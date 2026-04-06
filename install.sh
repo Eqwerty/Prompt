@@ -50,19 +50,43 @@ else
   INSTALL_NAME="${INSTALL_NAME:-${BIN_BASENAME}}"
 fi
 
-URL="https://github.com/Eqwerty/Prompt/releases/latest/download/${ASSET}"
+URL="https://github.com/Eqwerty/Prompt/releases/download/latest/${ASSET}"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT INT TERM
 
 echo "Downloading ${URL}"
 
+DOWNLOADED=0
+
 if command -v curl >/dev/null 2>&1; then
-  curl -fsSL "$URL" -o "$TMP_DIR/$ASSET"
-elif command -v wget >/dev/null 2>&1; then
-  wget -qO "$TMP_DIR/$ASSET" "$URL"
-else
-  echo "Neither curl nor wget is installed."
+  if [ "$GOOS" = "windows" ]; then
+    if curl --ssl-no-revoke -fsSL "$URL" -o "$TMP_DIR/$ASSET"; then
+      DOWNLOADED=1
+    fi
+  else
+    if curl -fsSL "$URL" -o "$TMP_DIR/$ASSET"; then
+      DOWNLOADED=1
+    fi
+  fi
+fi
+
+if [ "$DOWNLOADED" -eq 0 ] && command -v wget >/dev/null 2>&1; then
+  if wget -qO "$TMP_DIR/$ASSET" "$URL"; then
+    DOWNLOADED=1
+  fi
+fi
+
+if [ "$DOWNLOADED" -eq 0 ] && [ "$GOOS" = "windows" ] && command -v powershell.exe >/dev/null 2>&1; then
+  if powershell.exe -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '$URL' -OutFile '$TMP_DIR/$ASSET'" >/dev/null; then
+    DOWNLOADED=1
+  fi
+fi
+
+if [ "$DOWNLOADED" -eq 0 ]; then
+  echo "Failed to download release asset."
+  echo "If this repository has only prereleases, latest/download will not work."
+  echo "Push a new commit changing prompt.go to publish a non-prerelease release."
   exit 1
 fi
 

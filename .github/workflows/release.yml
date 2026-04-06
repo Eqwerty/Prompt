@@ -80,12 +80,23 @@ jobs:
           pattern: prompt-*
           merge-multiple: true
 
+      - name: Delete previous latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view latest >/dev/null 2>&1; then
+            gh release delete latest --yes --cleanup-tag
+          fi
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: auto-${{ github.run_number }}-${{ github.sha }}
-          name: Auto Release ${{ github.run_number }}
+          tag_name: latest
+          name: Latest
           target_commitish: ${{ github.sha }}
-          prerelease: true
+          prerelease: false
+          make_latest: true
           files: artifacts/*
           generate_release_notes: true

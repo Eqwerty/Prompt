@@ -13,7 +13,11 @@ When it runs, it:
 
 - Builds cross-platform binaries
 - Packages release artifacts
-- Creates a prerelease with an auto-generated tag
+- Replaces a fixed `latest` release tag with new artifacts
+
+Stable asset URL pattern:
+
+- `https://github.com/Eqwerty/Prompt/releases/download/latest/<asset-name>`
 
 Current build targets:
 
