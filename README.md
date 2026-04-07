@@ -1,21 +1,17 @@
 # Prompt
 
-This repository builds a single C#/.NET binary from `src/Prompt/Program.cs` and auto-publishes GitHub Releases.
+This repository publishes a single prompt binary and auto-publishes GitHub Releases.
 
 ## What Happens On Push
 
-The workflow in `.github/workflows/release.yml` runs only when both are true:
+The workflow in `.github/workflows/release.yml` runs when either is true:
 
 - You push to `master`
-- The push includes changes to one of:
-  - `src/Prompt/**`
-  - `.github/workflows/release.yml`
-  - `install.sh`
-  - `README.md`
+- You trigger it manually with `workflow_dispatch`
 
 When it runs, it:
 
-- Builds cross-platform self-contained binaries with `dotnet publish`
+- Builds cross-platform binaries
 - Packages release artifacts
 - Replaces a fixed `latest` release tag with new artifacts
 
@@ -31,10 +27,10 @@ Current build targets:
 
 ## Install (Linux, macOS, and Windows Git Bash)
 
-The installer downloads the latest GitHub release asset for your OS and installs the binary with this default layout:
+The installer downloads the latest GitHub release asset for your OS and installs the prompt executable with this default layout:
 
 - Linux/macOS: `$HOME/.local/bin/gitprompt`
-- Windows Git Bash: `$HOME/promptgo/gitprompt.exe`
+- Windows Git Bash: `$HOME/prompt/gitprompt.exe`
 
 Install:
 
@@ -43,11 +39,11 @@ Install:
 Notes:
 
 - Installer supports Linux, macOS, and Windows Git Bash on amd64.
-- Release binaries are self-contained and do not require a preinstalled .NET runtime.
+- On Linux and macOS, rerunning the installer replaces the binary atomically, so self-updates from your shell prompt work without `Text file busy` errors.
 
 ## Update
 
-Run the same install command again to update to the newest release:
+Run the same install command again to update to the newest release artifact:
 
     curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh
 
@@ -65,4 +61,4 @@ Linux/macOS:
 
 Windows Git Bash:
 
-    PS1='$(~/promptgo/gitprompt.exe)'
+    PS1='$(~/prompt/gitprompt.exe)'
