@@ -113,6 +113,156 @@ public sealed class GitStatusIntegrationTests
         gitStatusSegment.Should().Contain("@1");
     }
 
+    [Fact]
+    public void BuildGitStatusSegment_ShowsOperationMarker_WhenMergeIsInProgress()
+    {
+        using var sandbox = new TemporaryDirectory();
+        var repositoryPath = Path.Combine(sandbox.DirectoryPath, "repo");
+
+        RunGit(sandbox.DirectoryPath, $"init --initial-branch=main {Quote(repositoryPath)}");
+        ConfigureGitIdentity(repositoryPath);
+
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "base\n");
+        RunGit(repositoryPath, "add conflict.txt");
+        RunGit(repositoryPath, "commit -m \"base\"");
+
+        RunGit(repositoryPath, "checkout -b feature");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "feature\n");
+        RunGit(repositoryPath, "commit -am \"feature change\"");
+
+        RunGit(repositoryPath, "checkout main");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "main\n");
+        RunGit(repositoryPath, "commit -am \"main change\"");
+
+        var mergeCommandResult = RunGitAllowFailure(repositoryPath, "merge feature");
+        mergeCommandResult.ExitCode.Should().NotBe(0);
+
+        var gitStatusSegment = ExecuteInDirectory(repositoryPath, Program.BuildGitStatusSegment);
+
+        gitStatusSegment.Should().Contain("|MERGE");
+    }
+
+    [Fact]
+    public void BuildGitStatusSegment_ShowsOperationMarker_WhenCherryPickIsInProgress()
+    {
+        using var sandbox = new TemporaryDirectory();
+        var repositoryPath = Path.Combine(sandbox.DirectoryPath, "repo");
+
+        RunGit(sandbox.DirectoryPath, $"init --initial-branch=main {Quote(repositoryPath)}");
+        ConfigureGitIdentity(repositoryPath);
+
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "base\n");
+        RunGit(repositoryPath, "add conflict.txt");
+        RunGit(repositoryPath, "commit -m \"base\"");
+
+        RunGit(repositoryPath, "checkout -b source");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "source\n");
+        RunGit(repositoryPath, "commit -am \"source change\"");
+        var sourceCommitObjectId = RunGit(repositoryPath, "rev-parse HEAD").Trim();
+
+        RunGit(repositoryPath, "checkout main");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "main\n");
+        RunGit(repositoryPath, "commit -am \"main change\"");
+
+        var cherryPickCommandResult = RunGitAllowFailure(repositoryPath, $"cherry-pick {sourceCommitObjectId}");
+        cherryPickCommandResult.ExitCode.Should().NotBe(0);
+
+        var gitStatusSegment = ExecuteInDirectory(repositoryPath, Program.BuildGitStatusSegment);
+
+        gitStatusSegment.Should().Contain("|CHERRY-PICK");
+    }
+
+    [Fact]
+    public void BuildGitStatusSegment_OnNoUpstreamBranch_ShowsMergeOperationInsideBranchLabel()
+    {
+        using var sandbox = new TemporaryDirectory();
+        var repositoryPath = Path.Combine(sandbox.DirectoryPath, "repo");
+
+        RunGit(sandbox.DirectoryPath, $"init --initial-branch=main {Quote(repositoryPath)}");
+        ConfigureGitIdentity(repositoryPath);
+
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "base\n");
+        RunGit(repositoryPath, "add conflict.txt");
+        RunGit(repositoryPath, "commit -m \"base\"");
+
+        RunGit(repositoryPath, "checkout -b feature");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "feature\n");
+        RunGit(repositoryPath, "commit -am \"feature change\"");
+
+        RunGit(repositoryPath, "checkout -b other main");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "other\n");
+        RunGit(repositoryPath, "commit -am \"other change\"");
+
+        RunGit(repositoryPath, "checkout feature");
+        var mergeCommandResult = RunGitAllowFailure(repositoryPath, "merge other");
+        mergeCommandResult.ExitCode.Should().NotBe(0);
+
+        var gitStatusSegment = ExecuteInDirectory(repositoryPath, Program.BuildGitStatusSegment);
+
+        gitStatusSegment.Should().Contain("*(feature|MERGE)");
+    }
+
+    [Fact]
+    public void BuildGitStatusSegment_OnNoUpstreamBranch_ShowsCherryPickOperationInsideBranchLabel()
+    {
+        using var sandbox = new TemporaryDirectory();
+        var repositoryPath = Path.Combine(sandbox.DirectoryPath, "repo");
+
+        RunGit(sandbox.DirectoryPath, $"init --initial-branch=main {Quote(repositoryPath)}");
+        ConfigureGitIdentity(repositoryPath);
+
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "base\n");
+        RunGit(repositoryPath, "add conflict.txt");
+        RunGit(repositoryPath, "commit -m \"base\"");
+
+        RunGit(repositoryPath, "checkout -b source");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "source\n");
+        RunGit(repositoryPath, "commit -am \"source change\"");
+        var sourceCommitObjectId = RunGit(repositoryPath, "rev-parse HEAD").Trim();
+
+        RunGit(repositoryPath, "checkout -b feature main");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "feature\n");
+        RunGit(repositoryPath, "commit -am \"feature change\"");
+
+        var cherryPickCommandResult = RunGitAllowFailure(repositoryPath, $"cherry-pick {sourceCommitObjectId}");
+        cherryPickCommandResult.ExitCode.Should().NotBe(0);
+
+        var gitStatusSegment = ExecuteInDirectory(repositoryPath, Program.BuildGitStatusSegment);
+
+        gitStatusSegment.Should().Contain("*(feature|CHERRY-PICK)");
+    }
+
+    [Fact]
+    public void BuildGitStatusSegment_WhenRebaseIsInProgress_ShowsBranchNameInsteadOfDetachedCommit()
+    {
+        using var sandbox = new TemporaryDirectory();
+        var repositoryPath = Path.Combine(sandbox.DirectoryPath, "repo");
+
+        RunGit(sandbox.DirectoryPath, $"init --initial-branch=main {Quote(repositoryPath)}");
+        ConfigureGitIdentity(repositoryPath);
+
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "base\n");
+        RunGit(repositoryPath, "add conflict.txt");
+        RunGit(repositoryPath, "commit -m \"base\"");
+
+        RunGit(repositoryPath, "checkout -b feature");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "feature\n");
+        RunGit(repositoryPath, "commit -am \"feature change\"");
+
+        RunGit(repositoryPath, "checkout main");
+        File.WriteAllText(Path.Combine(repositoryPath, "conflict.txt"), "main\n");
+        RunGit(repositoryPath, "commit -am \"main change\"");
+
+        RunGit(repositoryPath, "checkout feature");
+        var rebaseCommandResult = RunGitAllowFailure(repositoryPath, "rebase main");
+        rebaseCommandResult.ExitCode.Should().NotBe(0);
+
+        var gitStatusSegment = ExecuteInDirectory(repositoryPath, Program.BuildGitStatusSegment);
+
+        gitStatusSegment.Should().Contain("feature|REBASE");
+        gitStatusSegment.Should().NotContain("...|REBASE");
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()
@@ -159,6 +309,17 @@ public sealed class GitStatusIntegrationTests
 
     private static string RunGit(string workingDirectoryPath, string arguments)
     {
+        var commandResult = RunGitAllowFailure(workingDirectoryPath, arguments);
+        if (commandResult.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"git {arguments} failed in {workingDirectoryPath}: {commandResult.StandardError}");
+        }
+
+        return commandResult.StandardOutput;
+    }
+
+    private static GitCommandResult RunGitAllowFailure(string workingDirectoryPath, string arguments)
+    {
         using var process = new Process();
         process.StartInfo = new ProcessStartInfo
         {
@@ -176,17 +337,14 @@ public sealed class GitStatusIntegrationTests
         var standardError = process.StandardError.ReadToEnd();
         process.WaitForExit();
 
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"git {arguments} failed in {workingDirectoryPath}: {standardError}");
-        }
-
-        return standardOutput;
+        return new GitCommandResult(process.ExitCode, standardOutput, standardError);
     }
 
     private static string Quote(string value)
     {
         return "\"" + value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
     }
+
+    private readonly record struct GitCommandResult(int ExitCode, string StandardOutput, string StandardError);
 }
 

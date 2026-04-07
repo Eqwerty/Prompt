@@ -1,4 +1,3 @@
-
 using FluentAssertions;
 
 namespace Prompt.Tests.Unit;
@@ -51,6 +50,7 @@ u UU ignored
         var stashLogDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "logs", "refs");
         Directory.CreateDirectory(stashLogDirectoryPath);
         File.WriteAllText(Path.Combine(stashLogDirectoryPath, "stash"), "entry-1\nentry-2\n");
+        File.WriteAllText(Path.Combine(gitDirectory.DirectoryPath, "MERGE_HEAD"), "merge\n");
 
         var statusCounts = new Program.StatusCounts
         {
@@ -62,7 +62,7 @@ u UU ignored
 
         var gitStatusDisplay = Program.BuildGitStatusDisplay("(main)", 4, 2, statusCounts, gitDirectory.DirectoryPath);
 
-        gitStatusDisplay.Should().Contain("(main)");
+        gitStatusDisplay.Should().Contain("(main|MERGE)");
         gitStatusDisplay.Should().Contain("↑4");
         gitStatusDisplay.Should().Contain("↓2");
         gitStatusDisplay.Should().Contain("~1");
@@ -70,6 +70,32 @@ u UU ignored
         gitStatusDisplay.Should().Contain("?1");
         gitStatusDisplay.Should().Contain("@2");
         gitStatusDisplay.Should().Contain("!1");
+    }
+
+    [Theory]
+    [InlineData("MERGE_HEAD", "MERGE")]
+    [InlineData("CHERRY_PICK_HEAD", "CHERRY-PICK")]
+    public void BuildGitStatusDisplay_OnBranchWithoutUpstream_PlacesOperationInsideBranchLabel(string operationMarkerFileName, string expectedOperationMarker)
+    {
+        using var gitDirectory = new TemporaryDirectory();
+        File.WriteAllText(Path.Combine(gitDirectory.DirectoryPath, operationMarkerFileName), "head\n");
+
+        var gitStatusDisplay = Program.BuildGitStatusDisplay("*(feature)", 0, 0, new Program.StatusCounts(), gitDirectory.DirectoryPath);
+
+        gitStatusDisplay.Should().Contain($"*(feature|{expectedOperationMarker})");
+    }
+
+    [Fact]
+    public void ResolveRebaseBranchName_ReturnsBranchName_FromRebaseHeadNameFile()
+    {
+        using var gitDirectory = new TemporaryDirectory();
+        var rebaseDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "rebase-merge");
+        Directory.CreateDirectory(rebaseDirectoryPath);
+        File.WriteAllText(Path.Combine(rebaseDirectoryPath, "head-name"), "refs/heads/feature\n");
+
+        var rebaseBranchName = Program.ResolveRebaseBranchName(gitDirectory.DirectoryPath);
+
+        rebaseBranchName.Should().Be("feature");
     }
 
     [Fact]
@@ -174,6 +200,91 @@ u UU conflict.txt
         statusCounts.UnstagedRenamed.Should().Be(1);
         statusCounts.Untracked.Should().Be(1);
         statusCounts.Conflicts.Should().Be(1);
+    }
+
+    [Fact]
+    public void ReadGitOperationMarker_ReturnsEmpty_WhenNoOperationExists()
+    {
+        using var gitDirectory = new TemporaryDirectory();
+
+        var operationMarker = Program.ReadGitOperationMarker(gitDirectory.DirectoryPath);
+
+        operationMarker.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ReadGitOperationMarker_DetectsCherryPick()
+    {
+        using var gitDirectory = new TemporaryDirectory();
+        File.WriteAllText(Path.Combine(gitDirectory.DirectoryPath, "CHERRY_PICK_HEAD"), "head\n");
+
+        var operationMarker = Program.ReadGitOperationMarker(gitDirectory.DirectoryPath);
+
+        operationMarker.Should().Be("CHERRY-PICK");
+    }
+
+    [Fact]
+    public void ReadGitOperationMarker_DetectsRevert()
+    {
+        using var gitDirectory = new TemporaryDirectory();
+        File.WriteAllText(Path.Combine(gitDirectory.DirectoryPath, "REVERT_HEAD"), "head\n");
+
+        var operationMarker = Program.ReadGitOperationMarker(gitDirectory.DirectoryPath);
+
+        operationMarker.Should().Be("REVERT");
+    }
+
+    [Fact]
+    public void ReadGitOperationMarker_DetectsBisect()
+    {
+        using var gitDirectory = new TemporaryDirectory();
+        File.WriteAllText(Path.Combine(gitDirectory.DirectoryPath, "BISECT_LOG"), "bisect\n");
+
+        var operationMarker = Program.ReadGitOperationMarker(gitDirectory.DirectoryPath);
+
+        operationMarker.Should().Be("BISECT");
+    }
+
+    [Fact]
+    public void ReadGitOperationMarker_DetectsRebaseAndHasPriorityOverOtherMarkers()
+    {
+        using var gitDirectory = new TemporaryDirectory();
+        Directory.CreateDirectory(Path.Combine(gitDirectory.DirectoryPath, "rebase-merge"));
+        File.WriteAllText(Path.Combine(gitDirectory.DirectoryPath, "MERGE_HEAD"), "head\n");
+        File.WriteAllText(Path.Combine(gitDirectory.DirectoryPath, "CHERRY_PICK_HEAD"), "head\n");
+
+        var operationMarker = Program.ReadGitOperationMarker(gitDirectory.DirectoryPath);
+
+        operationMarker.Should().Be("REBASE");
+    }
+
+    [Fact]
+    public void ResolveGitDirectoryPath_ReturnsDotGitDirectory_WhenDotGitIsDirectory()
+    {
+        using var repoDirectory = new TemporaryDirectory();
+        var dotGitPath = Path.Combine(repoDirectory.DirectoryPath, ".git");
+        Directory.CreateDirectory(dotGitPath);
+
+        var resolvedGitDirectoryPath = Program.ResolveGitDirectoryPath(dotGitPath);
+
+        resolvedGitDirectoryPath.Should().Be(dotGitPath);
+    }
+
+    [Fact]
+    public void ResolveGitDirectoryPath_ResolvesRelativeGitdirFileReference()
+    {
+        using var rootDirectory = new TemporaryDirectory();
+        var actualGitDirectoryPath = Path.Combine(rootDirectory.DirectoryPath, "actual-git");
+        var workingTreePath = Path.Combine(rootDirectory.DirectoryPath, "worktree");
+        Directory.CreateDirectory(actualGitDirectoryPath);
+        Directory.CreateDirectory(workingTreePath);
+
+        var dotGitPath = Path.Combine(workingTreePath, ".git");
+        File.WriteAllText(dotGitPath, "gitdir: ../actual-git\n");
+
+        var resolvedGitDirectoryPath = Program.ResolveGitDirectoryPath(dotGitPath);
+
+        resolvedGitDirectoryPath.Should().Be(Path.GetFullPath(actualGitDirectoryPath));
     }
 
     private sealed class TemporaryDirectory : IDisposable

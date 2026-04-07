@@ -20,6 +20,28 @@ internal static class Program
     private const string ColorPrompt = "\e[0;37m";
     private const string ColorReset = "\e[0m";
 
+    // Centralized formatting tokens for all git status rendering.
+    private const string NoUpstreamBranchMarker = "*";
+    private const string BranchLabelOpen = "(";
+    private const string BranchLabelClose = ")";
+    private const string BranchOperationSeparator = "|";
+
+    private const string IconAhead = "↑";
+    private const string IconBehind = "↓";
+    private const string IconAdded = "+";
+    private const string IconModified = "~";
+    private const string IconRenamed = "→";
+    private const string IconDeleted = "-";
+    private const string IconUntracked = "?";
+    private const string IconStash = "@";
+    private const string IconConflicts = "!";
+
+    private const string OperationRebase = "REBASE";
+    private const string OperationMerge = "MERGE";
+    private const string OperationCherryPick = "CHERRY-PICK";
+    private const string OperationRevert = "REVERT";
+    private const string OperationBisect = "BISECT";
+
     internal sealed class StatusCounts
     {
         public int StagedAdded;
@@ -91,6 +113,13 @@ internal static class Program
 
         if (branchHeadName == "(detached)" || string.IsNullOrEmpty(branchHeadName))
         {
+            var rebaseBranchName = ResolveRebaseBranchName(gitDirectoryPath);
+            if (!string.IsNullOrEmpty(rebaseBranchName))
+            {
+                var rebaseBranchDescription = BuildBranchLabel(rebaseBranchName, hasUpstream);
+                return BuildGitStatusDisplay(rebaseBranchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
+            }
+
             var shortObjectId = ShortenObjectId(headObjectId);
             if (string.IsNullOrEmpty(shortObjectId))
             {
@@ -98,10 +127,10 @@ internal static class Program
             }
 
             var matchingRemoteReferences = FindMatchingRemoteReferences(gitDirectoryPath, headObjectId);
-            var detachedBranchDescription = $"({shortObjectId}...)";
+            var detachedBranchDescription = BuildBranchLabel($"{shortObjectId}...");
             if (matchingRemoteReferences.Count == 1)
             {
-                detachedBranchDescription = $"({matchingRemoteReferences[0]} {shortObjectId}...)";
+                detachedBranchDescription = BuildBranchLabel($"{matchingRemoteReferences[0]} {shortObjectId}...");
             }
 
             return BuildGitStatusDisplay(detachedBranchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
@@ -119,9 +148,7 @@ internal static class Program
             commitsBehind = 0;
         }
 
-        var branchDescription = hasUpstream
-            ? $"({branchHeadName})"
-            : $"{ColorBranchNoUpstream}*({branchHeadName}){ColorReset}";
+        var branchDescription = BuildBranchLabel(branchHeadName, hasUpstream);
 
         return BuildGitStatusDisplay(branchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
     }
@@ -264,47 +291,163 @@ internal static class Program
     internal static string BuildGitStatusDisplay(string branchDescription, int commitsAhead, int commitsBehind, StatusCounts statusCounts, string gitDirectoryPath)
     {
         var statusBuilder = new StringBuilder();
-        statusBuilder.Append(ColorBranch).Append(branchDescription).Append(ColorReset);
+
+        var operationName = ReadGitOperationMarker(gitDirectoryPath);
+        branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
+
+        var noUpstreamPrefix = NoUpstreamBranchMarker + BranchLabelOpen;
+        var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
+            ? ColorBranchNoUpstream
+            : ColorBranch;
+
+        statusBuilder.Append(branchColor).Append(branchDescription).Append(ColorReset);
 
         if (commitsAhead > 0)
         {
-            statusBuilder.Append(' ').Append(ColorAhead).Append('↑').Append(commitsAhead).Append(ColorReset);
+            statusBuilder.Append(' ').Append(ColorAhead).Append(IconAhead).Append(commitsAhead).Append(ColorReset);
         }
 
         if (commitsBehind > 0)
         {
-            statusBuilder.Append(' ').Append(ColorBehind).Append('↓').Append(commitsBehind).Append(ColorReset);
+            statusBuilder.Append(' ').Append(ColorBehind).Append(IconBehind).Append(commitsBehind).Append(ColorReset);
         }
+
 
         AppendCountIndicators(
             statusBuilder,
-            new CountStyle(statusCounts.StagedAdded, ColorStaged, "+"),
-            new CountStyle(statusCounts.StagedModified, ColorStaged, "~"),
-            new CountStyle(statusCounts.StagedRenamed, ColorStaged, "→"),
-            new CountStyle(statusCounts.StagedDeleted, ColorStaged, "-"),
-            new CountStyle(statusCounts.UnstagedAdded, ColorUnstaged, "+"),
-            new CountStyle(statusCounts.UnstagedModified, ColorUnstaged, "~"),
-            new CountStyle(statusCounts.UnstagedRenamed, ColorUnstaged, "→"),
-            new CountStyle(statusCounts.UnstagedDeleted, ColorUnstaged, "-")
+            new CountStyle(statusCounts.StagedAdded, ColorStaged, IconAdded),
+            new CountStyle(statusCounts.StagedModified, ColorStaged, IconModified),
+            new CountStyle(statusCounts.StagedRenamed, ColorStaged, IconRenamed),
+            new CountStyle(statusCounts.StagedDeleted, ColorStaged, IconDeleted),
+            new CountStyle(statusCounts.UnstagedAdded, ColorUnstaged, IconAdded),
+            new CountStyle(statusCounts.UnstagedModified, ColorUnstaged, IconModified),
+            new CountStyle(statusCounts.UnstagedRenamed, ColorUnstaged, IconRenamed),
+            new CountStyle(statusCounts.UnstagedDeleted, ColorUnstaged, IconDeleted)
         );
 
         if (statusCounts.Untracked > 0)
         {
-            statusBuilder.Append(' ').Append(ColorUntracked).Append('?').Append(statusCounts.Untracked).Append(ColorReset);
+            statusBuilder.Append(' ').Append(ColorUntracked).Append(IconUntracked).Append(statusCounts.Untracked).Append(ColorReset);
         }
 
         var stashEntryCount = ReadStashEntryCount(gitDirectoryPath);
         if (stashEntryCount > 0)
         {
-            statusBuilder.Append(' ').Append(ColorStash).Append('@').Append(stashEntryCount).Append(ColorReset);
+            statusBuilder.Append(' ').Append(ColorStash).Append(IconStash).Append(stashEntryCount).Append(ColorReset);
         }
 
         if (statusCounts.Conflicts > 0)
         {
-            statusBuilder.Append(' ').Append(ColorState).Append('!').Append(statusCounts.Conflicts).Append(ColorReset);
+            statusBuilder.Append(' ').Append(ColorState).Append(IconConflicts).Append(statusCounts.Conflicts).Append(ColorReset);
         }
 
         return statusBuilder.ToString();
+    }
+
+    internal static string ReadGitOperationMarker(string gitDirectoryPath)
+    {
+        if (string.IsNullOrEmpty(gitDirectoryPath))
+        {
+            return string.Empty;
+        }
+
+        if (Directory.Exists(Path.Combine(gitDirectoryPath, "rebase-merge")) || Directory.Exists(Path.Combine(gitDirectoryPath, "rebase-apply")))
+        {
+            return OperationRebase;
+        }
+
+        if (File.Exists(Path.Combine(gitDirectoryPath, "MERGE_HEAD")))
+        {
+            return OperationMerge;
+        }
+
+        if (File.Exists(Path.Combine(gitDirectoryPath, "CHERRY_PICK_HEAD")))
+        {
+            return OperationCherryPick;
+        }
+
+        if (File.Exists(Path.Combine(gitDirectoryPath, "REVERT_HEAD")))
+        {
+            return OperationRevert;
+        }
+
+        if (File.Exists(Path.Combine(gitDirectoryPath, "BISECT_LOG")))
+        {
+            return OperationBisect;
+        }
+
+        return string.Empty;
+    }
+
+    private static string BuildBranchLabel(string branchName, bool hasUpstream = true)
+    {
+        var noUpstreamPrefix = hasUpstream ? string.Empty : NoUpstreamBranchMarker;
+        return $"{noUpstreamPrefix}{BranchLabelOpen}{branchName}{BranchLabelClose}";
+    }
+
+    private static string AppendOperationToBranchLabel(string branchLabel, string operationName)
+    {
+        if (string.IsNullOrEmpty(operationName))
+        {
+            return branchLabel;
+        }
+
+        if (branchLabel.EndsWith(BranchLabelClose, StringComparison.Ordinal))
+        {
+            return branchLabel[..^BranchLabelClose.Length] + BranchOperationSeparator + operationName + BranchLabelClose;
+        }
+
+        return branchLabel + BranchOperationSeparator + operationName;
+    }
+
+    internal static string ResolveRebaseBranchName(string gitDirectoryPath)
+    {
+        if (string.IsNullOrEmpty(gitDirectoryPath))
+        {
+            return string.Empty;
+        }
+
+        foreach (var rebaseDirectoryName in new[] { "rebase-merge", "rebase-apply" })
+        {
+            var headNamePath = Path.Combine(gitDirectoryPath, rebaseDirectoryName, "head-name");
+            if (!File.Exists(headNamePath))
+            {
+                continue;
+            }
+
+            try
+            {
+                var headName = File.ReadAllText(headNamePath).Trim();
+                if (string.IsNullOrEmpty(headName))
+                {
+                    continue;
+                }
+
+                const string localHeadPrefix = "refs/heads/";
+                if (headName.StartsWith(localHeadPrefix, StringComparison.Ordinal))
+                {
+                    return headName[localHeadPrefix.Length..];
+                }
+
+                const string refsPrefix = "refs/";
+                if (headName.StartsWith(refsPrefix, StringComparison.Ordinal))
+                {
+                    var slashIndex = headName.LastIndexOf('/');
+                    if (slashIndex >= 0 && slashIndex + 1 < headName.Length)
+                    {
+                        return headName[(slashIndex + 1)..];
+                    }
+                }
+
+                return headName;
+            }
+            catch
+            {
+                // Ignore unreadable rebase metadata.
+            }
+        }
+
+        return string.Empty;
     }
 
     private static void AppendCountIndicators(StringBuilder sb, params CountStyle[] items)
@@ -411,9 +554,10 @@ internal static class Program
         while (true)
         {
             var candidate = Path.Combine(current, ".git");
-            if (Directory.Exists(candidate))
+            var resolvedGitDirectoryPath = ResolveGitDirectoryPath(candidate);
+            if (!string.IsNullOrEmpty(resolvedGitDirectoryPath))
             {
-                return candidate;
+                return resolvedGitDirectoryPath;
             }
 
             var parent = Directory.GetParent(current);
@@ -423,6 +567,56 @@ internal static class Program
             }
 
             current = parent.FullName;
+        }
+    }
+
+    internal static string? ResolveGitDirectoryPath(string dotGitPath)
+    {
+        if (Directory.Exists(dotGitPath))
+        {
+            return dotGitPath;
+        }
+
+        if (!File.Exists(dotGitPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var referenceLine = File.ReadLines(dotGitPath).FirstOrDefault()?.Trim();
+            if (string.IsNullOrEmpty(referenceLine))
+            {
+                return null;
+            }
+
+            const string gitDirectoryPrefix = "gitdir:";
+            if (!referenceLine.StartsWith(gitDirectoryPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var gitDirectoryValue = referenceLine[gitDirectoryPrefix.Length..].Trim().Trim('"');
+            if (string.IsNullOrEmpty(gitDirectoryValue))
+            {
+                return null;
+            }
+
+            var dotGitParentPath = Path.GetDirectoryName(dotGitPath);
+            if (string.IsNullOrEmpty(dotGitParentPath))
+            {
+                return null;
+            }
+
+            var resolvedPath = Path.IsPathRooted(gitDirectoryValue)
+                ? gitDirectoryValue
+                : Path.GetFullPath(Path.Combine(dotGitParentPath, gitDirectoryValue));
+
+            return Directory.Exists(resolvedPath) ? resolvedPath : null;
+        }
+        catch
+        {
+            return null;
         }
     }
 
