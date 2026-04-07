@@ -294,7 +294,7 @@ u UU conflict.txt
 
         var gitStatusDisplay = Program.BuildGitStatusDisplay("(main)", 0, 0, new Program.StatusCounts(), gitDirectory.DirectoryPath);
 
-        gitStatusDisplay.Should().StartWith("\e[1;36m(main)\e[0m");
+        gitStatusDisplay.Should().StartWith("\u0001\e[1;36m\u0002(main)\u0001\e[0m\u0002");
     }
 
     [Fact]
@@ -304,7 +304,7 @@ u UU conflict.txt
 
         var gitStatusDisplay = Program.BuildGitStatusDisplay("*(feature)", 0, 0, new Program.StatusCounts(), gitDirectory.DirectoryPath);
 
-        gitStatusDisplay.Should().StartWith("\e[1;36m*(feature)\e[0m");
+        gitStatusDisplay.Should().StartWith("\u0001\e[1;36m\u0002*(feature)\u0001\e[0m\u0002");
     }
 
     [Fact]
@@ -314,8 +314,8 @@ u UU conflict.txt
 
         var gitStatusDisplay = Program.BuildGitStatusDisplay("(main)", 2, 3, new Program.StatusCounts(), gitDirectory.DirectoryPath);
 
-        gitStatusDisplay.Should().Contain(" \e[1;36m↑2\e[0m");
-        gitStatusDisplay.Should().Contain(" \e[1;36m↓3\e[0m");
+        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↑2\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↓3\u0001\e[0m\u0002");
     }
 
     [Fact]
@@ -333,13 +333,13 @@ u UU conflict.txt
 
         var gitStatusDisplay = Program.BuildGitStatusDisplay("(main)", 1, 1, statusCounts, gitDirectory.DirectoryPath);
 
-        gitStatusDisplay.Should().Contain("\e[1;36m(main)\e[0m");
-        gitStatusDisplay.Should().Contain(" \e[1;36m↑1\e[0m");
-        gitStatusDisplay.Should().Contain(" \e[1;36m↓1\e[0m");
-        gitStatusDisplay.Should().Contain(" \e[0;32m+1\e[0m");
-        gitStatusDisplay.Should().Contain(" \e[0;31m~1\e[0m");
-        gitStatusDisplay.Should().Contain(" \e[0;31m?1\e[0m");
-        gitStatusDisplay.Should().Contain(" \e[1;31m!1\e[0m");
+        gitStatusDisplay.Should().Contain("\u0001\e[1;36m\u0002(main)\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↑1\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↓1\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(" \u0001\e[0;32m\u0002+1\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(" \u0001\e[0;31m\u0002~1\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(" \u0001\e[0;31m\u0002?1\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(" \u0001\e[1;31m\u0002!1\u0001\e[0m\u0002");
     }
 
     private sealed class TemporaryDirectory : IDisposable

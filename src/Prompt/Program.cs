@@ -5,20 +5,24 @@ namespace Prompt;
 
 internal static class Program
 {
-    private const string ColorUser = "\e[0;32m";
-    private const string ColorHost = "\e[1;35m";
-    private const string ColorPath = "\e[38;5;172m";
-    private const string ColorBranch = "\e[1;36m";
-    private const string ColorBranchNoUpstream = "\e[1;36m";
-    private const string ColorAhead = "\e[1;36m";
-    private const string ColorBehind = "\e[1;36m";
-    private const string ColorStaged = "\e[0;32m";
-    private const string ColorUnstaged = "\e[0;31m";
-    private const string ColorUntracked = "\e[0;31m";
-    private const string ColorStash = "\e[1;35m";
-    private const string ColorState = "\e[1;31m";
-    private const string ColorPrompt = "\e[0;37m";
-    private const string ColorReset = "\e[0m";
+    private const string ReadLineStart = "\u0001";
+    private const string ReadLineEnd = "\u0002";
+    private const string AnsiEscape = "\e";
+
+    private const string ColorUser = $"{ReadLineStart}{AnsiEscape}[0;32m{ReadLineEnd}";
+    private const string ColorHost = $"{ReadLineStart}{AnsiEscape}[1;35m{ReadLineEnd}";
+    private const string ColorPath = $"{ReadLineStart}{AnsiEscape}[38;5;172m{ReadLineEnd}";
+    private const string ColorBranch = $"{ReadLineStart}{AnsiEscape}[1;36m{ReadLineEnd}";
+    private const string ColorBranchNoUpstream = $"{ReadLineStart}{AnsiEscape}[1;36m{ReadLineEnd}";
+    private const string ColorAhead = $"{ReadLineStart}{AnsiEscape}[1;36m{ReadLineEnd}";
+    private const string ColorBehind = $"{ReadLineStart}{AnsiEscape}[1;36m{ReadLineEnd}";
+    private const string ColorStaged = $"{ReadLineStart}{AnsiEscape}[0;32m{ReadLineEnd}";
+    private const string ColorUnstaged = $"{ReadLineStart}{AnsiEscape}[0;31m{ReadLineEnd}";
+    private const string ColorUntracked = $"{ReadLineStart}{AnsiEscape}[0;31m{ReadLineEnd}";
+    private const string ColorStash = $"{ReadLineStart}{AnsiEscape}[1;35m{ReadLineEnd}";
+    private const string ColorState = $"{ReadLineStart}{AnsiEscape}[1;31m{ReadLineEnd}";
+    private const string ColorPrompt = $"{ReadLineStart}{AnsiEscape}[0;37m{ReadLineEnd}";
+    private const string ColorReset = $"{ReadLineStart}{AnsiEscape}[0m{ReadLineEnd}";
 
     // Centralized formatting tokens for all git status rendering.
     private const string NoUpstreamBranchMarker = "*";
