@@ -51,6 +51,26 @@ Optional alias (Windows Git Bash, with schannel workaround):
 
     alias updateprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh'
 
+## Local Development Loop (No Release Needed)
+
+For day-to-day prompt changes, you can test locally without pushing to `master` or publishing a release.
+
+Run:
+
+    sh ./dev-install-local.sh
+
+What it does:
+
+- Runs `dotnet test` (Release)
+- Publishes a local Release binary for your OS
+- Installs it to the same default location as `install.sh`
+  - Linux/macOS: `$HOME/.local/bin/gitprompt`
+  - Windows Git Bash: `$HOME/prompt/gitprompt.exe`
+
+Optional (faster inner loop):
+
+    SKIP_TESTS=1 sh ./dev-install-local.sh
+
 ## Bash Prompt Setup
 
 After install, set `PS1` and you are done.
