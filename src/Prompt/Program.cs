@@ -20,7 +20,7 @@ internal static class Program
     private const string ColorPrompt = "\e[0;37m";
     private const string ColorReset = "\e[0m";
 
-    private sealed class StatusCounts
+    internal sealed class StatusCounts
     {
         public int StagedAdded;
         public int StagedModified;
@@ -32,6 +32,18 @@ internal static class Program
         public int UnstagedRenamed;
         public int Untracked;
         public int Conflicts;
+    }
+
+    internal sealed class GitStatusSnapshot
+    {
+        public string BranchHeadName { get; init; } = string.Empty;
+        public string HeadObjectId { get; init; } = string.Empty;
+        public int CommitsAhead { get; init; }
+        public int CommitsBehind { get; init; }
+        public string UpstreamReference { get; init; } = string.Empty;
+        public bool HasUpstream { get; init; }
+        public bool HasAheadBehindCounts { get; init; }
+        public StatusCounts StatusCounts { get; init; } = new();
     }
 
     private readonly record struct CountStyle(int Value, string Color, string Icon);
@@ -53,7 +65,7 @@ internal static class Program
         return 0;
     }
 
-    private static string BuildGitStatusSegment()
+    internal static string BuildGitStatusSegment()
     {
         var statusOutput = RunGitStatusCommand();
         if (statusOutput is null)
@@ -61,6 +73,61 @@ internal static class Program
             return string.Empty;
         }
 
+        var gitStatusSnapshot = ParseGitStatusOutput(statusOutput);
+        var branchHeadName = gitStatusSnapshot.BranchHeadName;
+        var headObjectId = gitStatusSnapshot.HeadObjectId;
+        var commitsAhead = gitStatusSnapshot.CommitsAhead;
+        var commitsBehind = gitStatusSnapshot.CommitsBehind;
+        var upstreamReference = gitStatusSnapshot.UpstreamReference;
+        var hasUpstream = gitStatusSnapshot.HasUpstream;
+        var hasAheadBehindCounts = gitStatusSnapshot.HasAheadBehindCounts;
+        var statusCounts = gitStatusSnapshot.StatusCounts;
+
+        var gitDirectoryPath = FindGitDirectoryPath();
+        if (gitDirectoryPath is null)
+        {
+            return string.Empty;
+        }
+
+        if (branchHeadName == "(detached)" || string.IsNullOrEmpty(branchHeadName))
+        {
+            var shortObjectId = ShortenObjectId(headObjectId);
+            if (string.IsNullOrEmpty(shortObjectId))
+            {
+                return string.Empty;
+            }
+
+            var matchingRemoteReferences = FindMatchingRemoteReferences(gitDirectoryPath, headObjectId);
+            var detachedBranchDescription = $"({shortObjectId}...)";
+            if (matchingRemoteReferences.Count == 1)
+            {
+                detachedBranchDescription = $"({matchingRemoteReferences[0]} {shortObjectId}...)";
+            }
+
+            return BuildGitStatusDisplay(detachedBranchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
+        }
+
+        if (hasUpstream && !hasAheadBehindCounts && !string.IsNullOrEmpty(upstreamReference))
+        {
+            var (computedAheadCount, computedBehindCount) = ComputeAheadBehindAgainstUpstream(gitDirectoryPath, upstreamReference);
+            commitsAhead = computedAheadCount;
+            commitsBehind = computedBehindCount;
+        }
+        else if (!hasUpstream)
+        {
+            commitsAhead = ComputeLocalAheadCommitCount(gitDirectoryPath);
+            commitsBehind = 0;
+        }
+
+        var branchDescription = hasUpstream
+            ? $"({branchHeadName})"
+            : $"{ColorBranchNoUpstream}*({branchHeadName}){ColorReset}";
+
+        return BuildGitStatusDisplay(branchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
+    }
+
+    internal static GitStatusSnapshot ParseGitStatusOutput(string statusOutput)
+    {
         var branchHeadName = string.Empty;
         var headObjectId = string.Empty;
         var commitsAhead = 0;
@@ -126,50 +193,20 @@ internal static class Program
             }
         }
 
-        var gitDirectoryPath = FindGitDirectoryPath();
-        if (gitDirectoryPath is null)
+        return new GitStatusSnapshot
         {
-            return string.Empty;
-        }
-
-        if (branchHeadName == "(detached)" || string.IsNullOrEmpty(branchHeadName))
-        {
-            var shortObjectId = ShortenObjectId(headObjectId);
-            if (string.IsNullOrEmpty(shortObjectId))
-            {
-                return string.Empty;
-            }
-
-            var matchingRemoteReferences = FindMatchingRemoteReferences(gitDirectoryPath, headObjectId);
-            var detachedBranchDescription = $"({shortObjectId}...)";
-            if (matchingRemoteReferences.Count == 1)
-            {
-                detachedBranchDescription = $"({matchingRemoteReferences[0]} {shortObjectId}...)";
-            }
-
-            return BuildGitStatusDisplay(detachedBranchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
-        }
-
-        if (hasUpstream && !hasAheadBehindCounts && !string.IsNullOrEmpty(upstreamReference))
-        {
-            var (computedAheadCount, computedBehindCount) = ComputeAheadBehindAgainstUpstream(gitDirectoryPath, upstreamReference);
-            commitsAhead = computedAheadCount;
-            commitsBehind = computedBehindCount;
-        }
-        else if (!hasUpstream)
-        {
-            commitsAhead = ComputeLocalAheadCommitCount(gitDirectoryPath);
-            commitsBehind = 0;
-        }
-
-        var branchDescription = hasUpstream
-            ? $"({branchHeadName})"
-            : $"{ColorBranchNoUpstream}*({branchHeadName}){ColorReset}";
-
-        return BuildGitStatusDisplay(branchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
+            BranchHeadName = branchHeadName,
+            HeadObjectId = headObjectId,
+            CommitsAhead = commitsAhead,
+            CommitsBehind = commitsBehind,
+            UpstreamReference = upstreamReference,
+            HasUpstream = hasUpstream,
+            HasAheadBehindCounts = hasAheadBehindCounts,
+            StatusCounts = statusCounts
+        };
     }
 
-    private static void AccumulateFileStatus(char value, bool isStaged, StatusCounts counts)
+    internal static void AccumulateFileStatus(char value, bool isStaged, StatusCounts counts)
     {
         switch (value)
         {
@@ -224,7 +261,7 @@ internal static class Program
         }
     }
 
-    private static string BuildGitStatusDisplay(string branchDescription, int commitsAhead, int commitsBehind, StatusCounts statusCounts, string gitDirectoryPath)
+    internal static string BuildGitStatusDisplay(string branchDescription, int commitsAhead, int commitsBehind, StatusCounts statusCounts, string gitDirectoryPath)
     {
         var statusBuilder = new StringBuilder();
         statusBuilder.Append(ColorBranch).Append(branchDescription).Append(ColorReset);
@@ -434,7 +471,7 @@ internal static class Program
             var baseReferenceCandidates = new[] { "origin/main", "origin/master", "main", "master" };
             foreach (var candidateReference in baseReferenceCandidates)
             {
-                if (RunProcessForOutput("git", $"-C {EscapeCommandLineArgument(repositoryRootPath)} show-ref --verify --quiet refs/remotes/{candidateReference}", null, false) != null)
+                if (RunProcessForOutput("git", $"-C {EscapeCommandLineArgument(repositoryRootPath)} show-ref --verify --quiet refs/remotes/{candidateReference}", null, true) != null)
                 {
                     baseReference = candidateReference;
                     break;
@@ -444,7 +481,7 @@ internal static class Program
                     ? candidateReference[7..]
                     : candidateReference;
 
-                if (RunProcessForOutput("git", $"-C {EscapeCommandLineArgument(repositoryRootPath)} show-ref --verify --quiet refs/heads/{localCandidateReference}", null, false) != null)
+                if (RunProcessForOutput("git", $"-C {EscapeCommandLineArgument(repositoryRootPath)} show-ref --verify --quiet refs/heads/{localCandidateReference}", null, true) != null)
                 {
                     baseReference = localCandidateReference;
                     break;
@@ -517,7 +554,7 @@ internal static class Program
     }
 
 
-    private static List<string> FindMatchingRemoteReferences(string gitDirectoryPath, string headObjectId)
+    internal static List<string> FindMatchingRemoteReferences(string gitDirectoryPath, string headObjectId)
     {
         var matchingRemoteReferences = new List<string>();
         if (string.IsNullOrEmpty(headObjectId))
@@ -581,7 +618,7 @@ internal static class Program
         return matchingRemoteReferences;
     }
 
-    private static int ReadStashEntryCount(string gitDirectoryPath)
+    internal static int ReadStashEntryCount(string gitDirectoryPath)
     {
         var stashLog = Path.Combine(gitDirectoryPath, "logs", "refs", "stash");
         if (!File.Exists(stashLog))
@@ -609,7 +646,7 @@ internal static class Program
         }
     }
 
-    private static string ShortenObjectId(string objectId)
+    internal static string ShortenObjectId(string objectId)
     {
         if (string.IsNullOrEmpty(objectId))
         {
@@ -628,7 +665,7 @@ internal static class Program
         }
     }
 
-    private static string EscapeCommandLineArgument(string argument)
+    internal static string EscapeCommandLineArgument(string argument)
     {
         if (argument.Length == 0)
         {

@@ -10,4 +10,9 @@
         <OptimizationPreference>Speed</OptimizationPreference>
     </PropertyGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Prompt.Tests.Unit" />
+        <InternalsVisibleTo Include="Prompt.Tests.Integration" />
+    </ItemGroup>
+
 </Project>

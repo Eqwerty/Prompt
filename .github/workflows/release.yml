@@ -10,8 +10,24 @@ permissions:
   contents: write
 
 jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Run test suite
+        run: dotnet test Prompt.slnx --configuration Release --nologo
+
   build:
     name: Build ${{ matrix.target_os }}-${{ matrix.target_architecture }}
+    needs: test
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false

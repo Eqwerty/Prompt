@@ -2,4 +2,8 @@
   <Folder Name="/src/">
     <Project Path="src/Prompt/Prompt.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Prompt.Tests.Unit/Prompt.Tests.Unit.csproj" />
+    <Project Path="tests/Prompt.Tests.Integration/Prompt.Tests.Integration.csproj" />
+  </Folder>
 </Solution>
