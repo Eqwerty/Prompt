@@ -34,7 +34,7 @@ esac
 
 if [ -z "${INSTALL_DIR:-}" ]; then
   if [ "$TARGET_OS" = "windows" ]; then
-    INSTALL_DIR="$HOME/promptgo"
+    INSTALL_DIR="$HOME/prompt"
   else
     INSTALL_DIR="$HOME/.local/bin"
   fi
@@ -86,7 +86,7 @@ fi
 if [ "$DOWNLOAD_COMPLETED" -eq 0 ]; then
   echo "Failed to download release asset."
   echo "If this repository has only prereleases, latest/download will not work."
-  echo "Push a new commit changing src/Prompt/Program.cs to publish a non-prerelease release."
+  echo "Push a new commit to publish a non-prerelease release."
   exit 1
 fi
 
@@ -105,12 +105,28 @@ else
   tar -xzf "$TEMPORARY_DIRECTORY/$RELEASE_ASSET_NAME" -C "$TEMPORARY_DIRECTORY"
 fi
 
-cp "$TEMPORARY_DIRECTORY/$EXTRACTED_BINARY_NAME" "$INSTALL_DIR/$INSTALLED_BINARY_NAME"
-chmod +x "$INSTALL_DIR/$INSTALLED_BINARY_NAME" 2>/dev/null || true
+FINAL_BINARY_PATH="$INSTALL_DIR/$INSTALLED_BINARY_NAME"
+STAGED_BINARY_PATH="$INSTALL_DIR/.${INSTALLED_BINARY_NAME}.new.$$"
+
+cp "$TEMPORARY_DIRECTORY/$EXTRACTED_BINARY_NAME" "$STAGED_BINARY_PATH"
+chmod +x "$STAGED_BINARY_PATH" 2>/dev/null || true
+
+if [ "$TARGET_OS" = "windows" ]; then
+  if mv -f "$STAGED_BINARY_PATH" "$FINAL_BINARY_PATH" 2>/dev/null; then
+    :
+  else
+    rm -f "$STAGED_BINARY_PATH"
+    echo "Failed to replace $FINAL_BINARY_PATH."
+    echo "On Windows, a running .exe may be locked. Close shells using gitprompt and run the installer again."
+    exit 1
+  fi
+else
+  mv -f "$STAGED_BINARY_PATH" "$FINAL_BINARY_PATH"
+fi
 
 echo "Installed to $INSTALL_DIR/$INSTALLED_BINARY_NAME"
 if [ "$TARGET_OS" = "windows" ]; then
-  echo "Make sure your PS1 is updated: PS1='\$(~/promptgo/gitprompt.exe)'"
+  echo "Make sure your PS1 is updated: PS1='\$(~/prompt/gitprompt.exe)'"
 else
   echo "Make sure your PS1 is updated: PS1='\$($HOME/.local/bin/gitprompt)'"
 fi
