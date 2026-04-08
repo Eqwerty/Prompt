@@ -10,6 +10,7 @@ internal static class Program
         Console.OutputEncoding = Encoding.UTF8;
 
         var platformProvider = PlatformProvider.System;
+        
         var contextSegment = ContextSegmentBuilder.Build(platformProvider);
         var gitStatusSegment = await GitStatusSegmentBuilder.BuildAsync();
         var promptSymbol = GetPromptSymbol(platformProvider);
@@ -24,17 +25,12 @@ internal static class Program
 
     internal static string GetPromptSymbol(PlatformProvider platformProvider)
     {
-        return IsCurrentUnixRootUser(platformProvider) ? "#" : "$";
-    }
-
-    private static bool IsCurrentUnixRootUser(PlatformProvider platformProvider)
-    {
         if (platformProvider.IsWindows())
         {
-            return false;
+            return ">";
         }
 
-        var userName = platformProvider.User ?? platformProvider.WindowsUserName;
-        return string.Equals(userName, "root", StringComparison.Ordinal);
+        var isCurrentUnixRootUser = string.Equals(platformProvider.User, "root", StringComparison.Ordinal);
+        return isCurrentUnixRootUser ? "#" : "$";
     }
 }

@@ -5,11 +5,11 @@ namespace Prompt.Tests.Unit;
 public sealed class ProgramTests
 {
     [Fact]
-    public void GetPromptSymbol_WhenOnWindows_ShouldReturnDollar()
+    public void GetPromptSymbol_WhenOnWindows_ShouldReturnGreaterThan()
     {
         var symbol = Program.GetPromptSymbol(new TestPlatformProvider(isWindows: true, user: "root"));
 
-        symbol.Should().Be("$");
+        symbol.Should().Be(">");
     }
 
     [Fact]
@@ -29,11 +29,11 @@ public sealed class ProgramTests
     }
 
     [Fact]
-    public void GetPromptSymbol_WhenOnUnixAndWindowsUsernameIsRoot_ShouldReturnHash()
+    public void GetPromptSymbol_WhenOnUnixAndWindowsUsernameIsRoot_ShouldReturnDollar()
     {
         var symbol = Program.GetPromptSymbol(new TestPlatformProvider(isWindows: false, windowsUserName: "root"));
 
-        symbol.Should().Be("#");
+        symbol.Should().Be("$");
     }
 
     [Fact]
