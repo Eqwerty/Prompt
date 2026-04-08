@@ -38,7 +38,7 @@ public sealed class GitStatusIntegrationTests
         await RunGitAsync(localRepositoryPath, "fetch origin");
 
         // Act
-        var gitStatusSegment = await ExecuteInDirectoryAsync(localRepositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(localRepositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         gitStatusSegment.Should().Contain("(main)");
@@ -66,7 +66,7 @@ public sealed class GitStatusIntegrationTests
         await RunGitAsync(repositoryPath, "commit -m \"feature commit\"");
 
         // Act
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         gitStatusSegment.Should().Contain("*(feature)");
@@ -95,7 +95,7 @@ public sealed class GitStatusIntegrationTests
         await RunGitAsync(repositoryPath, $"checkout --detach {commitAObjectId}");
 
         // Act
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         gitStatusSegment.Should().Contain($"({commitAObjectId[..7]}...)");
@@ -119,7 +119,7 @@ public sealed class GitStatusIntegrationTests
         await RunGitAsync(repositoryPath, "stash push -m \"wip\"");
 
         // Act
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         gitStatusSegment.Should().Contain("@1");
@@ -149,7 +149,7 @@ public sealed class GitStatusIntegrationTests
 
         // Act
         var mergeCommandResult = await RunGitAllowFailureAsync(repositoryPath, "merge feature");
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         mergeCommandResult.ExitCode.Should().NotBe(0);
@@ -181,7 +181,7 @@ public sealed class GitStatusIntegrationTests
 
         // Act
         var cherryPickCommandResult = await RunGitAllowFailureAsync(repositoryPath, $"cherry-pick {sourceCommitObjectId}");
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         cherryPickCommandResult.ExitCode.Should().NotBe(0);
@@ -214,7 +214,7 @@ public sealed class GitStatusIntegrationTests
 
         // Act
         var mergeCommandResult = await RunGitAllowFailureAsync(repositoryPath, "merge other");
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         mergeCommandResult.ExitCode.Should().NotBe(0);
@@ -246,7 +246,7 @@ public sealed class GitStatusIntegrationTests
 
         // Act
         var cherryPickCommandResult = await RunGitAllowFailureAsync(repositoryPath, $"cherry-pick {sourceCommitObjectId}");
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         cherryPickCommandResult.ExitCode.Should().NotBe(0);
@@ -279,7 +279,7 @@ public sealed class GitStatusIntegrationTests
 
         // Act
         var rebaseCommandResult = await RunGitAllowFailureAsync(repositoryPath, "rebase main");
-        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, Program.BuildGitStatusSegmentAsync);
+        var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
         rebaseCommandResult.ExitCode.Should().NotBe(0);
