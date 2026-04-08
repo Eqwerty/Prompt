@@ -19,6 +19,6 @@ internal static class PromptColors
     internal static readonly string ColorUntracked = PromptColor(AnsiColors.Red);
     internal static readonly string ColorStash = PromptColor(AnsiColors.BoldMagenta);
     internal static readonly string ColorState = PromptColor(AnsiColors.BoldRed);
-    internal static readonly string ColorPrompt = PromptColor(AnsiColors.LightGray);
+    internal static readonly string ColorPromptSymbol = PromptColor(AnsiColors.LightGray);
     internal static readonly string ColorReset = PromptColor(AnsiColors.Reset);
 }
