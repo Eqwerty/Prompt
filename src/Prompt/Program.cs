@@ -10,17 +10,17 @@ internal static class Program
         Console.OutputEncoding = Encoding.UTF8;
 
         var platformProvider = PlatformProvider.System;
-        var promptContext = PromptContextBuilder.Build(platformProvider);
+        var context = ContextSegmentBuilder.Build(platformProvider);
         var gitStatusSegment = await GitStatusSegmentBuilder.BuildAsync();
         var promptSymbol = GetPromptSymbol(platformProvider);
 
         if (!string.IsNullOrEmpty(gitStatusSegment))
         {
-            Console.Write($"{promptContext} {gitStatusSegment}\n{ColorPrompt}{promptSymbol} {ColorReset}");
+            Console.Write($"{context} {gitStatusSegment}\n{ColorPrompt}{promptSymbol} {ColorReset}");
             return 0;
         }
 
-        Console.Write($"{promptContext}\n{ColorPrompt}{promptSymbol} {ColorReset}");
+        Console.Write($"{context}\n{ColorPrompt}{promptSymbol} {ColorReset}");
         return 0;
     }
 

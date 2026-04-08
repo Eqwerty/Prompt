@@ -3,12 +3,12 @@ using static Prompt.Constants.PromptColors;
 
 namespace Prompt.Tests.Unit;
 
-public sealed class PromptContextBuilderTests
+public sealed class ContextSegmentBuilderTests
 {
     [Fact]
     public void Build_WhenUserAndUsernameExist_ShouldPreferUser()
     {
-        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
+        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
             user: "unix-user",
             windowsUserName: "windows-user",
             host: "workstation",
@@ -20,7 +20,7 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenOnlyUsernameExists_ShouldUseUsername()
     {
-        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
+        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
             user: null,
             windowsUserName: "windows-user",
             host: "workstation",
@@ -32,7 +32,7 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenNoUserExists_ShouldUseUnknownMarker()
     {
-        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
+        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
             host: "workstation",
             workingDirectoryPath: "/repo"));
 
@@ -42,7 +42,7 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenHostContainsDomain_ShouldTrimSuffix()
     {
-        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
+        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
             user: "me",
             host: "machine.example.local",
             workingDirectoryPath: "/repo"));
@@ -55,7 +55,7 @@ public sealed class PromptContextBuilderTests
     {
         using var home = new TemporaryDirectory();
 
-        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
+        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
             user: "me",
             host: "machine",
             workingDirectoryPath: home.DirectoryPath,
@@ -72,7 +72,7 @@ public sealed class PromptContextBuilderTests
         var projectPath = Path.Combine(home.DirectoryPath, "src", "project");
         Directory.CreateDirectory(projectPath);
 
-        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
+        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
             user: "me",
             host: "machine",
             workingDirectoryPath: projectPath,
@@ -85,7 +85,7 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenPathContainsBackslashes_ShouldNormalizeToForwardSlashes()
     {
-        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
+        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
             user: "me",
             host: "machine",
             workingDirectoryPath: "folder\\nested",

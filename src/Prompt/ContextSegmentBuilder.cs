@@ -2,26 +2,26 @@ using static Prompt.Constants.PromptColors;
 
 namespace Prompt;
 
-internal static class PromptContextBuilder
+internal static class ContextSegmentBuilder
 {
-    internal static string Build(PlatformProvider platform)
+    internal static string Build(PlatformProvider platformProvider)
     {
-        var resolvedUser = ResolveUser(platform);
-        var resolvedHost = ResolveHost(platform);
-        var resolvedPath = ResolveWorkingDirectoryPath(platform);
+        var resolvedUser = ResolveUser(platformProvider);
+        var resolvedHost = ResolveHost(platformProvider);
+        var resolvedPath = ResolveWorkingDirectoryPath(platformProvider);
 
         return $"{ColorUser}{resolvedUser}{ColorReset} {ColorHost}{resolvedHost}{ColorReset} {ColorPath}{resolvedPath}{ColorReset}";
     }
 
-    private static string ResolveUser(PlatformProvider platform)
+    private static string ResolveUser(PlatformProvider platformProvider)
     {
-        var user = platform.User;
+        var user = platformProvider.User;
         if (!string.IsNullOrEmpty(user))
         {
             return user;
         }
 
-        var windowsUserName = platform.WindowsUserName;
+        var windowsUserName = platformProvider.WindowsUserName;
         if (!string.IsNullOrEmpty(windowsUserName))
         {
             return windowsUserName;
@@ -30,9 +30,9 @@ internal static class PromptContextBuilder
         return "?";
     }
 
-    private static string ResolveHost(PlatformProvider platform)
+    private static string ResolveHost(PlatformProvider platformProvider)
     {
-        var host = platform.Host;
+        var host = platformProvider.Host;
         if (string.IsNullOrEmpty(host))
         {
             return "?";
@@ -42,9 +42,9 @@ internal static class PromptContextBuilder
         return dotIndex > 0 ? host[..dotIndex] : host;
     }
 
-    private static string ResolveWorkingDirectoryPath(PlatformProvider platform)
+    private static string ResolveWorkingDirectoryPath(PlatformProvider platformProvider)
     {
-        var workingDirectoryPath = platform.WorkingDirectoryPath;
+        var workingDirectoryPath = platformProvider.WorkingDirectoryPath;
         var resolvedPath = string.IsNullOrEmpty(workingDirectoryPath) ? "?" : workingDirectoryPath;
 
         if (resolvedPath is "?")
@@ -54,7 +54,7 @@ internal static class PromptContextBuilder
 
         try
         {
-            var homeDirectoryPath = platform.HomeDirectoryPath;
+            var homeDirectoryPath = platformProvider.HomeDirectoryPath;
             if (!string.IsNullOrEmpty(homeDirectoryPath))
             {
                 var fullWorkingDirectoryPath = Path.GetFullPath(resolvedPath)
@@ -63,7 +63,7 @@ internal static class PromptContextBuilder
                 var fullHomeDirectoryPath = Path.GetFullPath(homeDirectoryPath)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                var pathComparison = platform.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                var pathComparison = platformProvider.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
                 if (string.Equals(fullWorkingDirectoryPath, fullHomeDirectoryPath, pathComparison))
                 {
