@@ -8,13 +8,11 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenUserAndUsernameExist_ShouldPreferUser()
     {
-        var segment = PromptContextBuilder.Build(
+        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
             user: "unix-user",
             windowsUserName: "windows-user",
             host: "workstation",
-            workingDirectoryPath: "/repo",
-            homeDirectoryPath: null,
-            isWindows: false);
+            workingDirectoryPath: "/repo"));
 
         segment.Should().Be($"{ColorUser}unix-user{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
@@ -22,13 +20,11 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenOnlyUsernameExists_ShouldUseUsername()
     {
-        var segment = PromptContextBuilder.Build(
+        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
             user: null,
             windowsUserName: "windows-user",
             host: "workstation",
-            workingDirectoryPath: "/repo",
-            homeDirectoryPath: null,
-            isWindows: false);
+            workingDirectoryPath: "/repo"));
 
         segment.Should().Be($"{ColorUser}windows-user{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
@@ -36,13 +32,9 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenNoUserExists_ShouldUseUnknownMarker()
     {
-        var segment = PromptContextBuilder.Build(
-            user: null,
-            windowsUserName: null,
+        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
             host: "workstation",
-            workingDirectoryPath: "/repo",
-            homeDirectoryPath: null,
-            isWindows: false);
+            workingDirectoryPath: "/repo"));
 
         segment.Should().Be($"{ColorUser}?{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
@@ -50,13 +42,10 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenHostContainsDomain_ShouldTrimSuffix()
     {
-        var segment = PromptContextBuilder.Build(
+        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
             user: "me",
-            windowsUserName: null,
             host: "machine.example.local",
-            workingDirectoryPath: "/repo",
-            homeDirectoryPath: null,
-            isWindows: false);
+            workingDirectoryPath: "/repo"));
 
         segment.Should().Contain($"{ColorHost}machine{ColorReset}");
     }
@@ -66,13 +55,12 @@ public sealed class PromptContextBuilderTests
     {
         using var home = new TemporaryDirectory();
 
-        var segment = PromptContextBuilder.Build(
+        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
             user: "me",
-            windowsUserName: null,
             host: "machine",
             workingDirectoryPath: home.DirectoryPath,
             homeDirectoryPath: home.DirectoryPath,
-            isWindows: OperatingSystem.IsWindows());
+            isWindows: false));
 
         segment.Should().EndWith($" {ColorPath}~{ColorReset}");
     }
@@ -84,13 +72,12 @@ public sealed class PromptContextBuilderTests
         var projectPath = Path.Combine(home.DirectoryPath, "src", "project");
         Directory.CreateDirectory(projectPath);
 
-        var segment = PromptContextBuilder.Build(
+        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
             user: "me",
-            windowsUserName: null,
             host: "machine",
             workingDirectoryPath: projectPath,
             homeDirectoryPath: home.DirectoryPath,
-            isWindows: OperatingSystem.IsWindows());
+            isWindows: false));
 
         segment.Should().EndWith($" {ColorPath}~/src/project{ColorReset}");
     }
@@ -98,13 +85,11 @@ public sealed class PromptContextBuilderTests
     [Fact]
     public void Build_WhenPathContainsBackslashes_ShouldNormalizeToForwardSlashes()
     {
-        var segment = PromptContextBuilder.Build(
+        var segment = PromptContextBuilder.Build(new TestPlatformProvider(
             user: "me",
-            windowsUserName: null,
             host: "machine",
             workingDirectoryPath: "folder\\nested",
-            homeDirectoryPath: null,
-            isWindows: true);
+            isWindows: true));
 
         segment.Should().EndWith($" {ColorPath}folder/nested{ColorReset}");
     }
@@ -128,5 +113,3 @@ public sealed class PromptContextBuilderTests
         }
     }
 }
-
-

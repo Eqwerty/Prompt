@@ -14,9 +14,10 @@ internal static class Program
     {
         Console.OutputEncoding = Encoding.UTF8;
 
-        var promptContext = PromptContextBuilder.Build();
+        var platformProvider = PlatformProvider.System;
+        var promptContext = PromptContextBuilder.Build(platformProvider);
         var gitStatusSegment = await BuildGitStatusSegmentAsync();
-        var promptSymbol = GetPromptSymbol();
+        var promptSymbol = GetPromptSymbol(platformProvider);
 
         if (!string.IsNullOrEmpty(gitStatusSegment))
         {
@@ -28,24 +29,19 @@ internal static class Program
         return 0;
     }
 
-    internal static string GetPromptSymbol()
+    internal static string GetPromptSymbol(PlatformProvider platformProvider)
     {
-        return IsCurrentUnixRootUser() ? "#" : "$";
+        return IsCurrentUnixRootUser(platformProvider) ? "#" : "$";
     }
 
-    private static bool IsCurrentUnixRootUser()
+    private static bool IsCurrentUnixRootUser(PlatformProvider platformProvider)
     {
-        if (OperatingSystem.IsWindows())
+        if (platformProvider.IsWindows())
         {
             return false;
         }
 
-        var userName = Environment.GetEnvironmentVariable("USER");
-        if (string.IsNullOrEmpty(userName))
-        {
-            userName = Environment.GetEnvironmentVariable("USERNAME");
-        }
-
+        var userName = platformProvider.User ?? platformProvider.WindowsUserName;
         return string.Equals(userName, "root", StringComparison.Ordinal);
     }
 
@@ -292,7 +288,6 @@ internal static class Program
             }
         }
     }
-
 
     private static Task<string?> RunGitStatusCommandAsync()
     {

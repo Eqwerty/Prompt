@@ -4,55 +4,24 @@ namespace Prompt;
 
 internal static class PromptContextBuilder
 {
-    internal static string Build()
+    internal static string Build(PlatformProvider platform)
     {
-        var user = Environment.GetEnvironmentVariable("USER");
-        var windowsUserName = Environment.GetEnvironmentVariable("USERNAME");
-        var host = Environment.MachineName;
-
-        string workingDirectoryPath;
-        try
-        {
-            workingDirectoryPath = Directory.GetCurrentDirectory();
-        }
-        catch
-        {
-            workingDirectoryPath = "?";
-        }
-
-        var homeDirectoryPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        return Build(
-            user,
-            windowsUserName,
-            host,
-            workingDirectoryPath,
-            homeDirectoryPath,
-            OperatingSystem.IsWindows());
-    }
-
-    internal static string Build(
-        string? user,
-        string? windowsUserName,
-        string? host,
-        string? workingDirectoryPath,
-        string? homeDirectoryPath,
-        bool isWindows)
-    {
-        var resolvedUser = ResolveUser(user, windowsUserName);
-        var resolvedHost = ResolveHost(host);
-        var resolvedPath = ResolveWorkingDirectoryPath(workingDirectoryPath, homeDirectoryPath, isWindows);
+        var resolvedUser = ResolveUser(platform);
+        var resolvedHost = ResolveHost(platform);
+        var resolvedPath = ResolveWorkingDirectoryPath(platform);
 
         return $"{ColorUser}{resolvedUser}{ColorReset} {ColorHost}{resolvedHost}{ColorReset} {ColorPath}{resolvedPath}{ColorReset}";
     }
 
-    private static string ResolveUser(string? user, string? windowsUserName)
+    private static string ResolveUser(PlatformProvider platform)
     {
+        var user = platform.User;
         if (!string.IsNullOrEmpty(user))
         {
             return user;
         }
 
+        var windowsUserName = platform.WindowsUserName;
         if (!string.IsNullOrEmpty(windowsUserName))
         {
             return windowsUserName;
@@ -61,8 +30,9 @@ internal static class PromptContextBuilder
         return "?";
     }
 
-    private static string ResolveHost(string? host)
+    private static string ResolveHost(PlatformProvider platform)
     {
+        var host = platform.Host;
         if (string.IsNullOrEmpty(host))
         {
             return "?";
@@ -72,8 +42,9 @@ internal static class PromptContextBuilder
         return dotIndex > 0 ? host[..dotIndex] : host;
     }
 
-    private static string ResolveWorkingDirectoryPath(string? workingDirectoryPath, string? homeDirectoryPath, bool isWindows)
+    private static string ResolveWorkingDirectoryPath(PlatformProvider platform)
     {
+        var workingDirectoryPath = platform.WorkingDirectoryPath;
         var resolvedPath = string.IsNullOrEmpty(workingDirectoryPath) ? "?" : workingDirectoryPath;
 
         if (resolvedPath is "?")
@@ -83,13 +54,16 @@ internal static class PromptContextBuilder
 
         try
         {
+            var homeDirectoryPath = platform.HomeDirectoryPath;
             if (!string.IsNullOrEmpty(homeDirectoryPath))
             {
                 var fullWorkingDirectoryPath = Path.GetFullPath(resolvedPath)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
                 var fullHomeDirectoryPath = Path.GetFullPath(homeDirectoryPath)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                var pathComparison = isWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+                var pathComparison = platform.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
                 if (string.Equals(fullWorkingDirectoryPath, fullHomeDirectoryPath, pathComparison))
                 {
@@ -109,5 +83,3 @@ internal static class PromptContextBuilder
         return resolvedPath.Replace('\\', '/');
     }
 }
-
-
