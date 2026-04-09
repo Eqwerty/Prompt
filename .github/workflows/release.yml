@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - "master"
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "Prompt.slnx"
+      - ".github/workflows/release.yml"
   workflow_dispatch:
 
 permissions:
