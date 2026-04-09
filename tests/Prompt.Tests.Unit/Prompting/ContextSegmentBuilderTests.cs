@@ -41,11 +41,14 @@ public sealed class ContextSegmentBuilderTests
         segment.Should().Be($"{ColorUser}windows-user{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
-    [Fact]
-    public void Build_WhenNoUserExists_ShouldUseUnknownMarker()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Build_WhenNoUserExists_ShouldUseUnknownMarker(string? user)
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(
+            user: user,
             host: "workstation",
             workingDirectoryPath: "/repo");
 
@@ -56,20 +59,38 @@ public sealed class ContextSegmentBuilderTests
         segment.Should().Be($"{ColorUser}?{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
-    [Fact]
-    public void Build_WhenHostContainsDomain_ShouldTrimSuffix()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Build_WhenNoHostExists_ShouldUseUnknownMarker(string? host)
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(
             user: "me",
-            host: "machine.example.local",
+            host: host,
             workingDirectoryPath: "/repo");
 
         // Act
         var segment = ContextSegmentBuilder.Build(platformProvider);
 
         // Assert
-        segment.Should().Contain($"{ColorHost}machine{ColorReset}");
+        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}?{ColorReset} {ColorPath}/repo{ColorReset}");
+    }
+
+    [Fact]
+    public void Build_WhenHostExists_ShouldRenderHostValue()
+    {
+        // Arrange
+        var platformProvider = new TestPlatformProvider(
+            user: "me",
+            host: "workstation",
+            workingDirectoryPath: "/repo");
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
     [Fact]

@@ -31,7 +31,7 @@ internal abstract class PlatformProvider
             get
             {
                 try { return Directory.GetCurrentDirectory(); }
-                catch { return "?"; }
+                catch { return string.Empty; }
             }
         }
 

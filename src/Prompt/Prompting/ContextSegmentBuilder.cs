@@ -34,23 +34,21 @@ internal static class ContextSegmentBuilder
     private static string ResolveHost(PlatformProvider platformProvider)
     {
         var host = platformProvider.Host;
-        if (string.IsNullOrEmpty(host))
+        if (!string.IsNullOrEmpty(host))
         {
-            return "?";
+            return host;
         }
 
-        var dotIndex = host.IndexOf('.');
-        return dotIndex > 0 ? host[..dotIndex] : host;
+        return "?";
     }
 
     private static string ResolveWorkingDirectoryPath(PlatformProvider platformProvider)
     {
         var workingDirectoryPath = platformProvider.WorkingDirectoryPath;
-        var resolvedPath = string.IsNullOrEmpty(workingDirectoryPath) ? "?" : workingDirectoryPath;
 
-        if (resolvedPath is "?")
+        if (string.IsNullOrEmpty(workingDirectoryPath))
         {
-            return resolvedPath;
+            return "?";
         }
 
         try
@@ -58,7 +56,7 @@ internal static class ContextSegmentBuilder
             var homeDirectoryPath = platformProvider.HomeDirectoryPath;
             if (!string.IsNullOrEmpty(homeDirectoryPath))
             {
-                var fullWorkingDirectoryPath = Path.GetFullPath(resolvedPath)
+                var fullWorkingDirectoryPath = Path.GetFullPath(workingDirectoryPath)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
                 var fullHomeDirectoryPath = Path.GetFullPath(homeDirectoryPath)
@@ -68,11 +66,11 @@ internal static class ContextSegmentBuilder
 
                 if (string.Equals(fullWorkingDirectoryPath, fullHomeDirectoryPath, pathComparison))
                 {
-                    resolvedPath = "~";
+                    workingDirectoryPath = "~";
                 }
                 else if (fullWorkingDirectoryPath.StartsWith(fullHomeDirectoryPath + Path.DirectorySeparatorChar, pathComparison))
                 {
-                    resolvedPath = "~" + fullWorkingDirectoryPath[fullHomeDirectoryPath.Length..];
+                    workingDirectoryPath = "~" + fullWorkingDirectoryPath[fullHomeDirectoryPath.Length..];
                 }
             }
         }
@@ -81,6 +79,6 @@ internal static class ContextSegmentBuilder
             // Keep the raw path if normalization fails.
         }
 
-        return resolvedPath.Replace('\\', '/');
+        return workingDirectoryPath.Replace('\\', '/');
     }
 }
