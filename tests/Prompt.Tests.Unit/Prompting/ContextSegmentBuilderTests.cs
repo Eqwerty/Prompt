@@ -10,89 +10,122 @@ public sealed class ContextSegmentBuilderTests
     [Fact]
     public void Build_WhenUserAndUsernameExist_ShouldPreferUser()
     {
-        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
+        // Arrange
+        var platformProvider = new TestPlatformProvider(
             user: "unix-user",
             windowsUserName: "windows-user",
             host: "workstation",
-            workingDirectoryPath: "/repo"));
+            workingDirectoryPath: "/repo");
 
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
         segment.Should().Be($"{ColorUser}unix-user{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
     [Fact]
     public void Build_WhenOnlyUsernameExists_ShouldUseUsername()
     {
-        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
+        // Arrange
+        var platformProvider = new TestPlatformProvider(
             user: null,
             windowsUserName: "windows-user",
             host: "workstation",
-            workingDirectoryPath: "/repo"));
+            workingDirectoryPath: "/repo");
 
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
         segment.Should().Be($"{ColorUser}windows-user{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
     [Fact]
     public void Build_WhenNoUserExists_ShouldUseUnknownMarker()
     {
-        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
+        // Arrange
+        var platformProvider = new TestPlatformProvider(
             host: "workstation",
-            workingDirectoryPath: "/repo"));
+            workingDirectoryPath: "/repo");
 
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
         segment.Should().Be($"{ColorUser}?{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
     [Fact]
     public void Build_WhenHostContainsDomain_ShouldTrimSuffix()
     {
-        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
+        // Arrange
+        var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine.example.local",
-            workingDirectoryPath: "/repo"));
+            workingDirectoryPath: "/repo");
 
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
         segment.Should().Contain($"{ColorHost}machine{ColorReset}");
     }
 
     [Fact]
     public void Build_WhenPathEqualsHome_ShouldRenderTilde()
     {
+        // Arrange
         using var home = new TemporaryDirectory();
-
-        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
+        var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
             workingDirectoryPath: home.DirectoryPath,
             homeDirectoryPath: home.DirectoryPath,
-            isWindows: false));
+            isWindows: false);
 
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
         segment.Should().EndWith($" {ColorPath}~{ColorReset}");
     }
 
     [Fact]
     public void Build_WhenPathIsInsideHome_ShouldRenderTildeRelativePath()
     {
+        // Arrange
         using var home = new TemporaryDirectory();
         var projectPath = Path.Combine(home.DirectoryPath, "src", "project");
         Directory.CreateDirectory(projectPath);
-
-        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
+        var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
             workingDirectoryPath: projectPath,
             homeDirectoryPath: home.DirectoryPath,
-            isWindows: false));
+            isWindows: false);
 
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
         segment.Should().EndWith($" {ColorPath}~/src/project{ColorReset}");
     }
 
     [Fact]
     public void Build_WhenPathContainsBackslashes_ShouldNormalizeToForwardSlashes()
     {
-        var segment = ContextSegmentBuilder.Build(new TestPlatformProvider(
+        // Arrange
+        var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
             workingDirectoryPath: "folder\\nested",
-            isWindows: true));
+            isWindows: true);
 
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
         segment.Should().EndWith($" {ColorPath}folder/nested{ColorReset}");
     }
 

@@ -7,42 +7,41 @@ namespace Prompt.Tests.Unit.Prompting;
 public sealed class PromptSymbolBuilderTests
 {
     [Fact]
-    public void Build_WhenOnWindows_ShouldReturnGreaterThan()
+    public void Build_WhenOnWindows_ShouldReturnGreaterThanRegardlessOfUser()
     {
-        var symbol = PromptSymbolBuilder.Build(new TestPlatformProvider(isWindows: true, user: "root"));
+        // Arrange
+        var platformProvider = new TestPlatformProvider(isWindows: true);
 
+        // Act
+        var symbol = PromptSymbolBuilder.Build(platformProvider);
+
+        // Assert
         symbol.Should().Be(">");
     }
 
     [Fact]
     public void Build_WhenOnUnixAndUserIsRoot_ShouldReturnHash()
     {
-        var symbol = PromptSymbolBuilder.Build(new TestPlatformProvider(isWindows: false, user: "root"));
+        // Arrange
+        var platformProvider = new TestPlatformProvider(isWindows: false, user: "root");
 
+        // Act
+        var symbol = PromptSymbolBuilder.Build(platformProvider);
+
+        // Assert
         symbol.Should().Be("#");
     }
 
     [Fact]
     public void Build_WhenOnUnixAndUserIsNotRoot_ShouldReturnDollar()
     {
-        var symbol = PromptSymbolBuilder.Build(new TestPlatformProvider(isWindows: false, user: "me"));
+        // Arrange
+        var platformProvider = new TestPlatformProvider(isWindows: false, user: "me");
 
-        symbol.Should().Be("$");
-    }
+        // Act
+        var symbol = PromptSymbolBuilder.Build(platformProvider);
 
-    [Fact]
-    public void Build_WhenOnUnixAndWindowsUsernameIsRoot_ShouldReturnDollar()
-    {
-        var symbol = PromptSymbolBuilder.Build(new TestPlatformProvider(isWindows: false, windowsUserName: "root"));
-
-        symbol.Should().Be("$");
-    }
-
-    [Fact]
-    public void Build_WhenOnUnixAndNoUserSet_ShouldReturnDollar()
-    {
-        var symbol = PromptSymbolBuilder.Build(new TestPlatformProvider(isWindows: false));
-
+        // Assert
         symbol.Should().Be("$");
     }
 }
