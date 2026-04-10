@@ -596,7 +596,7 @@ internal static class GitStatusSegmentBuilder
                 return null;
             }
 
-            return process.ExitCode is 0 ? await stdoutTask : string.Empty;
+            return process.ExitCode is 0 ? stdoutTask.Result : string.Empty;
         }
         catch
         {
