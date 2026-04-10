@@ -96,12 +96,14 @@ internal static class GitStatusParser
         if (line.StartsWith(BranchHeadPrefix.AsSpan(), StringComparison.Ordinal))
         {
             branchHeadName = line[BranchHeadPrefix.Length..].ToString();
+
             return true;
         }
 
         if (line.StartsWith(BranchOidPrefix.AsSpan(), StringComparison.Ordinal))
         {
             headObjectId = line[BranchOidPrefix.Length..].ToString();
+
             return true;
         }
 
@@ -110,6 +112,7 @@ internal static class GitStatusParser
             ParseAheadBehind(line[BranchAheadBehindPrefix.Length..], out commitsAhead, out commitsBehind);
             hasUpstream = true;
             hasAheadBehindCounts = true;
+
             return true;
         }
 
@@ -117,6 +120,7 @@ internal static class GitStatusParser
         {
             upstreamReference = line[BranchUpstreamPrefix.Length..].ToString();
             hasUpstream = true;
+
             return true;
         }
 
@@ -228,6 +232,7 @@ internal static class GitStatusParser
         if (text.IsEmpty)
         {
             line = default;
+
             return false;
         }
 
@@ -236,6 +241,7 @@ internal static class GitStatusParser
         {
             line = text;
             text = [];
+
             return true;
         }
 
@@ -250,6 +256,7 @@ internal static class GitStatusParser
         }
 
         text = text[(lineTerminatorIndex + skipCount)..];
+
         return true;
     }
 }

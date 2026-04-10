@@ -13,6 +13,7 @@ internal static class PromptSymbolBuilder
         }
 
         var isCurrentUnixRootUser = string.Equals(platformProvider.User, "root", StringComparison.Ordinal);
+
         return isCurrentUnixRootUser ? UnixRoot : Unix;
     }
 }

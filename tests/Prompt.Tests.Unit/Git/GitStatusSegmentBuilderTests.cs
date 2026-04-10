@@ -169,7 +169,7 @@ public sealed class GitStatusSegmentBuilderTests
 
         // Act
         var stashEntryCount = GitStatusSegmentBuilder.ReadStashEntryCount(gitDirectory.DirectoryPath);
-
+   
         // Assert
         stashEntryCount.Should().Be(3);
     }

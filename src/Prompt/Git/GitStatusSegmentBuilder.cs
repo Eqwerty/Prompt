@@ -19,6 +19,7 @@ internal static class GitStatusSegmentBuilder
         }
 
         var gitStatusSnapshot = GitStatusParser.Parse(statusOutput);
+
         var branchHeadName = gitStatusSnapshot.BranchHeadName;
         var headObjectId = gitStatusSnapshot.HeadObjectId;
         var commitsAhead = gitStatusSnapshot.CommitsAhead;
@@ -40,6 +41,7 @@ internal static class GitStatusSegmentBuilder
             if (!string.IsNullOrEmpty(rebaseBranchName))
             {
                 var rebaseBranchDescription = BuildBranchLabel(rebaseBranchName, hasUpstream);
+
                 return BuildDisplay(rebaseBranchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
             }
 
@@ -72,6 +74,7 @@ internal static class GitStatusSegmentBuilder
         }
 
         var branchDescription = BuildBranchLabel(branchHeadName, hasUpstream);
+
         return BuildDisplay(branchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
     }
 
@@ -391,6 +394,7 @@ internal static class GitStatusSegmentBuilder
     private static string BuildBranchLabel(string branchName, bool hasUpstream = true)
     {
         var noUpstreamPrefix = hasUpstream ? string.Empty : NoUpstreamBranchMarker;
+
         return $"{noUpstreamPrefix}{BranchLabelOpen}{branchName}{BranchLabelClose}";
     }
 
@@ -433,32 +437,31 @@ internal static class GitStatusSegmentBuilder
 
     private static string? FindGitDirectoryPath()
     {
-        string current;
         try
         {
-            current = Directory.GetCurrentDirectory();
+            var current = Directory.GetCurrentDirectory();
+            
+            while (true)
+            {
+                var candidate = Path.Combine(current, ".git");
+                var resolvedGitDirectoryPath = ResolveGitDirectoryPath(candidate);
+                if (!string.IsNullOrEmpty(resolvedGitDirectoryPath))
+                {
+                    return resolvedGitDirectoryPath;
+                }
+
+                var parent = Directory.GetParent(current);
+                if (parent is null)
+                {
+                    return null;
+                }
+
+                current = parent.FullName;
+            }
         }
         catch
         {
             return null;
-        }
-
-        while (true)
-        {
-            var candidate = Path.Combine(current, ".git");
-            var resolvedGitDirectoryPath = ResolveGitDirectoryPath(candidate);
-            if (!string.IsNullOrEmpty(resolvedGitDirectoryPath))
-            {
-                return resolvedGitDirectoryPath;
-            }
-
-            var parent = Directory.GetParent(current);
-            if (parent is null)
-            {
-                return null;
-            }
-
-            current = parent.FullName;
         }
     }
 
@@ -501,20 +504,19 @@ internal static class GitStatusSegmentBuilder
             : $"{baseReference}..HEAD";
 
         var commitCountOutput = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "rev-list", "--count", commitRangeSpec);
+
         return int.TryParse(commitCountOutput, out var commitCount) ? commitCount : 0;
     }
 
     private static async Task<string> ResolveBaseReferenceAsync(string gitDirectoryPath)
     {
-        var baseReference = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD") ??
-                            string.Empty;
-
+        var baseReference = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD");
         if (!string.IsNullOrEmpty(baseReference))
         {
             return baseReference;
         }
 
-        var showRefOutput = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "show-ref") ?? string.Empty;
+        var showRefOutput = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "show-ref");
         if (!string.IsNullOrEmpty(showRefOutput))
         {
             var availableReferences = new HashSet<string>(StringComparer.Ordinal);
@@ -548,6 +550,7 @@ internal static class GitStatusSegmentBuilder
         }
 
         var upstreamReference = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}");
+
         return string.IsNullOrEmpty(upstreamReference) ? string.Empty : "@{u}";
     }
 
@@ -555,7 +558,7 @@ internal static class GitStatusSegmentBuilder
     {
         if (string.IsNullOrEmpty(upstreamReference))
         {
-            return (0, 0);
+            return (Ahead: 0, Behind: 0);
         }
 
         var leftRightCountsOutput = await RunGitCommandInRepositoryAsync(
@@ -571,10 +574,7 @@ internal static class GitStatusSegmentBuilder
             return (Ahead: 0, Behind: 0);
         }
 
-        var countParts = leftRightCountsOutput.Split(
-            (char[]?)null,
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-        );
+        var countParts = leftRightCountsOutput.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (countParts.Length < 2)
         {
@@ -583,13 +583,14 @@ internal static class GitStatusSegmentBuilder
 
         _ = int.TryParse(countParts[0], out var commitsBehind);
         _ = int.TryParse(countParts[1], out var commitsAhead);
+
         return (commitsAhead, commitsBehind);
     }
 
     private static IEnumerable<string> EnumerateLines(string text)
     {
         using var reader = new StringReader(text);
-        while (reader.ReadLine() is { } line)
+        while (reader.ReadLine() is string line)
         {
             yield return line;
         }
