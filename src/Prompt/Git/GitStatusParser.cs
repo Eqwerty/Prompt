@@ -244,7 +244,7 @@ internal static class GitStatusParser
     {
         if (text.IsEmpty)
         {
-            line = default;
+            line = ReadOnlySpan<char>.Empty;
 
             return false;
         }
@@ -253,7 +253,7 @@ internal static class GitStatusParser
         if (lineTerminatorIndex < 0)
         {
             line = text;
-            text = [];
+            text = ReadOnlySpan<char>.Empty;
 
             return true;
         }
