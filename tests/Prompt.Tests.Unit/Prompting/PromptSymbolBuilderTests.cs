@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Prompt.Constants;
 using Prompt.Prompting;
 using Prompt.Tests.Unit.Platform;
 
@@ -16,7 +17,7 @@ public sealed class PromptSymbolBuilderTests
         var symbol = PromptSymbolBuilder.Build(platformProvider);
 
         // Assert
-        symbol.Should().Be(">");
+        symbol.Should().Be(PromptSymbols.Windows);
     }
 
     [Fact]
@@ -29,7 +30,7 @@ public sealed class PromptSymbolBuilderTests
         var symbol = PromptSymbolBuilder.Build(platformProvider);
 
         // Assert
-        symbol.Should().Be("#");
+        symbol.Should().Be(PromptSymbols.UnixRoot);
     }
 
     [Fact]
@@ -42,6 +43,6 @@ public sealed class PromptSymbolBuilderTests
         var symbol = PromptSymbolBuilder.Build(platformProvider);
 
         // Assert
-        symbol.Should().Be("$");
+        symbol.Should().Be(PromptSymbols.Unix);
     }
 }

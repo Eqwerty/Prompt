@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using FluentAssertions;
+using Prompt.Constants;
 using Prompt.Git;
+using static Prompt.Constants.BranchLabelTokens;
 
 namespace Prompt.Tests.Integration;
 
@@ -42,9 +44,9 @@ public sealed class GitStatusIntegrationTests
         var gitStatusSegment = await ExecuteInDirectoryAsync(localRepositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
-        gitStatusSegment.Should().Contain("(main)");
-        gitStatusSegment.Should().Contain("↑1");
-        gitStatusSegment.Should().Contain("↓1");
+        gitStatusSegment.Should().Contain(TrackedBranchLabel("main"));
+        gitStatusSegment.Should().Contain(Indicator(PromptIcons.IconAhead, 1));
+        gitStatusSegment.Should().Contain(Indicator(PromptIcons.IconBehind, 1));
     }
 
     [Fact]
@@ -70,8 +72,8 @@ public sealed class GitStatusIntegrationTests
         var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
-        gitStatusSegment.Should().Contain("*(feature)");
-        gitStatusSegment.Should().Contain("↑1");
+        gitStatusSegment.Should().Contain(NoUpstreamBranchLabel("feature"));
+        gitStatusSegment.Should().Contain(Indicator(PromptIcons.IconAhead, 1));
     }
 
     [Fact]
@@ -123,7 +125,7 @@ public sealed class GitStatusIntegrationTests
         var gitStatusSegment = await ExecuteInDirectoryAsync(repositoryPath, GitStatusSegmentBuilder.BuildAsync);
 
         // Assert
-        gitStatusSegment.Should().Contain("@1");
+        gitStatusSegment.Should().Contain(Indicator(PromptIcons.IconStash, 1));
     }
 
     [Fact]
@@ -219,7 +221,7 @@ public sealed class GitStatusIntegrationTests
 
         // Assert
         mergeCommandResult.ExitCode.Should().NotBe(0);
-        gitStatusSegment.Should().Contain("*(feature|MERGE)");
+        gitStatusSegment.Should().Contain(BranchLabelWithOperation(NoUpstreamBranchLabel("feature"), "MERGE"));
     }
 
     [Fact]
@@ -251,7 +253,7 @@ public sealed class GitStatusIntegrationTests
 
         // Assert
         cherryPickCommandResult.ExitCode.Should().NotBe(0);
-        gitStatusSegment.Should().Contain("*(feature|CHERRY-PICK)");
+        gitStatusSegment.Should().Contain(BranchLabelWithOperation(NoUpstreamBranchLabel("feature"), "CHERRY-PICK"));
     }
 
     [Fact]
@@ -369,6 +371,15 @@ public sealed class GitStatusIntegrationTests
     {
         return "\"" + value.Replace("\\", @"\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
     }
+
+    private static string TrackedBranchLabel(string branchName) => $"{BranchLabelOpen}{branchName}{BranchLabelClose}";
+
+    private static string NoUpstreamBranchLabel(string branchName) => $"{NoUpstreamBranchMarker}{TrackedBranchLabel(branchName)}";
+
+    private static string BranchLabelWithOperation(string branchLabel, string operation) =>
+        branchLabel.Replace(BranchLabelClose, $"|{operation}{BranchLabelClose}", StringComparison.Ordinal);
+
+    private static string Indicator(char icon, int count) => $"{icon}{count}";
 
     private readonly record struct GitCommandResult(int ExitCode, string StandardOutput, string StandardError);
 }

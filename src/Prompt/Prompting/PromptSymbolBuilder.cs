@@ -1,5 +1,5 @@
 using Prompt.Platform;
-using static Prompt.Constants.PromptSymbols;
+using Prompt.Constants;
 
 namespace Prompt.Prompting;
 
@@ -9,11 +9,11 @@ internal static class PromptSymbolBuilder
     {
         if (platformProvider.IsWindows())
         {
-            return Windows;
+            return PromptSymbols.Windows;
         }
 
         var isCurrentUnixRootUser = string.Equals(platformProvider.User, "root", StringComparison.Ordinal);
 
-        return isCurrentUnixRootUser ? UnixRoot : Unix;
+        return isCurrentUnixRootUser ? PromptSymbols.UnixRoot : PromptSymbols.Unix;
     }
 }

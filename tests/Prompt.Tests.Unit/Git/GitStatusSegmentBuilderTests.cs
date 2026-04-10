@@ -1,5 +1,8 @@
 using FluentAssertions;
+using Prompt.Constants;
 using Prompt.Git;
+using static Prompt.Constants.BranchLabelTokens;
+using static Prompt.Constants.PromptColors;
 
 namespace Prompt.Tests.Unit.Git;
 
@@ -26,17 +29,17 @@ public sealed class GitStatusSegmentBuilderTests
 
         // Act
         var gitStatusDisplay =
-            GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 4, commitsBehind: 2, stashEntryCount: 2, statusCounts, gitDirectory.DirectoryPath);
+            GitStatusSegmentBuilder.BuildDisplay(TrackedBranchLabel("main"), commitsAhead: 4, commitsBehind: 2, stashEntryCount: 2, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
-        gitStatusDisplay.Should().Contain("(main|MERGE)");
-        gitStatusDisplay.Should().Contain("↑4");
-        gitStatusDisplay.Should().Contain("↓2");
-        gitStatusDisplay.Should().Contain("~1");
-        gitStatusDisplay.Should().Contain("→1");
-        gitStatusDisplay.Should().Contain("?1");
-        gitStatusDisplay.Should().Contain("@2");
-        gitStatusDisplay.Should().Contain("!1");
+        gitStatusDisplay.Should().Contain(BranchLabelWithOperation(TrackedBranchLabel("main"), "MERGE"));
+        gitStatusDisplay.Should().Contain(Indicator(PromptIcons.IconAhead, 4));
+        gitStatusDisplay.Should().Contain(Indicator(PromptIcons.IconBehind, 2));
+        gitStatusDisplay.Should().Contain(Indicator(PromptIcons.IconModified, 1));
+        gitStatusDisplay.Should().Contain(Indicator(PromptIcons.IconRenamed, 1));
+        gitStatusDisplay.Should().Contain(Indicator(PromptIcons.IconUntracked, 1));
+        gitStatusDisplay.Should().Contain(Indicator(PromptIcons.IconStash, 2));
+        gitStatusDisplay.Should().Contain(Indicator(PromptIcons.IconConflicts, 1));
     }
 
     [Fact]
@@ -59,7 +62,7 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 10);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)",
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay(TrackedBranchLabel("main"),
             commitsAhead: 12,
             commitsBehind: 13,
             stashEntryCount: 2,
@@ -69,20 +72,20 @@ public sealed class GitStatusSegmentBuilderTests
         // Assert
         AssertInOrder(
             gitStatusDisplay,
-            "(main|MERGE)",
-            "↑12",
-            "↓13",
-            "+1",
-            "~2",
-            "→3",
-            "-4",
-            "+5",
-            "~6",
-            "→7",
-            "-8",
-            "?9",
-            "!10",
-            "@2");
+            BranchLabelWithOperation(TrackedBranchLabel("main"), "MERGE"),
+            Indicator(PromptIcons.IconAhead, 12),
+            Indicator(PromptIcons.IconBehind, 13),
+            Indicator(PromptIcons.IconAdded, 1),
+            Indicator(PromptIcons.IconModified, 2),
+            Indicator(PromptIcons.IconRenamed, 3),
+            Indicator(PromptIcons.IconDeleted, 4),
+            Indicator(PromptIcons.IconAdded, 5),
+            Indicator(PromptIcons.IconModified, 6),
+            Indicator(PromptIcons.IconRenamed, 7),
+            Indicator(PromptIcons.IconDeleted, 8),
+            Indicator(PromptIcons.IconUntracked, 9),
+            Indicator(PromptIcons.IconConflicts, 10),
+            Indicator(PromptIcons.IconStash, 2));
     }
 
     [Theory]
@@ -109,7 +112,7 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 0);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("*(feature)",
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay(NoUpstreamBranchLabel("feature"),
             commitsAhead: 0,
             commitsBehind: 0,
             stashEntryCount: 0,
@@ -117,7 +120,7 @@ public sealed class GitStatusSegmentBuilderTests
             gitDirectory.DirectoryPath);
 
         // Assert
-        gitStatusDisplay.Should().Contain($"*(feature|{expectedOperationMarker})");
+        gitStatusDisplay.Should().Contain(BranchLabelWithOperation(NoUpstreamBranchLabel("feature"), expectedOperationMarker));
     }
 
     [Fact]
@@ -329,10 +332,10 @@ public sealed class GitStatusSegmentBuilderTests
 
         // Act
         var gitStatusDisplay =
-            GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
+            GitStatusSegmentBuilder.BuildDisplay(TrackedBranchLabel("main"), commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
-        gitStatusDisplay.Should().StartWith("\u0001\e[1;36m\u0002(main)\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().StartWith(Colored(ColorBranch, TrackedBranchLabel("main")));
     }
 
     [Fact]
@@ -354,7 +357,7 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 0);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("*(feature)",
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay(NoUpstreamBranchLabel("feature"),
             commitsAhead: 0,
             commitsBehind: 0,
             stashEntryCount: 0,
@@ -362,7 +365,7 @@ public sealed class GitStatusSegmentBuilderTests
             gitDirectory.DirectoryPath);
 
         // Assert
-        gitStatusDisplay.Should().StartWith("\u0001\e[1;36m\u0002*(feature)\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().StartWith(Colored(ColorBranchNoUpstream, NoUpstreamBranchLabel("feature")));
     }
 
     [Fact]
@@ -385,11 +388,11 @@ public sealed class GitStatusSegmentBuilderTests
 
         // Act
         var gitStatusDisplay =
-            GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 2, commitsBehind: 3, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
+            GitStatusSegmentBuilder.BuildDisplay(TrackedBranchLabel("main"), commitsAhead: 2, commitsBehind: 3, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
-        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↑2\u0001\e[0m\u0002");
-        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↓3\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain($" {Colored(ColorAhead, Indicator(PromptIcons.IconAhead, 2))}");
+        gitStatusDisplay.Should().Contain($" {Colored(ColorBehind, Indicator(PromptIcons.IconBehind, 3))}");
     }
 
     [Fact]
@@ -411,16 +414,16 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 1);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 1, commitsBehind: 1, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay(TrackedBranchLabel("main"), commitsAhead: 1, commitsBehind: 1, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
-        gitStatusDisplay.Should().Contain("\u0001\e[1;36m\u0002(main)\u0001\e[0m\u0002");
-        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↑1\u0001\e[0m\u0002");
-        gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↓1\u0001\e[0m\u0002");
-        gitStatusDisplay.Should().Contain(" \u0001\e[0;32m\u0002+1\u0001\e[0m\u0002");
-        gitStatusDisplay.Should().Contain(" \u0001\e[0;31m\u0002~1\u0001\e[0m\u0002");
-        gitStatusDisplay.Should().Contain(" \u0001\e[0;31m\u0002?1\u0001\e[0m\u0002");
-        gitStatusDisplay.Should().Contain(" \u0001\e[1;31m\u0002!1\u0001\e[0m\u0002");
+        gitStatusDisplay.Should().Contain(Colored(ColorBranch, TrackedBranchLabel("main")));
+        gitStatusDisplay.Should().Contain($" {Colored(ColorAhead, Indicator(PromptIcons.IconAhead, 1))}");
+        gitStatusDisplay.Should().Contain($" {Colored(ColorBehind, Indicator(PromptIcons.IconBehind, 1))}");
+        gitStatusDisplay.Should().Contain($" {Colored(ColorStaged, Indicator(PromptIcons.IconAdded, 1))}");
+        gitStatusDisplay.Should().Contain($" {Colored(ColorUnstaged, Indicator(PromptIcons.IconModified, 1))}");
+        gitStatusDisplay.Should().Contain($" {Colored(ColorUntracked, Indicator(PromptIcons.IconUntracked, 1))}");
+        gitStatusDisplay.Should().Contain($" {Colored(ColorState, Indicator(PromptIcons.IconConflicts, 1))}");
     }
 
     private sealed class TemporaryDirectory : IDisposable
@@ -457,4 +460,15 @@ public sealed class GitStatusSegmentBuilderTests
             currentIndex = tokenIndex;
         }
     }
+
+    private static string TrackedBranchLabel(string branchName) => $"{BranchLabelOpen}{branchName}{BranchLabelClose}";
+
+    private static string NoUpstreamBranchLabel(string branchName) => $"{NoUpstreamBranchMarker}{TrackedBranchLabel(branchName)}";
+
+    private static string BranchLabelWithOperation(string branchLabel, string operation) =>
+        branchLabel.Replace(BranchLabelClose, $"|{operation}{BranchLabelClose}", StringComparison.Ordinal);
+
+    private static string Indicator(char icon, int count) => $"{icon}{count}";
+
+    private static string Colored(string color, string segment) => $"{color}{segment}{ColorReset}";
 }
