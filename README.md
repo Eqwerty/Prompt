@@ -1,120 +1,137 @@
 # Prompt
 
-This repository publishes a single prompt binary and auto-publishes GitHub Releases.
+A fast cross-platform shell prompt binary for Git repositories.
 
-## What Happens On Push
+`gitprompt` prints a two-line prompt:
 
-The workflow in `.github/workflows/release.yml` runs when either is true:
+1. `user host path [git-status]`
+2. prompt symbol (`$`, `#`, or `>`)
 
-- You push to `master` and at least one release-relevant path changed:
-  - `src/**`
-  - `tests/**`
-  - `Prompt.slnx`
-  - `.github/workflows/release.yml`
-- You trigger it manually with `workflow_dispatch`
+This repository contains the source code for that binary.
 
-When it runs, it:
+## Quick Install
 
-- Builds cross-platform binaries
-- Packages release artifacts
-- Replaces a fixed `latest` release tag with new artifacts
+Install latest release:
 
-Stable asset URL pattern:
+```sh
+curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh
+```
 
-- `https://github.com/Eqwerty/Prompt/releases/download/latest/<asset-name>`
-
-Current build targets:
-
-- Linux amd64: `prompt_linux_amd64.tar.gz`
-- macOS amd64: `prompt_darwin_amd64.tar.gz`
-- Windows amd64: `prompt_windows_amd64.zip`
-
-## Install (Linux, macOS, and Windows Git Bash)
-
-The installer downloads the latest GitHub release asset for your OS and installs the prompt executable with this default layout:
+Default install location:
 
 - Linux/macOS: `$HOME/.local/bin/gitprompt`
 - Windows Git Bash: `$HOME/prompt/gitprompt.exe`
 
-Install:
+Update is the same command.
 
-    curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh
+## Bash Setup
 
-Notes:
-
-- Installer supports Linux, macOS, and Windows Git Bash on amd64.
-- Installer options are intentionally minimal: `-h` / `--help` only.
-- On Linux and macOS, rerunning the installer replaces the binary atomically, so self-updates from your shell prompt work without `Text file busy` errors.
-
-## Update
-
-Run the same install command again to update to the newest release artifact:
-
-    curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh
-
-Optional alias (Windows Git Bash, with schannel workaround):
-
-    alias updateprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh'
-
-## Local Development Loop (No Release Needed)
-
-For day-to-day prompt changes, you can test locally without pushing to `master` or publishing a release.
-
-Run:
-
-    sh ./dev-install-local.sh
-
-What it does:
-
-- Restores solution packages
-- Builds the solution in Release
-- Runs tests in Release
-- Publishes a local Release binary for your OS
-- Installs it to the same default location as `install.sh`
-  - Linux/macOS: `$HOME/.local/bin/gitprompt`
-  - Windows Git Bash: `$HOME/prompt/gitprompt.exe`
-
-By default the script keeps `dotnet` output quiet and shows a single-line spinner while each step runs, then prints each completed step with a dimmed duration plus a total overall duration at the end. If you want to stream the underlying `dotnet` output, use verbose mode:
-
-    sh ./dev-install-local.sh --verbose
-
-Optional (faster inner loop, still restores/builds but skips only the test execution and marks that step as skipped):
-
-    sh ./dev-install-local.sh --skip-tests
-
-Short flags also work:
-
-    sh ./dev-install-local.sh -s -v
-
-## Performance Checks (Optional)
-
-If you want to watch for performance regressions while refactoring, run the benchmark suite. All benchmarks run by default:
-
-Local run:
-
-    dotnet run -c Release --project benchmarks/Prompt.Benchmarks/Prompt.Benchmarks.csproj
-
-This runs all benchmarks (parser, display rendering, context building) and writes results to:
-
-- `benchmarks/Prompt.Benchmarks/BenchmarkDotNet.Artifacts/`
-
-Optional: to run only a specific benchmark class, use `--filter`:
-
-    dotnet run -c Release --project benchmarks/Prompt.Benchmarks/Prompt.Benchmarks.csproj -- --filter GitStatusParserBenchmarks
-
-CI run:
-
-- Trigger `.github/workflows/perf.yml` manually with `workflow_dispatch`.
-- The workflow uploads benchmark reports as a `benchmark-results` artifact.
-
-## Bash Prompt Setup
-
-After install, set `PS1` and you are done.
+After install, set `PS1`:
 
 Linux/macOS:
 
-    PS1='$($HOME/.local/bin/gitprompt)'
+```sh
+PS1='$($HOME/.local/bin/gitprompt)'
+```
 
 Windows Git Bash:
 
-    PS1='$(~/prompt/gitprompt.exe)'
+```sh
+PS1='$(~/prompt/gitprompt.exe)'
+```
+
+## Prompt Format Reference
+
+### Overall Shape
+
+Line 1:
+
+`<user> <host> <path> [git-status]`
+
+Line 2:
+
+`$` on Unix, `#` for Unix root, `>` on Windows.
+
+If you are outside a Git repo, the git-status segment is omitted.
+
+### Context Segment
+
+- `<user>`: current user (fallback `?`)
+- `<host>`: machine name (fallback `?`)
+- `<path>`: current working directory
+- Home path is shortened to `~`
+
+### Git Status Segment
+
+General shape:
+
+`(branch) ↑A ↓B +x ~y ...`
+
+Render order:
+
+1. Branch label
+2. Ahead (`↑N`) if `N > 0`
+3. Behind (`↓N`) if `N > 0`
+4. Staged counts (`+ ~ → -`, non-zero only)
+5. Unstaged counts (`+ ~ → -`, non-zero only)
+6. Untracked (`?N`)
+7. Stash (`@N`)
+8. Conflicts (`!N`)
+
+### Branch Labels
+
+- Tracked branch: `(main)`
+- No upstream: `*(feature)`
+  - `*` means no upstream tracking branch.
+- Detached HEAD commit: `(abc1234...)`
+- Detached HEAD with one matching remote ref: `(origin/main abc1234...)`
+
+### Operation Markers
+
+If Git has an in-progress operation, it appears inside the branch label:
+
+- `(main|MERGE)`
+- `*(feature|CHERRY-PICK)`
+- `(feature|REBASE)`
+
+Supported markers: `REBASE`, `MERGE`, `CHERRY-PICK`, `REVERT`, `BISECT`.
+
+### Icons
+
+- `↑` ahead commits
+- `↓` behind commits
+- `+` added
+- `~` modified
+- `→` renamed/copied
+- `-` deleted
+- `?` untracked
+- `@` stash entries
+- `!` conflicts
+
+Staged and unstaged share the same file-state icons (`+ ~ → -`) and are distinguished by color:
+
+- staged: green
+- unstaged: red
+
+Example:
+
+```text
+(main) ↑2 ↓1 +1 ~2 +3 -1 ?4 @1 !1
+```
+
+In that example, `+1 ~2` is staged, and `+3 -1` is unstaged.
+
+## Local Development
+
+Run the local dev install script:
+
+```sh
+sh ./dev-install-local.sh
+```
+
+Useful flags:
+
+```sh
+sh ./dev-install-local.sh --verbose
+sh ./dev-install-local.sh --skip-tests
+```
