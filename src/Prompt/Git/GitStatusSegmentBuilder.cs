@@ -24,6 +24,7 @@ internal static class GitStatusSegmentBuilder
         var headObjectId = gitStatusSnapshot.HeadObjectId;
         var commitsAhead = gitStatusSnapshot.CommitsAhead;
         var commitsBehind = gitStatusSnapshot.CommitsBehind;
+        var stashEntryCount = gitStatusSnapshot.StashEntryCount;
         var upstreamReference = gitStatusSnapshot.UpstreamReference;
         var hasUpstream = gitStatusSnapshot.HasUpstream;
         var hasAheadBehindCounts = gitStatusSnapshot.HasAheadBehindCounts;
@@ -42,7 +43,7 @@ internal static class GitStatusSegmentBuilder
             {
                 var rebaseBranchDescription = BuildBranchLabel(rebaseBranchName, hasUpstream);
 
-                return BuildDisplay(rebaseBranchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
+                return BuildDisplay(rebaseBranchDescription, commitsAhead, commitsBehind, stashEntryCount, statusCounts, gitDirectoryPath);
             }
 
             var shortObjectId = ShortenObjectId(headObjectId);
@@ -58,7 +59,7 @@ internal static class GitStatusSegmentBuilder
                 detachedBranchDescription = BuildBranchLabel($"{matchingRemoteReferences[0]} {shortObjectId}...");
             }
 
-            return BuildDisplay(detachedBranchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
+            return BuildDisplay(detachedBranchDescription, commitsAhead, commitsBehind, stashEntryCount, statusCounts, gitDirectoryPath);
         }
 
         if (hasUpstream && !hasAheadBehindCounts && !string.IsNullOrEmpty(upstreamReference))
@@ -75,13 +76,14 @@ internal static class GitStatusSegmentBuilder
 
         var branchDescription = BuildBranchLabel(branchHeadName, hasUpstream);
 
-        return BuildDisplay(branchDescription, commitsAhead, commitsBehind, statusCounts, gitDirectoryPath);
+        return BuildDisplay(branchDescription, commitsAhead, commitsBehind, stashEntryCount, statusCounts, gitDirectoryPath);
     }
 
     internal static string BuildDisplay(
         string branchDescription,
         int commitsAhead,
         int commitsBehind,
+        int stashEntryCount,
         StatusCounts statusCounts,
         string gitDirectoryPath)
     {
@@ -129,7 +131,6 @@ internal static class GitStatusSegmentBuilder
             statusBuilder.Append(' ').Append(ColorState).Append(IconConflicts).Append(statusCounts.Conflicts).Append(ColorReset);
         }
 
-        var stashEntryCount = ReadStashEntryCount(gitDirectoryPath);
         if (stashEntryCount > 0)
         {
             statusBuilder.Append(' ').Append(ColorStash).Append(IconStash).Append(stashEntryCount).Append(ColorReset);
@@ -338,34 +339,6 @@ internal static class GitStatusSegmentBuilder
         return matchingRemoteReferences;
     }
 
-    internal static int ReadStashEntryCount(string gitDirectoryPath)
-    {
-        var stashLog = Path.Combine(gitDirectoryPath, "logs", "refs", "stash");
-        if (!File.Exists(stashLog))
-        {
-            return 0;
-        }
-
-        try
-        {
-            var data = File.ReadAllBytes(stashLog);
-            var count = 0;
-            foreach (var value in data)
-            {
-                if (value is (byte)'\n')
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-        catch
-        {
-            return 0;
-        }
-    }
-
     internal static string ShortenObjectId(string objectId)
     {
         if (string.IsNullOrEmpty(objectId))
@@ -429,7 +402,7 @@ internal static class GitStatusSegmentBuilder
     {
         return RunProcessForOutputAsync(
             fileName: "git",
-            arguments: "status --porcelain=2 --branch --ahead-behind",
+            arguments: "status --porcelain=2 --branch --ahead-behind --show-stash",
             workingDirectory: null,
             requireSuccess: true
         );
@@ -440,7 +413,7 @@ internal static class GitStatusSegmentBuilder
         try
         {
             var current = Directory.GetCurrentDirectory();
-            
+
             while (true)
             {
                 var candidate = Path.Combine(current, ".git");

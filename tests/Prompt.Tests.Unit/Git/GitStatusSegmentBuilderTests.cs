@@ -10,9 +10,6 @@ public sealed class GitStatusSegmentBuilderTests
     {
         // Arrange
         using var gitDirectory = new TemporaryDirectory();
-        var stashLogDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "logs", "refs");
-        Directory.CreateDirectory(stashLogDirectoryPath);
-        await File.WriteAllTextAsync(Path.Combine(stashLogDirectoryPath, "stash"), "entry-1\nentry-2\n");
         await File.WriteAllTextAsync(Path.Combine(gitDirectory.DirectoryPath, "MERGE_HEAD"), "merge\n");
 
         var statusCounts = new StatusCounts(
@@ -28,7 +25,8 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 1);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)", 4, 2, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay =
+            GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 4, commitsBehind: 2, stashEntryCount: 2, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
         gitStatusDisplay.Should().Contain("(main|MERGE)");
@@ -46,9 +44,6 @@ public sealed class GitStatusSegmentBuilderTests
     {
         // Arrange
         using var gitDirectory = new TemporaryDirectory();
-        var stashLogDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "logs", "refs");
-        Directory.CreateDirectory(stashLogDirectoryPath);
-        await File.WriteAllTextAsync(Path.Combine(stashLogDirectoryPath, "stash"), "entry-1\nentry-2\n");
         await File.WriteAllTextAsync(Path.Combine(gitDirectory.DirectoryPath, "MERGE_HEAD"), "merge\n");
 
         var statusCounts = new StatusCounts(
@@ -64,7 +59,12 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 10);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 12, commitsBehind: 13, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)",
+            commitsAhead: 12,
+            commitsBehind: 13,
+            stashEntryCount: 2,
+            statusCounts,
+            gitDirectory.DirectoryPath);
 
         // Assert
         AssertInOrder(
@@ -109,7 +109,12 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 0);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("*(feature)", commitsAhead: 0, commitsBehind: 0, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("*(feature)",
+            commitsAhead: 0,
+            commitsBehind: 0,
+            stashEntryCount: 0,
+            statusCounts,
+            gitDirectory.DirectoryPath);
 
         // Assert
         gitStatusDisplay.Should().Contain($"*(feature|{expectedOperationMarker})");
@@ -156,22 +161,6 @@ public sealed class GitStatusSegmentBuilderTests
         matchingRemoteReferences.Should().Contain("origin/main");
         matchingRemoteReferences.Should().Contain("origin/release");
         matchingRemoteReferences.Should().NotContain("origin/other");
-    }
-
-    [Fact]
-    public async Task ReadStashEntryCount_WhenStashLogContainsEntries_ShouldCountStashLines()
-    {
-        // Arrange
-        using var gitDirectory = new TemporaryDirectory();
-        var stashLogDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "logs", "refs");
-        Directory.CreateDirectory(stashLogDirectoryPath);
-        await File.WriteAllTextAsync(Path.Combine(stashLogDirectoryPath, "stash"), "first\nsecond\nthird\n");
-
-        // Act
-        var stashEntryCount = GitStatusSegmentBuilder.ReadStashEntryCount(gitDirectory.DirectoryPath);
-   
-        // Assert
-        stashEntryCount.Should().Be(3);
     }
 
     [Theory]
@@ -339,7 +328,8 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 0);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay =
+            GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
         gitStatusDisplay.Should().StartWith("\u0001\e[1;36m\u0002(main)\u0001\e[0m\u0002");
@@ -364,7 +354,12 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 0);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("*(feature)", commitsAhead: 0, commitsBehind: 0, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("*(feature)",
+            commitsAhead: 0,
+            commitsBehind: 0,
+            stashEntryCount: 0,
+            statusCounts,
+            gitDirectory.DirectoryPath);
 
         // Assert
         gitStatusDisplay.Should().StartWith("\u0001\e[1;36m\u0002*(feature)\u0001\e[0m\u0002");
@@ -389,7 +384,8 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 0);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 2, commitsBehind: 3, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay =
+            GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 2, commitsBehind: 3, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
         gitStatusDisplay.Should().Contain(" \u0001\e[1;36m\u0002↑2\u0001\e[0m\u0002");
@@ -415,7 +411,7 @@ public sealed class GitStatusSegmentBuilderTests
             Conflicts: 1);
 
         // Act
-        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)", 1, 1, statusCounts, gitDirectory.DirectoryPath);
+        var gitStatusDisplay = GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 1, commitsBehind: 1, stashEntryCount: 0, statusCounts, gitDirectory.DirectoryPath);
 
         // Assert
         gitStatusDisplay.Should().Contain("\u0001\e[1;36m\u0002(main)\u0001\e[0m\u0002");

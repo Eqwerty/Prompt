@@ -6,6 +6,7 @@ internal static class GitStatusParser
     private const string BranchOidPrefix = "# branch.oid ";
     private const string BranchAheadBehindPrefix = "# branch.ab ";
     private const string BranchUpstreamPrefix = "# branch.upstream ";
+    private const string StashPrefix = "# stash ";
     private const string UntrackedRecordPrefix = "? ";
     private const string UnmergedRecordPrefix = "u ";
 
@@ -45,6 +46,7 @@ internal static class GitStatusParser
         var headObjectId = string.Empty;
         var commitsAhead = 0;
         var commitsBehind = 0;
+        var stashEntryCount = 0;
         var upstreamReference = string.Empty;
         var hasUpstream = false;
         var hasAheadBehindCounts = false;
@@ -63,6 +65,7 @@ internal static class GitStatusParser
                     ref headObjectId,
                     ref commitsAhead,
                     ref commitsBehind,
+                    ref stashEntryCount,
                     ref upstreamReference,
                     ref hasUpstream,
                     ref hasAheadBehindCounts))
@@ -77,6 +80,7 @@ internal static class GitStatusParser
             headObjectId,
             commitsAhead,
             commitsBehind,
+            stashEntryCount,
             upstreamReference,
             hasUpstream,
             hasAheadBehindCounts,
@@ -89,6 +93,7 @@ internal static class GitStatusParser
         ref string headObjectId,
         ref int commitsAhead,
         ref int commitsBehind,
+        ref int stashEntryCount,
         ref string upstreamReference,
         ref bool hasUpstream,
         ref bool hasAheadBehindCounts)
@@ -120,6 +125,14 @@ internal static class GitStatusParser
         {
             upstreamReference = line[BranchUpstreamPrefix.Length..].ToString();
             hasUpstream = true;
+
+            return true;
+        }
+
+        if (line.StartsWith(StashPrefix.AsSpan(), StringComparison.Ordinal))
+        {
+            var stashValue = line[StashPrefix.Length..].Trim();
+            _ = int.TryParse(stashValue, out stashEntryCount);
 
             return true;
         }

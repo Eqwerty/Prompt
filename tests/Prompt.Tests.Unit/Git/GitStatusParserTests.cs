@@ -14,6 +14,7 @@ public sealed class GitStatusParserTests
                                     # branch.head master
                                     # branch.upstream origin/master
                                     # branch.ab +3 -2
+                                    # stash 4
                                     1 A. ignored
                                     1 .M ignored
                                     2 R. ignored
@@ -35,6 +36,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.HasAheadBehindCounts.Should().BeTrue();
         gitStatusSnapshot.CommitsAhead.Should().Be(3);
         gitStatusSnapshot.CommitsBehind.Should().Be(2);
+        gitStatusSnapshot.StashEntryCount.Should().Be(4);
 
         var statusCounts = gitStatusSnapshot.StatusCounts;
         statusCounts.StagedAdded.Should().Be(1);
@@ -72,6 +74,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.HasAheadBehindCounts.Should().BeFalse();
         gitStatusSnapshot.CommitsAhead.Should().Be(0);
         gitStatusSnapshot.CommitsBehind.Should().Be(0);
+        gitStatusSnapshot.StashEntryCount.Should().Be(0);
 
         var statusCounts = gitStatusSnapshot.StatusCounts;
         statusCounts.StagedAdded.Should().Be(1);
