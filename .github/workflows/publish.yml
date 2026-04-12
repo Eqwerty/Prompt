@@ -1,0 +1,64 @@
+name: Publish Artifacts
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.target_os }}-${{ matrix.target_architecture }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_os: linux
+            target_architecture: amd64
+            runtime_identifier: linux-x64
+            extension: ""
+            runner: ubuntu-latest
+          - target_os: darwin
+            target_architecture: amd64
+            runtime_identifier: osx-x64
+            extension: ""
+            runner: macos-latest
+          - target_os: windows
+            target_architecture: amd64
+            runtime_identifier: win-x64
+            extension: ".exe"
+            runner: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore src/Prompt/Prompt.csproj --runtime "${{ matrix.runtime_identifier }}" --nologo
+
+      - name: Publish binary
+        shell: bash
+        run: |
+          bash .github/scripts/publish-artifact.sh \
+            "${{ matrix.runtime_identifier }}" \
+            "${{ matrix.target_os }}" \
+            "${{ matrix.target_architecture }}" \
+            "${{ matrix.extension }}"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-${{ matrix.target_os }}-${{ matrix.target_architecture }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+
+
+

@@ -1,15 +1,43 @@
-name: Release
+name: Build
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - "master"
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "Prompt.slnx"
+      - ".github/workflows/build.yml"
+      - ".github/workflows/publish.yml"
+      - ".github/workflows/release.yml"
+      - ".github/scripts/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   build:
-    name: Build
-    uses: ./.github/workflows/build.yml
+    name: Restore, Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore Prompt.slnx --nologo
+
+      - name: Build
+        run: dotnet build Prompt.slnx --configuration Release --no-restore --nologo
+
+      - name: Test
+        run: dotnet test Prompt.slnx --configuration Release --no-build --nologo
 
   publish:
     name: Publish Artifacts
