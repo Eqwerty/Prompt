@@ -10,6 +10,19 @@ namespace Prompt.Tests.Integration;
 public sealed class GitStatusIntegrationTests
 {
     [Fact]
+    public async Task BuildGitStatusSegment_WhenCurrentDirectoryIsNotInGitRepository_ShouldReturnEmpty()
+    {
+        // Arrange
+        using var sandbox = new TemporaryDirectory();
+
+        // Act
+        var gitStatusSegment = await ExecuteInDirectoryAsync(sandbox.DirectoryPath, GitStatusSegmentBuilder.BuildAsync);
+
+        // Assert
+        gitStatusSegment.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task BuildGitStatusSegment_WhenTrackedBranchHasLocalAndRemoteCommits_ShouldShowBranchAndAheadBehindCounts()
     {
         // Arrange
@@ -77,6 +90,30 @@ public sealed class GitStatusIntegrationTests
     }
 
     [Fact]
+    public async Task BuildGitStatusSegment_WhenExecutedFromNestedRepositoryDirectory_ShouldFindGitDirectoryInParent()
+    {
+        // Arrange
+        using var sandbox = new TemporaryDirectory();
+        var repositoryPath = Path.Combine(sandbox.DirectoryPath, "repo");
+        var nestedDirectoryPath = Path.Combine(repositoryPath, "src", "features");
+
+        await RunGitAsync(sandbox.DirectoryPath, $"init --initial-branch=main {Quote(repositoryPath)}");
+        await ConfigureGitIdentityAsync(repositoryPath);
+
+        await File.WriteAllTextAsync(Path.Combine(repositoryPath, "base.txt"), "base\n");
+        await RunGitAsync(repositoryPath, "add base.txt");
+        await RunGitAsync(repositoryPath, "commit -m \"base\"");
+
+        Directory.CreateDirectory(nestedDirectoryPath);
+
+        // Act
+        var gitStatusSegment = await ExecuteInDirectoryAsync(nestedDirectoryPath, GitStatusSegmentBuilder.BuildAsync);
+
+        // Assert
+        gitStatusSegment.Should().Contain(TrackedBranchLabel("main"));
+    }
+
+    [Fact]
     public async Task BuildGitStatusSegment_WhenHeadIsDetached_ShouldShowCheckedOutCommit()
     {
         // Arrange
@@ -105,6 +142,35 @@ public sealed class GitStatusIntegrationTests
     }
 
     [Fact]
+    public async Task BuildGitStatusSegment_WhenDetachedHeadMatchesSingleRemoteReference_ShouldShowRemoteReferenceAndShortCommit()
+    {
+        // Arrange
+        using var sandbox = new TemporaryDirectory();
+        var remoteRepositoryPath = Path.Combine(sandbox.DirectoryPath, "remote.git");
+        var sourceRepositoryPath = Path.Combine(sandbox.DirectoryPath, "source");
+        var localRepositoryPath = Path.Combine(sandbox.DirectoryPath, "local");
+
+        await RunGitAsync(sandbox.DirectoryPath, $"init --bare --initial-branch=main {Quote(remoteRepositoryPath)}");
+        await RunGitAsync(sandbox.DirectoryPath, $"clone {Quote(remoteRepositoryPath)} {Quote(sourceRepositoryPath)}");
+        await ConfigureGitIdentityAsync(sourceRepositoryPath);
+
+        await File.WriteAllTextAsync(Path.Combine(sourceRepositoryPath, "base.txt"), "base\n");
+        await RunGitAsync(sourceRepositoryPath, "add base.txt");
+        await RunGitAsync(sourceRepositoryPath, "commit -m \"base\"");
+        var commitObjectId = (await RunGitAsync(sourceRepositoryPath, "rev-parse HEAD")).Trim();
+        await RunGitAsync(sourceRepositoryPath, "push -u origin main");
+
+        await RunGitAsync(sandbox.DirectoryPath, $"clone {Quote(remoteRepositoryPath)} {Quote(localRepositoryPath)}");
+        await RunGitAsync(localRepositoryPath, $"checkout --detach {commitObjectId}");
+
+        // Act
+        var gitStatusSegment = await ExecuteInDirectoryAsync(localRepositoryPath, GitStatusSegmentBuilder.BuildAsync);
+
+        // Assert
+        gitStatusSegment.Should().Contain($"(origin/main {commitObjectId[..7]}...)");
+    }
+
+    [Fact]
     public async Task BuildGitStatusSegment_WhenStashExists_ShouldShowStashMarker()
     {
         // Arrange
@@ -126,6 +192,35 @@ public sealed class GitStatusIntegrationTests
 
         // Assert
         gitStatusSegment.Should().Contain(Indicator(PromptIcons.IconStash, 1));
+    }
+
+    [Fact]
+    public async Task BuildGitStatusSegment_WhenNoUpstreamBranchIsInWorktree_ShouldShowNoUpstreamMarkerAndAheadCount()
+    {
+        // Arrange
+        using var sandbox = new TemporaryDirectory();
+        var repositoryPath = Path.Combine(sandbox.DirectoryPath, "repo");
+        var worktreePath = Path.Combine(sandbox.DirectoryPath, "feature-worktree");
+
+        await RunGitAsync(sandbox.DirectoryPath, $"init --initial-branch=main {Quote(repositoryPath)}");
+        await ConfigureGitIdentityAsync(repositoryPath);
+
+        await File.WriteAllTextAsync(Path.Combine(repositoryPath, "base.txt"), "base\n");
+        await RunGitAsync(repositoryPath, "add base.txt");
+        await RunGitAsync(repositoryPath, "commit -m \"base\"");
+
+        await RunGitAsync(repositoryPath, $"worktree add -b feature {Quote(worktreePath)}");
+
+        await File.WriteAllTextAsync(Path.Combine(worktreePath, "feature.txt"), "feature\n");
+        await RunGitAsync(worktreePath, "add feature.txt");
+        await RunGitAsync(worktreePath, "commit -m \"feature commit\"");
+
+        // Act
+        var gitStatusSegment = await ExecuteInDirectoryAsync(worktreePath, GitStatusSegmentBuilder.BuildAsync);
+
+        // Assert
+        gitStatusSegment.Should().Contain(NoUpstreamBranchLabel("feature"));
+        gitStatusSegment.Should().Contain(Indicator(PromptIcons.IconAhead, 1));
     }
 
     [Fact]

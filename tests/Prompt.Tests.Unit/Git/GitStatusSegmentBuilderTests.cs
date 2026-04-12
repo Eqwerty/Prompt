@@ -129,6 +129,22 @@ public sealed class GitStatusSegmentBuilderTests
     }
 
     [Fact]
+    public async Task ResolveRebaseBranchName_WhenRebaseApplyHeadNameFileExists_ShouldReturnBranchName()
+    {
+        // Arrange
+        using var gitDirectory = new TemporaryDirectory();
+        var rebaseDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "rebase-apply");
+        Directory.CreateDirectory(rebaseDirectoryPath);
+        await File.WriteAllTextAsync(Path.Combine(rebaseDirectoryPath, "head-name"), "refs/heads/feature\n");
+
+        // Act
+        var rebaseBranchName = GitStatusSegmentBuilder.ResolveRebaseBranchName(gitDirectory.DirectoryPath);
+
+        // Assert
+        rebaseBranchName.Should().Be("feature");
+    }
+
+    [Fact]
     public async Task FindMatchingRemoteReferences_WhenLooseAndPackedRefsContainMatches_ShouldReturnMatchingReferences()
     {
         // Arrange
@@ -153,6 +169,26 @@ public sealed class GitStatusSegmentBuilderTests
         matchingRemoteReferences.Should().Contain("origin/main");
         matchingRemoteReferences.Should().Contain("origin/release");
         matchingRemoteReferences.Should().NotContain("origin/other");
+    }
+
+    [Fact]
+    public async Task FindMatchingRemoteReferences_WhenSameReferenceExistsLooseAndPacked_ShouldReturnUniqueReferenceOnce()
+    {
+        // Arrange
+        using var gitDirectory = new TemporaryDirectory();
+        var remoteDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "refs", "remotes", "origin");
+        Directory.CreateDirectory(remoteDirectoryPath);
+
+        await File.WriteAllTextAsync(Path.Combine(remoteDirectoryPath, "main"), "abcdef1234567890\n");
+        await File.WriteAllTextAsync(
+            Path.Combine(gitDirectory.DirectoryPath, "packed-refs"),
+            "abcdef1234567890 refs/remotes/origin/main\n");
+
+        // Act
+        var matchingRemoteReferences = GitStatusSegmentBuilder.FindMatchingRemoteReferences(gitDirectory.DirectoryPath, "abcdef1234567890");
+
+        // Assert
+        matchingRemoteReferences.Should().Equal("origin/main");
     }
 
     [Theory]

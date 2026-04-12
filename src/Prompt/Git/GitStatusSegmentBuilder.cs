@@ -9,9 +9,19 @@ namespace Prompt.Git;
 internal static class GitStatusSegmentBuilder
 {
     private readonly record struct CountStyle(int Value, string Color, char Icon);
+    private readonly record struct RepositoryContext(string WorkingTreePath, string GitDirectoryPath);
 
     internal static async Task<string> BuildAsync()
     {
+        var repositoryContext = FindRepositoryContext();
+        if (repositoryContext is null)
+        {
+            return string.Empty;
+        }
+
+        var repositoryRootPath = repositoryContext.Value.WorkingTreePath;
+        var gitDirectoryPath = repositoryContext.Value.GitDirectoryPath;
+
         var statusOutput = await RunGitStatusCommandAsync();
         if (statusOutput is null)
         {
@@ -29,12 +39,6 @@ internal static class GitStatusSegmentBuilder
         var hasUpstream = gitStatusSnapshot.HasUpstream;
         var hasAheadBehindCounts = gitStatusSnapshot.HasAheadBehindCounts;
         var statusCounts = gitStatusSnapshot.StatusCounts;
-
-        var gitDirectoryPath = FindGitDirectoryPath();
-        if (gitDirectoryPath is null)
-        {
-            return string.Empty;
-        }
 
         if (branchHeadName is "(detached)" || string.IsNullOrEmpty(branchHeadName))
         {
@@ -64,13 +68,13 @@ internal static class GitStatusSegmentBuilder
 
         if (hasUpstream && !hasAheadBehindCounts && !string.IsNullOrEmpty(upstreamReference))
         {
-            var (computedAheadCount, computedBehindCount) = await ComputeAheadBehindAgainstUpstreamAsync(gitDirectoryPath, upstreamReference);
+            var (computedAheadCount, computedBehindCount) = await ComputeAheadBehindAgainstUpstreamAsync(repositoryRootPath, upstreamReference);
             commitsAhead = computedAheadCount;
             commitsBehind = computedBehindCount;
         }
         else if (!hasUpstream)
         {
-            commitsAhead = await ComputeLocalAheadCommitCountAsync(gitDirectoryPath);
+            commitsAhead = await ComputeLocalAheadCommitCountAsync(repositoryRootPath);
             commitsBehind = 0;
         }
 
@@ -277,9 +281,18 @@ internal static class GitStatusSegmentBuilder
     internal static List<string> FindMatchingRemoteReferences(string gitDirectoryPath, string headObjectId)
     {
         var matchingRemoteReferences = new List<string>();
+        var seenRemoteReferences = new HashSet<string>(StringComparer.Ordinal);
         if (string.IsNullOrEmpty(headObjectId))
         {
             return matchingRemoteReferences;
+        }
+
+        void AddMatchingRemoteReference(string relativeReferencePath)
+        {
+            if (seenRemoteReferences.Add(relativeReferencePath))
+            {
+                matchingRemoteReferences.Add(relativeReferencePath);
+            }
         }
 
         var remoteReferencesDirectoryPath = Path.Combine(gitDirectoryPath, "refs", "remotes");
@@ -296,7 +309,7 @@ internal static class GitStatusSegmentBuilder
                     }
 
                     var relativeReferencePath = Path.GetRelativePath(remoteReferencesDirectoryPath, referenceFilePath).Replace('\\', '/');
-                    matchingRemoteReferences.Add(relativeReferencePath);
+                    AddMatchingRemoteReference(relativeReferencePath);
                 }
                 catch
                 {
@@ -332,7 +345,7 @@ internal static class GitStatusSegmentBuilder
                 }
 
                 var relativeReferencePath = fullReferenceName[prefix.Length..].Replace('\\', '/');
-                matchingRemoteReferences.Add(relativeReferencePath);
+                AddMatchingRemoteReference(relativeReferencePath);
             }
         }
 
@@ -408,7 +421,7 @@ internal static class GitStatusSegmentBuilder
         );
     }
 
-    private static string? FindGitDirectoryPath()
+    private static RepositoryContext? FindRepositoryContext()
     {
         try
         {
@@ -420,7 +433,7 @@ internal static class GitStatusSegmentBuilder
                 var resolvedGitDirectoryPath = ResolveGitDirectoryPath(candidate);
                 if (!string.IsNullOrEmpty(resolvedGitDirectoryPath))
                 {
-                    return resolvedGitDirectoryPath;
+                    return new RepositoryContext(current, resolvedGitDirectoryPath);
                 }
 
                 var parent = Directory.GetParent(current);
@@ -438,9 +451,8 @@ internal static class GitStatusSegmentBuilder
         }
     }
 
-    private static async Task<string?> RunGitCommandInRepositoryAsync(string gitDirectoryPath, params string[] args)
+    private static async Task<string?> RunGitCommandInRepositoryAsync(string repositoryRootPath, params string[] args)
     {
-        var repositoryRootPath = Path.GetDirectoryName(gitDirectoryPath);
         if (string.IsNullOrEmpty(repositoryRootPath))
         {
             return null;
@@ -457,39 +469,39 @@ internal static class GitStatusSegmentBuilder
         return output?.Trim();
     }
 
-    private static async Task<int> ComputeLocalAheadCommitCountAsync(string gitDirectoryPath)
+    private static async Task<int> ComputeLocalAheadCommitCountAsync(string repositoryRootPath)
     {
-        var baseReference = await ResolveBaseReferenceAsync(gitDirectoryPath);
+        var baseReference = await ResolveBaseReferenceAsync(repositoryRootPath);
 
         if (string.IsNullOrEmpty(baseReference))
         {
             return 0;
         }
 
-        var forkPointCommit = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "merge-base", "--fork-point", baseReference, "HEAD") ?? string.Empty;
+        var forkPointCommit = await RunGitCommandInRepositoryAsync(repositoryRootPath, "merge-base", "--fork-point", baseReference, "HEAD") ?? string.Empty;
         if (string.IsNullOrEmpty(forkPointCommit))
         {
-            forkPointCommit = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "merge-base", baseReference, "HEAD") ?? string.Empty;
+            forkPointCommit = await RunGitCommandInRepositoryAsync(repositoryRootPath, "merge-base", baseReference, "HEAD") ?? string.Empty;
         }
 
         var commitRangeSpec = !string.IsNullOrEmpty(forkPointCommit)
             ? $"{forkPointCommit}..HEAD"
             : $"{baseReference}..HEAD";
 
-        var commitCountOutput = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "rev-list", "--count", commitRangeSpec);
+        var commitCountOutput = await RunGitCommandInRepositoryAsync(repositoryRootPath, "rev-list", "--count", commitRangeSpec);
 
         return int.TryParse(commitCountOutput, out var commitCount) ? commitCount : 0;
     }
 
-    private static async Task<string> ResolveBaseReferenceAsync(string gitDirectoryPath)
+    private static async Task<string> ResolveBaseReferenceAsync(string repositoryRootPath)
     {
-        var baseReference = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD");
+        var baseReference = await RunGitCommandInRepositoryAsync(repositoryRootPath, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD");
         if (!string.IsNullOrEmpty(baseReference))
         {
             return baseReference;
         }
 
-        var showRefOutput = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "show-ref");
+        var showRefOutput = await RunGitCommandInRepositoryAsync(repositoryRootPath, "show-ref");
         if (!string.IsNullOrEmpty(showRefOutput))
         {
             var availableReferences = new HashSet<string>(StringComparer.Ordinal);
@@ -522,12 +534,12 @@ internal static class GitStatusSegmentBuilder
             }
         }
 
-        var upstreamReference = await RunGitCommandInRepositoryAsync(gitDirectoryPath, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}");
+        var upstreamReference = await RunGitCommandInRepositoryAsync(repositoryRootPath, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}");
 
         return string.IsNullOrEmpty(upstreamReference) ? string.Empty : "@{u}";
     }
 
-    private static async Task<(int Ahead, int Behind)> ComputeAheadBehindAgainstUpstreamAsync(string gitDirectoryPath, string upstreamReference)
+    private static async Task<(int Ahead, int Behind)> ComputeAheadBehindAgainstUpstreamAsync(string repositoryRootPath, string upstreamReference)
     {
         if (string.IsNullOrEmpty(upstreamReference))
         {
@@ -535,7 +547,7 @@ internal static class GitStatusSegmentBuilder
         }
 
         var leftRightCountsOutput = await RunGitCommandInRepositoryAsync(
-            gitDirectoryPath,
+            repositoryRootPath,
             "rev-list",
             "--left-right",
             "--count",
