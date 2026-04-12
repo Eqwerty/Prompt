@@ -1,6 +1,6 @@
 using Prompt.Platform;
 
-namespace Prompt.Tests.Unit.Platform;
+namespace Prompt.Tests.Unit.Prompting;
 
 internal sealed class TestPlatformProvider(
     bool isWindows = false,

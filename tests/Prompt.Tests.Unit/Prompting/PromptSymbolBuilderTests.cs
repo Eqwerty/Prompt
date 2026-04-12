@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Prompt.Constants;
 using Prompt.Prompting;
-using Prompt.Tests.Unit.Platform;
 
 namespace Prompt.Tests.Unit.Prompting;
 

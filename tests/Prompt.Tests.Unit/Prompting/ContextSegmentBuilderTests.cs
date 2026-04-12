@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Prompt.Prompting;
-using Prompt.Tests.Unit.Platform;
 using static Prompt.Constants.PromptColors;
 
 namespace Prompt.Tests.Unit.Prompting;
