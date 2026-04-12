@@ -1,4 +1,9 @@
 namespace Prompt.Tests.Integration;
 
-[CollectionDefinition("GitStatusSerialTests", DisableParallelization = true)]
+internal static class GitIntegrationTestCollections
+{
+    public const string Serial = nameof(Serial);
+}
+
+[CollectionDefinition(GitIntegrationTestCollections.Serial, DisableParallelization = true)]
 public sealed class GitStatusSerialCollection;
