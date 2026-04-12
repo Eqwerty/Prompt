@@ -1,6 +1,6 @@
 namespace Prompt.Git;
 
-internal sealed record StatusCounts(
+internal sealed record GitStatusCounts(
     int StagedAdded = 0,
     int StagedModified = 0,
     int StagedDeleted = 0,

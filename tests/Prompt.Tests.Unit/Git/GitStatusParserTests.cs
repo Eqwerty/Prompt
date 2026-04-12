@@ -53,7 +53,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.CommitsBehind.Should().Be(2);
         gitStatusSnapshot.StashEntryCount.Should().Be(4);
 
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts(
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts(
             StagedAdded: 1,
             StagedDeleted: 1,
             StagedRenamed: 1,
@@ -91,7 +91,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.CommitsBehind.Should().Be(0);
         gitStatusSnapshot.StashEntryCount.Should().Be(0);
 
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts(
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts(
             StagedAdded: 1,
             StagedModified: 1,
             StagedRenamed: 1,
@@ -122,7 +122,7 @@ public sealed class GitStatusParserTests
         var gitStatusSnapshot = GitStatusParser.Parse(statusOutput);
 
         // Assert
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts(
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts(
             StagedRenamed: 1,
             UnstagedRenamed: 1,
             Conflicts: 2));
@@ -140,7 +140,7 @@ public sealed class GitStatusParserTests
         var gitStatusSnapshot = GitStatusParser.Parse(statusOutput);
 
         // Assert
-        gitStatusSnapshot.StatusCounts.Should().Be(expectedCounts);
+        gitStatusSnapshot.GitStatusCounts.Should().Be(expectedCounts);
     }
 
     [Theory]
@@ -170,7 +170,7 @@ public sealed class GitStatusParserTests
         var gitStatusSnapshot = GitStatusParser.Parse(statusOutput);
 
         // Assert
-        gitStatusSnapshot.StatusCounts.Should().Be(expectedCounts);
+        gitStatusSnapshot.GitStatusCounts.Should().Be(expectedCounts);
     }
 
     [Fact]
@@ -189,7 +189,7 @@ public sealed class GitStatusParserTests
         var gitStatusSnapshot = GitStatusParser.Parse(statusOutput);
 
         // Assert
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts());
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts());
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.StashEntryCount.Should().Be(0);
         gitStatusSnapshot.BranchHeadName.Should().BeEmpty();
         gitStatusSnapshot.HeadObjectId.Should().BeEmpty();
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts());
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts());
     }
 
     [Fact]
@@ -228,7 +228,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.CommitsAhead.Should().Be(0);
         gitStatusSnapshot.CommitsBehind.Should().Be(0);
         gitStatusSnapshot.StashEntryCount.Should().Be(0);
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts());
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts());
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.CommitsAhead.Should().Be(0);
         gitStatusSnapshot.CommitsBehind.Should().Be(0);
         gitStatusSnapshot.StashEntryCount.Should().Be(0);
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts());
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts());
     }
 
     [Fact]
@@ -279,7 +279,7 @@ public sealed class GitStatusParserTests
         gitStatusSnapshot.CommitsAhead.Should().Be(7);
         gitStatusSnapshot.CommitsBehind.Should().Be(3);
         gitStatusSnapshot.StashEntryCount.Should().Be(9);
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts());
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts());
     }
 
     [Theory]
@@ -301,7 +301,7 @@ public sealed class GitStatusParserTests
 
         // Assert
         gitStatusSnapshot.BranchHeadName.Should().Be("feature/line-endings");
-        gitStatusSnapshot.StatusCounts.Should().Be(new StatusCounts(
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts(
             StagedAdded: 1,
             UnstagedModified: 1,
             Untracked: 1,
@@ -334,21 +334,21 @@ public sealed class GitStatusParserTests
         }
     }
 
-    private static StatusCounts CreateExpectedCounts(CounterKind counter, int value)
+    private static GitStatusCounts CreateExpectedCounts(CounterKind counter, int value)
     {
         return counter switch
         {
-            CounterKind.None => new StatusCounts(),
-            CounterKind.StagedAdded => new StatusCounts(StagedAdded: value),
-            CounterKind.StagedModified => new StatusCounts(StagedModified: value),
-            CounterKind.StagedDeleted => new StatusCounts(StagedDeleted: value),
-            CounterKind.StagedRenamed => new StatusCounts(StagedRenamed: value),
-            CounterKind.UnstagedAdded => new StatusCounts(UnstagedAdded: value),
-            CounterKind.UnstagedModified => new StatusCounts(UnstagedModified: value),
-            CounterKind.UnstagedDeleted => new StatusCounts(UnstagedDeleted: value),
-            CounterKind.UnstagedRenamed => new StatusCounts(UnstagedRenamed: value),
-            CounterKind.Untracked => new StatusCounts(Untracked: value),
-            CounterKind.Conflicts => new StatusCounts(Conflicts: value),
+            CounterKind.None => new GitStatusCounts(),
+            CounterKind.StagedAdded => new GitStatusCounts(StagedAdded: value),
+            CounterKind.StagedModified => new GitStatusCounts(StagedModified: value),
+            CounterKind.StagedDeleted => new GitStatusCounts(StagedDeleted: value),
+            CounterKind.StagedRenamed => new GitStatusCounts(StagedRenamed: value),
+            CounterKind.UnstagedAdded => new GitStatusCounts(UnstagedAdded: value),
+            CounterKind.UnstagedModified => new GitStatusCounts(UnstagedModified: value),
+            CounterKind.UnstagedDeleted => new GitStatusCounts(UnstagedDeleted: value),
+            CounterKind.UnstagedRenamed => new GitStatusCounts(UnstagedRenamed: value),
+            CounterKind.Untracked => new GitStatusCounts(Untracked: value),
+            CounterKind.Conflicts => new GitStatusCounts(Conflicts: value),
             _ => throw new ArgumentOutOfRangeException(nameof(counter), counter, message: null)
         };
     }

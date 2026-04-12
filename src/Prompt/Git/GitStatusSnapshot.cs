@@ -9,4 +9,4 @@ internal sealed record GitStatusSnapshot(
     string UpstreamReference,
     bool HasUpstream,
     bool HasAheadBehindCounts,
-    StatusCounts StatusCounts);
+    GitStatusCounts GitStatusCounts);

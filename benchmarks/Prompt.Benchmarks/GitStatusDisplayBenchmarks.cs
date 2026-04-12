@@ -8,9 +8,9 @@ public class GitStatusDisplayBenchmarks
 {
     private string _gitDirectoryPath = string.Empty;
 
-    private StatusCounts _cleanCounts = new();
+    private GitStatusCounts _cleanCounts = new();
 
-    private StatusCounts _busyCounts = new(
+    private GitStatusCounts _busyCounts = new(
         StagedAdded: 1,
         StagedModified: 2,
         StagedRenamed: 1,
@@ -25,9 +25,9 @@ public class GitStatusDisplayBenchmarks
         _gitDirectoryPath = Path.Combine(Path.GetTempPath(), "Prompt.Benchmarks", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_gitDirectoryPath);
 
-        _cleanCounts = new StatusCounts();
+        _cleanCounts = new GitStatusCounts();
 
-        _busyCounts = new StatusCounts(
+        _busyCounts = new GitStatusCounts(
             StagedAdded: 1,
             StagedModified: 2,
             StagedRenamed: 1,
@@ -49,12 +49,12 @@ public class GitStatusDisplayBenchmarks
     [Benchmark]
     public string BuildDisplay_CleanRepository()
     {
-        return GitStatusSegmentBuilder.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, _cleanCounts, _gitDirectoryPath);
+        return GitStatusDisplayFormatter.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, _cleanCounts, _gitDirectoryPath);
     }
 
     [Benchmark]
     public string BuildDisplay_BusyRepository()
     {
-        return GitStatusSegmentBuilder.BuildDisplay("(feature)", commitsAhead: 4, commitsBehind: 2, stashEntryCount: 0, _busyCounts, _gitDirectoryPath);
+        return GitStatusDisplayFormatter.BuildDisplay("(feature)", commitsAhead: 4, commitsBehind: 2, stashEntryCount: 0, _busyCounts, _gitDirectoryPath);
     }
 }

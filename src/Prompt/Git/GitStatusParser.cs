@@ -10,7 +10,7 @@ internal static class GitStatusParser
     private const string UntrackedRecordPrefix = "? ";
     private const string UnmergedRecordPrefix = "u ";
 
-    private struct StatusCountsAccumulator
+    private struct GitStatusCountsAccumulator
     {
         public int StagedAdded;
         public int StagedModified;
@@ -23,9 +23,9 @@ internal static class GitStatusParser
         public int Untracked;
         public int Conflicts;
 
-        public StatusCounts ToStatusCounts()
+        public GitStatusCounts ToGitStatusCounts()
         {
-            return new StatusCounts(
+            return new GitStatusCounts(
                 StagedAdded,
                 StagedModified,
                 StagedDeleted,
@@ -50,7 +50,7 @@ internal static class GitStatusParser
         var upstreamReference = string.Empty;
         var hasUpstream = false;
         var hasAheadBehindCounts = false;
-        var statusCountsAccumulator = new StatusCountsAccumulator();
+        var statusCountsAccumulator = new GitStatusCountsAccumulator();
 
         while (TryReadLine(ref statusText, out var line))
         {
@@ -84,7 +84,7 @@ internal static class GitStatusParser
             upstreamReference,
             hasUpstream,
             hasAheadBehindCounts,
-            statusCountsAccumulator.ToStatusCounts());
+            statusCountsAccumulator.ToGitStatusCounts());
     }
 
     private static bool TryParseBranchMetadata(
@@ -140,7 +140,7 @@ internal static class GitStatusParser
         return false;
     }
 
-    private static void TrackStatusCounts(ReadOnlySpan<char> line, ref StatusCountsAccumulator statusCounts)
+    private static void TrackStatusCounts(ReadOnlySpan<char> line, ref GitStatusCountsAccumulator gitStatusCounts)
     {
         var isUntrackedRecord = line.StartsWith(UntrackedRecordPrefix.AsSpan(), StringComparison.Ordinal);
         var isUnmergedRecord = line.StartsWith(UnmergedRecordPrefix.AsSpan(), StringComparison.Ordinal);
@@ -148,11 +148,11 @@ internal static class GitStatusParser
         {
             if (isUntrackedRecord)
             {
-                statusCounts.Untracked++;
+                gitStatusCounts.Untracked++;
             }
             else
             {
-                statusCounts.Conflicts++;
+                gitStatusCounts.Conflicts++;
             }
 
             return;
@@ -165,57 +165,57 @@ internal static class GitStatusParser
             return;
         }
 
-        TrackStatusCode(line[2], isStaged: true, ref statusCounts);
-        TrackStatusCode(line[3], isStaged: false, ref statusCounts);
+        TrackStatusCode(line[2], isStaged: true, ref gitStatusCounts);
+        TrackStatusCode(line[3], isStaged: false, ref gitStatusCounts);
     }
 
-    private static void TrackStatusCode(char value, bool isStaged, ref StatusCountsAccumulator statusCounts)
+    private static void TrackStatusCode(char value, bool isStaged, ref GitStatusCountsAccumulator gitStatusCounts)
     {
         switch (value, isStaged)
         {
             case (value: 'A', isStaged: true):
             {
-                statusCounts.StagedAdded++;
+                gitStatusCounts.StagedAdded++;
                 break;
             }
             case (value: 'A', isStaged: false):
             {
-                statusCounts.UnstagedAdded++;
+                gitStatusCounts.UnstagedAdded++;
                 break;
             }
             case (value: 'M', isStaged: true):
             {
-                statusCounts.StagedModified++;
+                gitStatusCounts.StagedModified++;
                 break;
             }
             case (value: 'M', isStaged: false):
             {
-                statusCounts.UnstagedModified++;
+                gitStatusCounts.UnstagedModified++;
                 break;
             }
             case (value: 'D', isStaged: true):
             {
-                statusCounts.StagedDeleted++;
+                gitStatusCounts.StagedDeleted++;
                 break;
             }
             case (value: 'D', isStaged: false):
             {
-                statusCounts.UnstagedDeleted++;
+                gitStatusCounts.UnstagedDeleted++;
                 break;
             }
             case (value: 'R' or 'C', isStaged: true):
             {
-                statusCounts.StagedRenamed++;
+                gitStatusCounts.StagedRenamed++;
                 break;
             }
             case (value: 'R' or 'C', isStaged: false):
             {
-                statusCounts.UnstagedRenamed++;
+                gitStatusCounts.UnstagedRenamed++;
                 break;
             }
             case (value: 'U', isStaged: _):
             {
-                statusCounts.Conflicts++;
+                gitStatusCounts.Conflicts++;
                 break;
             }
         }
