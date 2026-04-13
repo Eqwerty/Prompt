@@ -2,6 +2,8 @@ namespace Prompt.Git;
 
 internal static class GitOperationDetector
 {
+    private static readonly string[] RebaseDirectoryNames = ["rebase-merge", "rebase-apply"];
+
     internal static string ReadGitOperationMarker(string gitDirectoryPath)
     {
         if (string.IsNullOrEmpty(gitDirectoryPath))
@@ -44,7 +46,7 @@ internal static class GitOperationDetector
             return string.Empty;
         }
 
-        foreach (var rebaseDirectoryName in new[] { "rebase-merge", "rebase-apply" })
+        foreach (var rebaseDirectoryName in RebaseDirectoryNames)
         {
             var headNamePath = Path.Combine(gitDirectoryPath, rebaseDirectoryName, "head-name");
             if (!File.Exists(headNamePath))
@@ -91,7 +93,7 @@ internal static class GitOperationDetector
     {
         var matchingRemoteReferences = new List<string>();
         var seenRemoteReferences = new HashSet<string>(StringComparer.Ordinal);
-        if (string.IsNullOrEmpty(headObjectId))
+        if (string.IsNullOrEmpty(gitDirectoryPath) || string.IsNullOrEmpty(headObjectId))
         {
             return matchingRemoteReferences;
         }
@@ -99,54 +101,67 @@ internal static class GitOperationDetector
         var remoteReferencesDirectoryPath = Path.Combine(gitDirectoryPath, "refs", "remotes");
         if (Directory.Exists(remoteReferencesDirectoryPath))
         {
-            foreach (var referenceFilePath in Directory.EnumerateFiles(remoteReferencesDirectoryPath, "*", SearchOption.AllDirectories))
+            try
             {
-                try
+                foreach (var referenceFilePath in Directory.EnumerateFiles(remoteReferencesDirectoryPath, "*", SearchOption.AllDirectories))
                 {
-                    var referenceObjectId = File.ReadAllText(referenceFilePath).Trim();
-                    if (!string.Equals(referenceObjectId, headObjectId, StringComparison.Ordinal))
+                    try
                     {
-                        continue;
-                    }
+                        var referenceObjectId = File.ReadAllText(referenceFilePath).Trim();
+                        if (!string.Equals(referenceObjectId, headObjectId, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
 
-                    var relativeReferencePath = Path.GetRelativePath(remoteReferencesDirectoryPath, referenceFilePath).Replace('\\', '/');
-                    AddMatchingRemoteReference(relativeReferencePath);
+                        var relativeReferencePath = Path.GetRelativePath(remoteReferencesDirectoryPath, referenceFilePath).Replace('\\', '/');
+                        AddMatchingRemoteReference(relativeReferencePath);
+                    }
+                    catch
+                    {
+                        // Ignore unreadable refs.
+                    }
                 }
-                catch
-                {
-                    // Ignore unreadable refs.
-                }
+            }
+            catch
+            {
+                // Ignore disappearing or unreadable refs/remotes directory.
             }
         }
 
         var packedReferencesPath = Path.Combine(gitDirectoryPath, "packed-refs");
         if (File.Exists(packedReferencesPath))
         {
-            foreach (var line in Utilities.EnumerateLines(File.ReadAllText(packedReferencesPath)))
+            try
             {
-                if (string.IsNullOrEmpty(line) || line[0] is '#' or '^')
+                const string packedRemotePrefix = "refs/remotes/";
+                foreach (var line in File.ReadLines(packedReferencesPath))
                 {
-                    continue;
+                    if (string.IsNullOrEmpty(line) || line[0] is '#' or '^')
+                    {
+                        continue;
+                    }
+
+                    var separatorIndex = line.IndexOf(' ');
+                    if (separatorIndex <= 0 || separatorIndex + 1 >= line.Length)
+                    {
+                        continue;
+                    }
+
+                    var referenceObjectId = line[..separatorIndex].Trim();
+                    var fullReferenceName = line[(separatorIndex + 1)..].Trim();
+                    if (!fullReferenceName.StartsWith(packedRemotePrefix, StringComparison.Ordinal) ||
+                        !string.Equals(referenceObjectId, headObjectId, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    var relativeReferencePath = fullReferenceName[packedRemotePrefix.Length..].Replace('\\', '/');
+                    AddMatchingRemoteReference(relativeReferencePath);
                 }
-
-                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (parts.Length is not 2)
-                {
-                    continue;
-                }
-
-                var referenceObjectId = parts[0];
-                var fullReferenceName = parts[1];
-                const string prefix = "refs/remotes/";
-
-                if (!fullReferenceName.StartsWith(prefix, StringComparison.Ordinal) ||
-                    !string.Equals(referenceObjectId, headObjectId, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var relativeReferencePath = fullReferenceName[prefix.Length..].Replace('\\', '/');
-                AddMatchingRemoteReference(relativeReferencePath);
+            }
+            catch
+            {
+                // Ignore unreadable packed refs.
             }
         }
 

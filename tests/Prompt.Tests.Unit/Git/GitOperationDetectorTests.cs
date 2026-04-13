@@ -154,4 +154,38 @@ public sealed class GitOperationDetectorTests
         // Assert
         operationMarker.Should().Be("REBASE");
     }
+
+    [Fact]
+    public void FindMatchingRemoteReferences_WhenGitDirectoryPathIsNull_ShouldReturnEmpty()
+    {
+        // Act
+        var matchingRemoteReferences = GitOperationDetector.FindMatchingRemoteReferences(null!, "abcdef1234567890");
+
+        // Assert
+        matchingRemoteReferences.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FindMatchingRemoteReferences_WhenPackedRefsContainsMalformedLines_ShouldIgnoreMalformedAndReturnValidMatch()
+    {
+        // Arrange
+        using var gitDirectory = new TemporaryDirectory();
+        await File.WriteAllTextAsync(
+            Path.Combine(gitDirectory.DirectoryPath, "packed-refs"),
+            """
+            # pack-refs with: peeled fully-peeled sorted
+            malformed-line-without-space
+            abcdef1234567890
+            abcdef1234567890 refs/heads/main
+            ^abcdef1234567890
+            abcdef1234567890 refs/remotes/origin/release
+            """
+        );
+
+        // Act
+        var matchingRemoteReferences = GitOperationDetector.FindMatchingRemoteReferences(gitDirectory.DirectoryPath, "abcdef1234567890");
+
+        // Assert
+        matchingRemoteReferences.Should().Equal("origin/release");
+    }
 }
