@@ -31,7 +31,7 @@ internal static class ContextSegmentBuilder
             return windowsUserName;
         }
 
-        return "?";
+        return "[user?]";
     }
 
     private static string ResolveHost(PlatformProvider platformProvider)
@@ -43,7 +43,7 @@ internal static class ContextSegmentBuilder
             return host;
         }
 
-        return "?";
+        return "[host?]";
     }
 
     private static (string DisplayPath, bool IsMissingPath) ResolveWorkingDirectoryPath(PlatformProvider platformProvider)
@@ -53,7 +53,7 @@ internal static class ContextSegmentBuilder
 
         if (string.IsNullOrEmpty(workingDirectoryPath))
         {
-            return (DisplayPath: "?", IsMissingPath: false);
+            return (DisplayPath: "[path?]", IsMissingPath: false);
         }
 
         var isMissingPath = isFallbackPath && !Directory.Exists(workingDirectoryPath);

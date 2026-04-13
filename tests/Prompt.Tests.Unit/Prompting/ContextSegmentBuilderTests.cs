@@ -55,7 +55,7 @@ public sealed class ContextSegmentBuilderTests
         var segment = ContextSegmentBuilder.Build(platformProvider);
 
         // Assert
-        segment.Should().Be($"{ColorUser}?{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
+        segment.Should().Be($"{ColorUser}[user?]{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
     [Theory]
@@ -73,7 +73,25 @@ public sealed class ContextSegmentBuilderTests
         var segment = ContextSegmentBuilder.Build(platformProvider);
 
         // Assert
-        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}?{ColorReset} {ColorPath}/repo{ColorReset}");
+        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}[host?]{ColorReset} {ColorPath}/repo{ColorReset}");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Build_WhenPathIsNotFound_ShouldUseUnknownMarker(string? path)
+    {
+        // Arrange
+        var platformProvider = new TestPlatformProvider(
+            user: "me",
+            host: "workstation",
+            workingDirectoryPath: path);
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}workstation{ColorReset} {ColorPath}[path?]{ColorReset}");
     }
 
     [Fact]
