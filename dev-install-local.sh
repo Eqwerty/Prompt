@@ -63,14 +63,7 @@ print_status() {
   status_label="$2"
   shift 2
 
-  # Only pad [OK] to align with [SKIP] when tests are intentionally skipped.
-  if [ "$SKIP_TESTS" -eq 1 ] && [ "$status_label" = "OK" ]; then
-    status_gap='   '
-  else
-    status_gap=' '
-  fi
-
-  printf '%s[%s]%s%s%s\n' "$status_color" "$status_label" "$COLOR_RESET" "$status_gap" "$*"
+  printf '%s[%s]%s %s\n' "$status_color" "$status_label" "$COLOR_RESET" "$*"
 }
 
 print_banner() {
@@ -188,7 +181,7 @@ print_step_warning() {
     printf '\r'
   fi
 
-  print_status "$COLOR_YELLOW" "SKIP" "$(format_colored_step_label "$step_number") $step_message $(format_duration_segment "$(format_duration "$step_duration")")"
+  print_status "$COLOR_YELLOW" "OK" "$(format_colored_step_label "$step_number") $step_message $(format_duration_segment "$(format_duration "$step_duration") skipped")"
 }
 
 print_step_failed() {
