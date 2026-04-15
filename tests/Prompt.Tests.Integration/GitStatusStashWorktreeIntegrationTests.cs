@@ -4,6 +4,7 @@ using Prompt.Git;
 
 namespace Prompt.Tests.Integration;
 
+[Collection(IntegrationTestCollection.Name)]
 public sealed class GitStatusStashWorktreeIntegrationTests
 {
     [Fact]

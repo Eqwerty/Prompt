@@ -4,6 +4,19 @@ namespace Prompt.Git;
 
 internal static class Utilities
 {
+    internal static readonly StringComparer FileSystemPathComparer = OperatingSystem.IsWindows()
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal;
+
+    internal static readonly StringComparison FileSystemPathComparison = OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+
+    internal static string NormalizePath(string path)
+    {
+        return Path.GetFullPath(path);
+    }
+
     internal static IEnumerable<string> EnumerateLines(string text)
     {
         using var reader = new StringReader(text);

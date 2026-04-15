@@ -19,7 +19,23 @@ internal sealed class TemporaryDirectory : IDisposable
                 File.SetAttributes(filePath, FileAttributes.Normal);
             }
 
-            Directory.Delete(DirectoryPath, recursive: true);
+            const int maxAttempts = 5;
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    Directory.Delete(DirectoryPath, recursive: true);
+                    break;
+                }
+                catch (IOException) when (attempt < maxAttempts)
+                {
+                    Thread.Sleep(50 * attempt);
+                }
+                catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+                {
+                    Thread.Sleep(50 * attempt);
+                }
+            }
         }
     }
 }

@@ -15,6 +15,11 @@ internal static class GitStatusSegmentBuilder
         var repositoryRootPath = repositoryContext.Value.WorkingTreePath;
         var gitDirectoryPath = repositoryContext.Value.GitDirectoryPath;
 
+        if (GitStatusSharedCache.TryGet(repositoryRootPath, gitDirectoryPath, out var cachedSegment))
+        {
+            return cachedSegment;
+        }
+
         var statusOutput = await RunGitCommandAsync(
             repositoryRootPath,
             "status",
@@ -46,7 +51,12 @@ internal static class GitStatusSegmentBuilder
             if (!string.IsNullOrEmpty(rebaseBranchName))
             {
                 var rebaseBranchLabel = GitStatusDisplayFormatter.BuildBranchLabel(rebaseBranchName, hasUpstream);
-                return GitStatusDisplayFormatter.BuildDisplay(rebaseBranchLabel, commitsAhead, commitsBehind, stashEntryCount, statusCounts, gitDirectoryPath);
+                return CacheAndReturn(GitStatusDisplayFormatter.BuildDisplay(rebaseBranchLabel,
+                    commitsAhead,
+                    commitsBehind,
+                    stashEntryCount,
+                    statusCounts,
+                    gitDirectoryPath));
             }
 
             var shortObjectId = ShortenCommitHash(headObjectId);
@@ -62,7 +72,12 @@ internal static class GitStatusSegmentBuilder
                 detachedBranchLabel = GitStatusDisplayFormatter.BuildBranchLabel($"{matchingRemoteReferences[0]} {shortObjectId}...");
             }
 
-            return GitStatusDisplayFormatter.BuildDisplay(detachedBranchLabel, commitsAhead, commitsBehind, stashEntryCount, statusCounts, gitDirectoryPath);
+            return CacheAndReturn(GitStatusDisplayFormatter.BuildDisplay(detachedBranchLabel,
+                commitsAhead,
+                commitsBehind,
+                stashEntryCount,
+                statusCounts,
+                gitDirectoryPath));
         }
 
         if (hasUpstream && !hasAheadBehindCounts && !string.IsNullOrEmpty(upstreamReference))
@@ -81,6 +96,18 @@ internal static class GitStatusSegmentBuilder
 
         var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel(branchHeadName, hasUpstream);
 
-        return GitStatusDisplayFormatter.BuildDisplay(branchLabel, commitsAhead, commitsBehind, stashEntryCount, statusCounts, gitDirectoryPath);
+        return CacheAndReturn(GitStatusDisplayFormatter.BuildDisplay(branchLabel,
+            commitsAhead,
+            commitsBehind,
+            stashEntryCount,
+            statusCounts,
+            gitDirectoryPath));
+
+        string CacheAndReturn(string segment)
+        {
+            GitStatusSharedCache.Set(repositoryRootPath, gitDirectoryPath, segment);
+
+            return segment;
+        }
     }
 }

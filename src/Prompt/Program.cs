@@ -6,6 +6,15 @@ using static Prompt.Constants.PromptColors;
 
 Console.OutputEncoding = Encoding.UTF8;
 
+foreach (var argument in args)
+{
+    if (string.Equals(argument, "--invalidate-status-cache", StringComparison.Ordinal))
+    {
+        GitStatusSharedCache.Invalidate();
+        return 0;
+    }
+}
+
 var platformProvider = PlatformProvider.System;
 var workingDirectoryPath = platformProvider.WorkingDirectory.Path;
 

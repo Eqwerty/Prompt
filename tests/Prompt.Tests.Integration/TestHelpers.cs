@@ -90,4 +90,24 @@ internal static class TestHelpers
     internal static string Indicator(char icon, int count) => $"{icon}{count}";
 
     internal readonly record struct GitCommandResult(int ExitCode, string StandardOutput, string StandardError);
+
+    internal sealed class GitStatusCacheOverride : IDisposable
+    {
+        private readonly string? _originalCacheDir;
+        private readonly string? _originalTtl;
+
+        public GitStatusCacheOverride(string cacheDirectoryPath, int ttlMilliseconds = 60_000)
+        {
+            _originalCacheDir = Environment.GetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_DIR");
+            _originalTtl = Environment.GetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_TTL_MS");
+            Environment.SetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_DIR", cacheDirectoryPath);
+            Environment.SetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_TTL_MS", ttlMilliseconds.ToString());
+        }
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_DIR", _originalCacheDir);
+            Environment.SetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_TTL_MS", _originalTtl);
+        }
+    }
 }

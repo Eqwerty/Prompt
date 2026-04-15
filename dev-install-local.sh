@@ -364,40 +364,72 @@ configure_shell() {
 # gitprompt
 _GITPROMPT_BIN="$FINAL_BINARY_PATH"
 
+__gitprompt_preexec_flag=0
+__gitprompt_running=0
+
+__gitprompt_debug_trap() {
+  if [ "\$__gitprompt_running" -eq 0 ] && [ "\$BASH_COMMAND" != "_gitprompt_update_ps1" ]; then
+    __gitprompt_preexec_flag=1
+  fi
+}
+
 _gitprompt_update_ps1() {
+  __gitprompt_running=1
+  if [ "\$__gitprompt_preexec_flag" -eq 1 ]; then
+    __gitprompt_preexec_flag=0
+    "\$_GITPROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
+  fi
   if output="\$("\$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
     PS1="\$output"
   else
     PS1='\w > '
   fi
+  __gitprompt_running=0
 }
 
 if [ -x "\$_GITPROMPT_BIN" ]; then
+  trap '__gitprompt_debug_trap' DEBUG
   PROMPT_COMMAND="_gitprompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
 fi
 
 alias updateprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
-alias uninstallprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && PROMPT_COMMAND="" && PS1='"'"'\w > '"'"' && source ~/.bashrc'
+alias uninstallprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w > '"'"' && source ~/.bashrc'
 EOF
   else
     cat > "$PROMPT_RC_PATH" <<EOF
 # gitprompt
 _GITPROMPT_BIN="$FINAL_BINARY_PATH"
 
+__gitprompt_preexec_flag=0
+__gitprompt_running=0
+
+__gitprompt_debug_trap() {
+  if [ "\$__gitprompt_running" -eq 0 ] && [ "\$BASH_COMMAND" != "_gitprompt_update_ps1" ]; then
+    __gitprompt_preexec_flag=1
+  fi
+}
+
 _gitprompt_update_ps1() {
+  __gitprompt_running=1
+  if [ "\$__gitprompt_preexec_flag" -eq 1 ]; then
+    __gitprompt_preexec_flag=0
+    "\$_GITPROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
+  fi
   if output="\$("\$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
     PS1="\$output"
   else
     PS1='\w \$ '
   fi
+  __gitprompt_running=0
 }
 
 if [ -x "\$_GITPROMPT_BIN" ]; then
+  trap '__gitprompt_debug_trap' DEBUG
   PROMPT_COMMAND="_gitprompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
 fi
 
 alias updateprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
-alias uninstallprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && PROMPT_COMMAND="" && PS1='"'"'\w \$ '"'"' && source ~/.bashrc'
+alias uninstallprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w \$ '"'"' && source ~/.bashrc'
 EOF
   fi
 
