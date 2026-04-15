@@ -9,8 +9,8 @@ set -eu
 # Usage:
 #   ./dev-install-local.sh
 # Optional:
-#   ./dev-install-local.sh --skip-tests --verbose
-#   ./dev-install-local.sh -s -v
+#   ./dev-install-local.sh --skip-tests --verbose --yes
+#   ./dev-install-local.sh -svy
 #   INSTALL_DIR=/custom/path ./dev-install-local.sh
 #   BIN_BASENAME=mygitprompt ./dev-install-local.sh
 #   INSTALL_NAME=mygitprompt.exe ./dev-install-local.sh
@@ -20,7 +20,8 @@ REPOSITORY_ROOT="${SCRIPT_DIRECTORY}"
 
 SKIP_TESTS=0
 VERBOSE_MODE=0
-TOTAL_STEPS=5
+YES_MODE=0
+TOTAL_STEPS=6
 SCRIPT_STARTED_AT="$(date +%s)"
 LOADER_INDEX=0
 
@@ -209,6 +210,7 @@ print_usage() {
 Usage: sh ./dev-install-local.sh [options]
 
 Options:
+  -y,  --yes                       Auto-configure shell without prompting
   -s,  --skip-tests                Skip test execution only
   -v,  --verbose                   Show dotnet output while commands run
   -h,  --help                      Show this help text
@@ -223,15 +225,31 @@ EOF
 parse_arguments() {
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      -s|--skip-tests)
-        SKIP_TESTS=1
+      --yes)         YES_MODE=1 ;;
+      --skip-tests)  SKIP_TESTS=1 ;;
+      --verbose)     VERBOSE_MODE=1 ;;
+      --help)        print_usage; exit 0 ;;
+      --)            shift; break ;;
+      --*)
+        print_usage >&2
+        print_error_and_exit "Unknown option: $1"
         ;;
-      -v|--verbose)
-        VERBOSE_MODE=1
-        ;;
-      -h|--help)
-        print_usage
-        exit 0
+      -*)
+        flags="${1#-}"
+        while [ -n "$flags" ]; do
+          flag="${flags%"${flags#?}"}"
+          flags="${flags#?}"
+          case "$flag" in
+            y) YES_MODE=1 ;;
+            s) SKIP_TESTS=1 ;;
+            v) VERBOSE_MODE=1 ;;
+            h) print_usage; exit 0 ;;
+            *)
+              print_usage >&2
+              print_error_and_exit "Unknown option: -$flag"
+              ;;
+          esac
+        done
         ;;
       *)
         print_usage >&2
@@ -336,6 +354,71 @@ install_binary() {
 
   mv -f "$STAGED_BINARY_PATH" "$FINAL_BINARY_PATH"
 }
+
+configure_shell() {
+  PROMPT_RC_PATH="$INSTALL_DIR/.promptrc"
+  SHELL_CONFIG="$HOME/.bashrc"
+
+  if [ "$TARGET_OS" = "windows" ]; then
+    cat > "$PROMPT_RC_PATH" <<EOF
+# gitprompt
+_GITPROMPT_BIN="$FINAL_BINARY_PATH"
+
+_gitprompt_update_ps1() {
+  if output="\$("\$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
+    PS1="\$output"
+  else
+    PS1='\w > '
+  fi
+}
+
+if [ -x "\$_GITPROMPT_BIN" ]; then
+  PROMPT_COMMAND="_gitprompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
+fi
+
+alias updateprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
+alias uninstallprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && PROMPT_COMMAND="" && PS1='"'"'\w > '"'"' && source ~/.bashrc'
+EOF
+  else
+    cat > "$PROMPT_RC_PATH" <<EOF
+# gitprompt
+_GITPROMPT_BIN="$FINAL_BINARY_PATH"
+
+_gitprompt_update_ps1() {
+  if output="\$("\$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
+    PS1="\$output"
+  else
+    PS1='\w \$ '
+  fi
+}
+
+if [ -x "\$_GITPROMPT_BIN" ]; then
+  PROMPT_COMMAND="_gitprompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
+fi
+
+alias updateprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
+alias uninstallprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && PROMPT_COMMAND="" && PS1='"'"'\w \$ '"'"' && source ~/.bashrc'
+EOF
+  fi
+
+  EXPECTED_SOURCE_LINE="[ -f \"$PROMPT_RC_PATH\" ] && . \"$PROMPT_RC_PATH\"  # gitprompt"
+
+  if [ ! -f "$SHELL_CONFIG" ]; then
+    touch "$SHELL_CONFIG"
+  fi
+
+  if grep -qF "# gitprompt" "$SHELL_CONFIG" 2>/dev/null; then
+    return 0
+  fi
+
+  shell_config_backup="${SHELL_CONFIG}.bak"
+  if [ ! -f "$shell_config_backup" ]; then
+    cp "$SHELL_CONFIG" "$shell_config_backup"
+  fi
+
+  printf '\n%s\n' "$EXPECTED_SOURCE_LINE" >> "$SHELL_CONFIG"
+}
+
 
 publish_binary() {
   if dotnet publish "$REPOSITORY_ROOT/src/Prompt/Prompt.csproj" \
@@ -472,16 +555,32 @@ chmod +x "$STAGED_BINARY_PATH" 2>/dev/null || true
 run_step "5" "Installing to $FINAL_BINARY_PATH" "$LOG_DIRECTORY/install.log" \
   install_binary
 
+CONFIGURE_SHELL=1
+if [ "$YES_MODE" -eq 0 ] && [ -e /dev/tty ]; then
+  printf '\nConfigure shell automatically? (writes %s/.promptrc and sources it from ~/.bashrc) [Y/n] ' "$INSTALL_DIR" >/dev/tty
+  read -r CONFIGURE_ANSWER </dev/tty
+  case "$CONFIGURE_ANSWER" in
+    [nN]*) CONFIGURE_SHELL=0 ;;
+  esac
+fi
+
+if [ "$CONFIGURE_SHELL" -eq 1 ]; then
+  run_step "6" "Configuring shell (~/.bashrc)" "$LOG_DIRECTORY/configure.log" \
+    configure_shell
+  print_status "$COLOR_DIM" "INFO" "Run 'source ~/.bashrc' or open a new terminal to activate the prompt."
+else
+  print_status "$COLOR_YELLOW" "SKIP" "$(format_colored_step_label "6") Configuring shell (skipped)"
+  printf '\n'
+  print_status "$COLOR_DIM" "INFO" "Add to your shell config manually:"
+  if [ "$TARGET_OS" = "windows" ]; then
+    print_status "$COLOR_DIM" "INFO" "  PS1='\$(\"$FINAL_BINARY_PATH\" 2>/dev/null || printf \"\\w > \")'"
+  else
+    print_status "$COLOR_DIM" "INFO" "  PS1='\$(\"$FINAL_BINARY_PATH\" 2>/dev/null || printf \"\\w \\$ \")'"
+  fi
+fi
+
 SCRIPT_FINISHED_AT="$(current_timestamp)"
 OVERALL_DURATION=$((SCRIPT_FINISHED_AT - SCRIPT_STARTED_AT))
 
 printf '\n'
 print_status "$COLOR_GREEN" "DONE" "Installed local build to: $FINAL_BINARY_PATH $(format_duration_segment "$(format_duration "$OVERALL_DURATION")")"
-if [ "$TARGET_OS" = "windows" ]; then
-  print_status "$COLOR_DIM" "INFO" "Add to your shell config:"
-  print_status "$COLOR_DIM" "INFO" "  PS1='\$([ -x \"$HOME/prompt/gitprompt.exe\" ] && \"$HOME/prompt/gitprompt.exe\" || printf \"\\w > \")'"
-else
-  print_status "$COLOR_DIM" "INFO" "Add to your shell config:"
-  print_status "$COLOR_DIM" "INFO" "  PS1='\$([ -x \"$HOME/.local/bin/gitprompt\" ] && \"$HOME/.local/bin/gitprompt\" || printf \"\\w \\$ \")'"
-fi
-

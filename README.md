@@ -30,12 +30,22 @@ Update is the same command.
 curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh
 ```
 
-This removes the binary and its install directory. Your shell config (e.g. `~/.bashrc`) is not
-modified — remove the `PS1` block manually after uninstalling.
+This removes the binary, the generated `.promptrc` shell config, and the source line from `~/.bashrc`.
+Legacy manual `PS1` lines written before the automated setup was introduced are also removed.
 
 ## Bash Setup
 
-Add to your shell config:
+Shell configuration is automated by the installer. After `install.sh` runs, it writes a `.promptrc`
+file co-located with the binary and adds a source line to `~/.bashrc`:
+
+- Linux/macOS: `$HOME/.local/bin/.promptrc`
+- Windows Git Bash: `$HOME/prompt/.promptrc`
+
+The `.promptrc` sets `PS1` and provides two convenience aliases:
+- `updateprompt` — re-runs the installer and reloads `~/.bashrc`
+- `uninstallprompt` — runs the uninstaller and reloads `~/.bashrc`
+
+If you skip automatic setup or need to configure manually, add one of the following to your shell config:
 
 Linux/macOS:
 
@@ -146,6 +156,8 @@ Useful flags:
 ```sh
 sh ./dev-install-local.sh --verbose
 sh ./dev-install-local.sh --skip-tests
+sh ./dev-install-local.sh --yes
+sh ./dev-install-local.sh -svy
 ```
 
 ### Native AOT prerequisites

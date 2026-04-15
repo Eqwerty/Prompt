@@ -254,7 +254,7 @@ scan_shell_configs() {
     printf '%s\n' "$matches" | while IFS= read -r line; do
       line_content="${line#*:}"
       trimmed="$(printf '%s' "$line_content" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-      if [ "$trimmed" = "$EXPECTED_PS1" ]; then
+      if [ "$trimmed" = "$EXPECTED_PS1" ] || [ "$trimmed" = "$EXPECTED_SOURCE_LINE" ]; then
         printf '%s\n' "$config_file" >> "$EXACT_MATCHES_FILE"
       else
         printf '%s:%s\n' "$config_file" "$line" >> "$WARN_MATCHES_FILE"
@@ -273,25 +273,31 @@ clean_shell_configs() {
       cp "$config_file" "$backup_path"
     fi
     tmp_file="$(mktemp)"
-    expected="$EXPECTED_PS1" awk '
+    expected_ps1="$EXPECTED_PS1" expected_source="$EXPECTED_SOURCE_LINE" awk '
       {
         line = $0
         gsub(/\r/, "", line)
         sub(/^[[:space:]]*/, "", line)
         sub(/[[:space:]]*$/, "", line)
-        if (line != ENVIRON["expected"]) print $0
+        if (line != ENVIRON["expected_ps1"] && line != ENVIRON["expected_source"]) print $0
       }
     ' "$config_file" > "$tmp_file"
     mv "$tmp_file" "$config_file"
-    print_status "$COLOR_GREEN" "INFO" "Removed PS1 line from: $config_file (backup: ${config_file}.bak)"
+    print_status "$COLOR_GREEN" "INFO" "Removed gitprompt line from: $config_file (backup: ${config_file}.bak)"
   done
 }
+
 
 remove_binary() {
   if [ -f "$FINAL_BINARY_PATH" ]; then
     rm -f "$FINAL_BINARY_PATH"
   else
     printf 'Binary not found at %s — already removed.\n' "$FINAL_BINARY_PATH"
+  fi
+
+  # Remove .promptrc before attempting directory cleanup.
+  if [ -f "$PROMPT_RC_PATH" ]; then
+    rm -f "$PROMPT_RC_PATH"
   fi
 
   # Only remove the install directory on Windows, where ~/prompt is a dedicated folder.
@@ -321,12 +327,17 @@ else
 fi
 
 FINAL_BINARY_PATH="$INSTALL_DIR/$INSTALLED_BINARY_NAME"
+PROMPT_RC_PATH="$INSTALL_DIR/.promptrc"
 
+# Legacy PS1 line (set manually before this automation existed)
 if [ "$TARGET_OS" = "windows" ]; then
   EXPECTED_PS1="PS1='\$([ -x \"$FINAL_BINARY_PATH\" ] && \"$FINAL_BINARY_PATH\" || printf \"\\w > \")'"
 else
   EXPECTED_PS1="PS1='\$([ -x \"$FINAL_BINARY_PATH\" ] && \"$FINAL_BINARY_PATH\" || printf \"\\w \\\$ \")'"
 fi
+
+# New source line (written by the automated installer)
+EXPECTED_SOURCE_LINE="[ -f \"$PROMPT_RC_PATH\" ] && . \"$PROMPT_RC_PATH\"  # gitprompt"
 
 TEMPORARY_DIRECTORY="$(mktemp -d)"
 trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT INT TERM
@@ -355,8 +366,15 @@ if [ -s "$WARN_MATCHES_FILE" ]; then
   done < "$WARN_MATCHES_FILE"
 fi
 
+PROMPT_RC_EXISTED=0
+[ -f "$PROMPT_RC_PATH" ] && PROMPT_RC_EXISTED=1
+
 run_step "2" "Removing $FINAL_BINARY_PATH" "$LOG_DIRECTORY/remove.log" \
   remove_binary
+
+if [ "$PROMPT_RC_EXISTED" -eq 1 ]; then
+  print_status "$COLOR_GREEN" "INFO" "Removed shell config: $PROMPT_RC_PATH"
+fi
 
 SCRIPT_FINISHED_AT="$(current_timestamp)"
 OVERALL_DURATION=$((SCRIPT_FINISHED_AT - SCRIPT_STARTED_AT))
