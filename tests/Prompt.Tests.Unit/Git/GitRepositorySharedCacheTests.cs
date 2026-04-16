@@ -128,7 +128,7 @@ public sealed class GitRepositorySharedCacheTests
         contextB.WorkingTreePath.Should().Be(Path.GetFullPath(workingTreePath));
 
         // Two distinct cache files should exist (one per unique path hash).
-        var cacheFiles = Directory.GetFiles(cacheDirectory.DirectoryPath, "*.json");
+        var cacheFiles = Directory.GetFiles(cacheDirectory.DirectoryPath, "*.cache");
         cacheFiles.Should().HaveCount(2);
     }
 
@@ -143,8 +143,8 @@ public sealed class GitRepositorySharedCacheTests
         using var timeOverride = GitRepositorySharedCache.OverrideTimeProviderForTesting(fakeClock);
         GitRepositorySharedCache.ResetCleanupScheduleForTesting();
 
-        var staleCachePath = Path.Combine(cacheDirectory.DirectoryPath, "stale.json");
-        var freshCachePath = Path.Combine(cacheDirectory.DirectoryPath, "fresh.json");
+        var staleCachePath = Path.Combine(cacheDirectory.DirectoryPath, "stale.cache");
+        var freshCachePath = Path.Combine(cacheDirectory.DirectoryPath, "fresh.cache");
         File.WriteAllText(staleCachePath, "stale");
         File.WriteAllText(freshCachePath, "fresh");
 
@@ -191,7 +191,7 @@ public sealed class GitRepositorySharedCacheTests
         // First write triggers cleanup and sets next cleanup time.
         GitRepositorySharedCache.Set([startDirectoryPath], context);
 
-        var staleCachePath = Path.Combine(cacheDirectory.DirectoryPath, "stale.json");
+        var staleCachePath = Path.Combine(cacheDirectory.DirectoryPath, "stale.cache");
         File.WriteAllText(staleCachePath, "stale");
         File.SetLastWriteTimeUtc(staleCachePath, fakeClock.GetUtcNow().UtcDateTime.AddDays(-8));
 

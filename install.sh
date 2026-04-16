@@ -331,7 +331,7 @@ fi
 
 alias updateprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
 alias uninstallprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w \$ '"'"' && source ~/.bashrc'
-alias promptrc='vim "$INSTALL_DIR/config.json"'
+alias promptconfig='vim "$INSTALL_DIR/config.json"'
 EOF
   fi
 

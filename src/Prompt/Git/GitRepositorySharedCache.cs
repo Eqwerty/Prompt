@@ -146,7 +146,7 @@ internal static class GitRepositorySharedCache
 
     private static void CleanupStaleEntries(string cacheDirectoryPath, DateTime staleBeforeUtc)
     {
-        foreach (var cacheFilePath in Directory.EnumerateFiles(cacheDirectoryPath, "*.json"))
+        foreach (var cacheFilePath in Directory.EnumerateFiles(cacheDirectoryPath, "*.cache"))
         {
             try
             {
@@ -207,7 +207,7 @@ internal static class GitRepositorySharedCache
     {
         var pathHash = HashPath(normalizedStartDirectoryPath);
 
-        return Path.Combine(GetCacheDirectoryPath(), pathHash + ".json");
+        return Path.Combine(GetCacheDirectoryPath(), pathHash + ".cache");
     }
 
     private static string HashPath(string path)
