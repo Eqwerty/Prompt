@@ -13,13 +13,13 @@ fi
 
 DIST_DIR="dist"
 PUBLISH_DIR="$DIST_DIR/publish"
-BIN_NAME="prompt${EXTENSION}"
-ARCHIVE_BASENAME="prompt_${TARGET_OS}_${TARGET_ARCHITECTURE}"
+BIN_NAME="gitPrompt${EXTENSION}"
+ARCHIVE_BASENAME="gitPrompt_${TARGET_OS}_${TARGET_ARCHITECTURE}"
 
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
 
-dotnet publish src/Prompt/Prompt.csproj \
+dotnet publish src/GitPrompt/GitPrompt.csproj \
   -c Release \
   -r "$RUNTIME_IDENTIFIER" \
   --no-restore \
@@ -27,7 +27,7 @@ dotnet publish src/Prompt/Prompt.csproj \
   -p:DebugSymbols=false \
   -o "$PUBLISH_DIR"
 
-cp "$PUBLISH_DIR/Prompt${EXTENSION}" "$DIST_DIR/$BIN_NAME"
+cp "$PUBLISH_DIR/GitPrompt${EXTENSION}" "$DIST_DIR/$BIN_NAME"
 
 if [[ "$TARGET_OS" == "windows" ]]; then
   (

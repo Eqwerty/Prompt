@@ -1,0 +1,12 @@
+<Solution>
+    <Folder Name="/src/">
+        <Project Path="src/GitPrompt/GitPrompt.csproj"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/GitPrompt.Tests.Unit/GitPrompt.Tests.Unit.csproj"/>
+        <Project Path="tests/GitPrompt.Tests.Integration/GitPrompt.Tests.Integration.csproj"/>
+    </Folder>
+    <Folder Name="/benchmarks/">
+        <Project Path="benchmarks/GitPrompt.Benchmarks/GitPrompt.Benchmarks.csproj"/>
+    </Folder>
+</Solution>

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-# Uninstall prompt binary.
+# Uninstall gitPrompt binary.
 # Usage:
 #   ./uninstall.sh
 
@@ -51,7 +51,7 @@ print_status() {
 }
 
 print_banner() {
-  printf '%s%sPrompt uninstaller%s\n' "$COLOR_BOLD" "$COLOR_BLUE" "$COLOR_RESET"
+  printf '%s%sGitPrompt uninstaller%s\n' "$COLOR_BOLD" "$COLOR_BLUE" "$COLOR_RESET"
 }
 
 format_step_label() {
@@ -238,7 +238,7 @@ scan_shell_configs() {
       continue
     fi
 
-    matches="$(grep -n "prompt" "$config_file" 2>/dev/null || true)"
+    matches="$(grep -n "gitPrompt" "$config_file" 2>/dev/null || true)"
     if [ -z "$matches" ]; then
       continue
     fi
@@ -277,13 +277,30 @@ clean_shell_configs() {
       {
         line = $0
         gsub(/\r/, "", line)
-        sub(/^[[:space:]]*/, "", line)
-        sub(/[[:space:]]*$/, "", line)
-        if (line != ENVIRON["expected_ps1"] && line != ENVIRON["expected_source"]) print $0
+        trimmed = line
+        sub(/^[[:space:]]*/, "", trimmed)
+        sub(/[[:space:]]*$/, "", trimmed)
+        if (trimmed == ENVIRON["expected_ps1"] || trimmed == ENVIRON["expected_source"]) {
+          pending_blank = 0
+          next
+        }
+        if (pending_blank) {
+          print pending_line
+          pending_blank = 0
+        }
+        if (trimmed == "") {
+          pending_blank = 1
+          pending_line = $0
+        } else {
+          print $0
+        }
+      }
+      END {
+        if (pending_blank) print pending_line
       }
     ' "$config_file" > "$tmp_file"
     mv "$tmp_file" "$config_file"
-    print_status "$COLOR_GREEN" "INFO" "Removed prompt line from: $config_file (backup: ${config_file}.bak)"
+    print_status "$COLOR_GREEN" "INFO" "Removed gitPrompt line from: $config_file (backup: ${config_file}.bak)"
   done
 }
 
@@ -295,7 +312,7 @@ remove_binary() {
     printf 'Binary not found at %s — already removed.\n' "$FINAL_BINARY_PATH"
   fi
 
-  # Remove the entire install directory (binary, .promptrc, config.json, cache folders).
+  # Remove the entire install directory (binary, .gitPromptrc, config.json, cache folders).
   rm -rf "$INSTALL_DIR"
 }
 
@@ -311,15 +328,15 @@ case "$OPERATING_SYSTEM" in
 esac
 
 if [ "$TARGET_OS" = "windows" ]; then
-  INSTALL_DIR="$HOME/.prompt"
-  INSTALLED_BINARY_NAME="prompt.exe"
+  INSTALL_DIR="$HOME/.gitPrompt"
+  INSTALLED_BINARY_NAME="gitPrompt.exe"
 else
-  INSTALL_DIR="$HOME/.prompt"
-  INSTALLED_BINARY_NAME="prompt"
+  INSTALL_DIR="$HOME/.gitPrompt"
+  INSTALLED_BINARY_NAME="gitPrompt"
 fi
 
 FINAL_BINARY_PATH="$INSTALL_DIR/$INSTALLED_BINARY_NAME"
-PROMPT_RC_PATH="$INSTALL_DIR/.promptrc"
+GITPROMPT_RC_PATH="$INSTALL_DIR/.gitPromptrc"
 
 # Legacy PS1 line (set manually before this automation existed)
 if [ "$TARGET_OS" = "windows" ]; then
@@ -329,7 +346,7 @@ else
 fi
 
 # New source line (written by the automated installer)
-EXPECTED_SOURCE_LINE="[ -f \"$PROMPT_RC_PATH\" ] && . \"$PROMPT_RC_PATH\"  # prompt"
+EXPECTED_SOURCE_LINE="[ -f \"$GITPROMPT_RC_PATH\" ] && . \"$GITPROMPT_RC_PATH\"  # gitPrompt"
 
 TEMPORARY_DIRECTORY="$(mktemp -d)"
 trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT INT TERM
@@ -344,7 +361,7 @@ print_status "$COLOR_DIM" "INFO" "Binary: $FINAL_BINARY_PATH"
 
 printf '\n'
 
-run_step "1" "Scanning shell configs for prompt references" "$LOG_DIRECTORY/scan.log" \
+run_step "1" "Scanning shell configs for gitPrompt references" "$LOG_DIRECTORY/scan.log" \
   scan_shell_configs
 
 if [ -s "$EXACT_MATCHES_FILE" ]; then
@@ -352,20 +369,20 @@ if [ -s "$EXACT_MATCHES_FILE" ]; then
 fi
 
 if [ -s "$WARN_MATCHES_FILE" ]; then
-  print_status "$COLOR_YELLOW" "WARN" "Found prompt references — remove these lines from your shell config:"
+  print_status "$COLOR_YELLOW" "WARN" "Found gitPrompt references — remove these lines from your shell config:"
   while IFS= read -r match; do
     printf '  %s\n' "$match"
   done < "$WARN_MATCHES_FILE"
 fi
 
-PROMPT_RC_EXISTED=0
-[ -f "$PROMPT_RC_PATH" ] && PROMPT_RC_EXISTED=1
+GITPROMPT_RC_EXISTED=0
+[ -f "$GITPROMPT_RC_PATH" ] && GITPROMPT_RC_EXISTED=1
 
 run_step "2" "Removing $FINAL_BINARY_PATH" "$LOG_DIRECTORY/remove.log" \
   remove_binary
 
-if [ "$PROMPT_RC_EXISTED" -eq 1 ]; then
-  print_status "$COLOR_GREEN" "INFO" "Removed shell config: $PROMPT_RC_PATH"
+if [ "$GITPROMPT_RC_EXISTED" -eq 1 ]; then
+  print_status "$COLOR_GREEN" "INFO" "Removed shell config: $GITPROMPT_RC_PATH"
 fi
 
 SCRIPT_FINISHED_AT="$(current_timestamp)"

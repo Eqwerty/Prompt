@@ -20,13 +20,13 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Run benchmarks
-        working-directory: benchmarks/Prompt.Benchmarks
+        working-directory: benchmarks/GitPrompt.Benchmarks
         run: dotnet run -c Release -- --exporters json markdown
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
-          path: benchmarks/Prompt.Benchmarks/BenchmarkDotNet.Artifacts/**
+          path: benchmarks/GitPrompt.Benchmarks/BenchmarkDotNet.Artifacts/**
           if-no-files-found: error
 

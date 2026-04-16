@@ -7,7 +7,7 @@ on:
     paths:
       - "src/**"
       - "tests/**"
-      - "Prompt.slnx"
+      - "GitPrompt.slnx"
       - ".github/workflows/build.yml"
       - ".github/workflows/publish.yml"
       - ".github/workflows/release.yml"
@@ -31,13 +31,13 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore Prompt.slnx --nologo
+        run: dotnet restore GitPrompt.slnx --nologo
 
       - name: Build
-        run: dotnet build Prompt.slnx --configuration Release --no-restore --nologo
+        run: dotnet build GitPrompt.slnx --configuration Release --no-restore --nologo
 
       - name: Test
-        run: dotnet test Prompt.slnx --configuration Release --no-build --nologo
+        run: dotnet test GitPrompt.slnx --configuration Release --no-build --nologo
 
   publish:
     name: Publish Artifacts
@@ -55,7 +55,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-          pattern: prompt-*
+          pattern: gitprompt-*
           merge-multiple: true
 
       - name: Delete previous latest release

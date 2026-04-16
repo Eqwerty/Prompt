@@ -1,8 +1,8 @@
-# Prompt
+# GitPrompt
 
 A fast cross-platform shell prompt binary for Git repositories.
 
-`prompt` prints a two-line prompt:
+`gitPrompt` prints a two-line prompt:
 
 1. `user host path [git-status]`
 2. prompt symbol (`$`, `#`, or `>`)
@@ -14,52 +14,52 @@ This repository contains the source code for that binary.
 Install latest release:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/install.sh | sh
 ```
 
 Default install location:
 
-- Linux/macOS: `$HOME/.prompt/prompt`
-- Windows Git Bash: `$HOME/.prompt/prompt.exe`
+- Linux/macOS: `$HOME/.gitPrompt/gitPrompt`
+- Windows Git Bash: `$HOME/.gitPrompt/gitPrompt.exe`
 
 Update is the same command.
 
 ## Uninstall
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/uninstall.sh | sh
 ```
 
-This removes the binary, the generated `.promptrc` shell config, and the source line from `~/.bashrc`.
+This removes the binary, the generated `.gitPromptrc` shell config, and the source line from `~/.bashrc`.
 Legacy manual `PS1` lines written before the automated setup was introduced are also removed.
 
 ## Bash Setup
 
-Shell configuration is automated by the installer. After `install.sh` runs, it writes a `.promptrc`
+Shell configuration is automated by the installer. After `install.sh` runs, it writes a `.gitPromptrc`
 file co-located with the binary and adds a source line to `~/.bashrc`:
 
-- Linux/macOS: `$HOME/.prompt/.promptrc`
-- Windows Git Bash: `$HOME/.prompt/.promptrc`
+- Linux/macOS: `$HOME/.gitPrompt/.gitPromptrc`
+- Windows Git Bash: `$HOME/.gitPrompt/.gitPromptrc`
 
-The `.promptrc` sets `PS1` and provides two convenience aliases:
-- `updateprompt` — re-runs the installer and reloads `~/.bashrc`
-- `uninstallprompt` — runs the uninstaller and reloads `~/.bashrc`
+The `.gitPromptrc` sets `PS1` and provides two convenience aliases:
+- `updategitprompt` — re-runs the installer and reloads `~/.bashrc`
+- `uninstallgitprompt` — runs the uninstaller and reloads `~/.bashrc`
 
 If you skip automatic setup or need to configure manually, add one of the following to your shell config:
 
 Linux/macOS:
 
 ```sh
-PS1='$([ -x "$HOME/.prompt/prompt" ] && "$HOME/.prompt/prompt" || printf "\w \$ ")'
+PS1='$([ -x "$HOME/.gitPrompt/gitPrompt" ] && "$HOME/.gitPrompt/gitPrompt" || printf "\w \$ ")'
 ```
 
 Windows Git Bash:
 
 ```sh
-PS1='$([ -x "$HOME/.prompt/prompt.exe" ] && "$HOME/.prompt/prompt.exe" || printf "\w > ")'
+PS1='$([ -x "$HOME/.gitPrompt/gitPrompt.exe" ] && "$HOME/.gitPrompt/gitPrompt.exe" || printf "\w > ")'
 ```
 
-The `&&`/`||` guard runs on every prompt render — if `prompt` is removed, the prompt falls back to the current directory and prompt symbol (e.g. `~/repos$ `). Bash expands `\w` and `\$` before the command substitution runs.
+The `&&`/`||` guard runs on every prompt render — if `gitPrompt` is removed, the prompt falls back to the current directory and prompt symbol (e.g. `~/repos$ `). Bash expands `\w` and `\$` before the command substitution runs.
 
 ## Prompt Format Reference
 
@@ -145,16 +145,16 @@ In that example, `+1 ~2` is staged, and `+3 -1` is unstaged.
 
 ## Configuration
 
-`prompt` optionally reads a `config.json` file co-located with the binary:
+`gitPrompt` optionally reads a `config.json` file co-located with the binary:
 
-- Linux/macOS: `$HOME/.prompt/config.json`
-- Windows Git Bash: `$HOME/.prompt/config.json`
+- Linux/macOS: `$HOME/.gitPrompt/config.json`
+- Windows Git Bash: `$HOME/.gitPrompt/config.json`
 
 If the file is absent or cannot be parsed, all settings fall back to their defaults. The parser is case-insensitive and accepts comments and trailing commas.
 
 ### Cache
 
-Controls how long `prompt` reuses cached results before re-running a Git command. TTL values are specified in **seconds**. Setting a value to `0` disables caching for that entry.
+Controls how long `gitPrompt` reuses cached results before re-running a Git command. TTL values are specified in **seconds**. Setting a value to `0` disables caching for that entry.
 
 | Key | Default | Description |
 |---|---|---|

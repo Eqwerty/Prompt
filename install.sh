@@ -53,7 +53,7 @@ print_status() {
 }
 
 print_banner() {
-  printf '%s%sPrompt installer%s\n' "$COLOR_BOLD" "$COLOR_BLUE" "$COLOR_RESET"
+  printf '%s%sGitPrompt installer%s\n' "$COLOR_BOLD" "$COLOR_BLUE" "$COLOR_RESET"
 }
 
 format_step_label() {
@@ -256,92 +256,92 @@ parse_arguments() {
 }
 
 configure_shell() {
-  PROMPT_RC_PATH="$INSTALL_DIR/.promptrc"
+  GITPROMPT_RC_PATH="$INSTALL_DIR/.gitPromptrc"
   SHELL_CONFIG="$HOME/.bashrc"
 
   if [ "$TARGET_OS" = "windows" ]; then
-    cat > "$PROMPT_RC_PATH" <<EOF
-# prompt
-_PROMPT_BIN="$FINAL_BINARY_PATH"
+    cat > "$GITPROMPT_RC_PATH" <<EOF
+# gitPrompt
+_GITPROMPT_BIN="$FINAL_BINARY_PATH"
 
-__prompt_preexec_flag=0
-__prompt_running=0
+__gitprompt_preexec_flag=0
+__gitprompt_running=0
 
-__prompt_debug_trap() {
-  if [ "\$__prompt_running" -eq 0 ] && [ "\$BASH_COMMAND" != "_prompt_update_ps1" ]; then
-    __prompt_preexec_flag=1
+__gitprompt_debug_trap() {
+  if [ "\$__gitprompt_running" -eq 0 ] && [ "\$BASH_COMMAND" != "_gitprompt_update_ps1" ]; then
+    __gitprompt_preexec_flag=1
   fi
 }
 
-_prompt_update_ps1() {
-  __prompt_running=1
-  if [ "\$__prompt_preexec_flag" -eq 1 ]; then
-    __prompt_preexec_flag=0
-    "\$_PROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
+_gitprompt_update_ps1() {
+  __gitprompt_running=1
+  if [ "\$__gitprompt_preexec_flag" -eq 1 ]; then
+    __gitprompt_preexec_flag=0
+    "\$_GITPROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
   fi
-  if output="\$("\$_PROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
+  if output="\$("\$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
     PS1="\$output"
   else
     PS1='\w > '
   fi
-  __prompt_running=0
+  __gitprompt_running=0
 }
 
-if [ -x "\$_PROMPT_BIN" ]; then
-  trap '__prompt_debug_trap' DEBUG
-  PROMPT_COMMAND="_prompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
+if [ -x "\$_GITPROMPT_BIN" ]; then
+  trap '__gitprompt_debug_trap' DEBUG
+  PROMPT_COMMAND="_gitprompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
 fi
 
-alias updateprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
-alias uninstallprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w > '"'"' && source ~/.bashrc'
-alias promptconfig='vim "$INSTALL_DIR/config.json"'
+alias updategitprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
+alias uninstallgitprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w > '"'"' && source ~/.bashrc'
+alias gitpromptconfig='vim "$INSTALL_DIR/config.json"'
 EOF
   else
-    cat > "$PROMPT_RC_PATH" <<EOF
-# prompt
-_PROMPT_BIN="$FINAL_BINARY_PATH"
+    cat > "$GITPROMPT_RC_PATH" <<EOF
+# gitPrompt
+_GITPROMPT_BIN="$FINAL_BINARY_PATH"
 
-__prompt_preexec_flag=0
-__prompt_running=0
+__gitprompt_preexec_flag=0
+__gitprompt_running=0
 
-__prompt_debug_trap() {
-  if [ "\$__prompt_running" -eq 0 ] && [ "\$BASH_COMMAND" != "_prompt_update_ps1" ]; then
-    __prompt_preexec_flag=1
+__gitprompt_debug_trap() {
+  if [ "\$__gitprompt_running" -eq 0 ] && [ "\$BASH_COMMAND" != "_gitprompt_update_ps1" ]; then
+    __gitprompt_preexec_flag=1
   fi
 }
 
-_prompt_update_ps1() {
-  __prompt_running=1
-  if [ "\$__prompt_preexec_flag" -eq 1 ]; then
-    __prompt_preexec_flag=0
-    "\$_PROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
+_gitprompt_update_ps1() {
+  __gitprompt_running=1
+  if [ "\$__gitprompt_preexec_flag" -eq 1 ]; then
+    __gitprompt_preexec_flag=0
+    "\$_GITPROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
   fi
-  if output="\$("\$_PROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
+  if output="\$("\$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "\$output" ]; then
     PS1="\$output"
   else
     PS1='\w \$ '
   fi
-  __prompt_running=0
+  __gitprompt_running=0
 }
 
-if [ -x "\$_PROMPT_BIN" ]; then
-  trap '__prompt_debug_trap' DEBUG
-  PROMPT_COMMAND="_prompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
+if [ -x "\$_GITPROMPT_BIN" ]; then
+  trap '__gitprompt_debug_trap' DEBUG
+  PROMPT_COMMAND="_gitprompt_update_ps1\${PROMPT_COMMAND:+; \$PROMPT_COMMAND}"
 fi
 
-alias updateprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
-alias uninstallprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w \$ '"'"' && source ~/.bashrc'
-alias promptconfig='vim "$INSTALL_DIR/config.json"'
+alias updategitprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
+alias uninstallgitprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w \$ '"'"' && source ~/.bashrc'
+alias gitpromptconfig='vim "$INSTALL_DIR/config.json"'
 EOF
   fi
 
-  EXPECTED_SOURCE_LINE="[ -f \"$PROMPT_RC_PATH\" ] && . \"$PROMPT_RC_PATH\"  # prompt"
+  EXPECTED_SOURCE_LINE="[ -f \"$GITPROMPT_RC_PATH\" ] && . \"$GITPROMPT_RC_PATH\"  # gitPrompt"
 
   if [ ! -f "$SHELL_CONFIG" ]; then
     touch "$SHELL_CONFIG"
   fi
 
-  if grep -qF "# prompt" "$SHELL_CONFIG" 2>/dev/null; then
+  if grep -qF "$EXPECTED_SOURCE_LINE" "$SHELL_CONFIG" 2>/dev/null; then
     return 0
   fi
 
@@ -440,14 +440,14 @@ install_binary() {
 
     rm -f "$STAGED_BINARY_PATH"
     printf '%s\n' "Failed to replace $FINAL_BINARY_PATH." >&2
-    printf '%s\n' "On Windows, a running .exe may be locked. Close shells using prompt and run the installer again." >&2
+    printf '%s\n' "On Windows, a running .exe may be locked. Close shells using gitPrompt and run the installer again." >&2
     return 1
   fi
 
   mv -f "$STAGED_BINARY_PATH" "$FINAL_BINARY_PATH"
 }
 
-BINARY_BASENAME="prompt"
+BINARY_BASENAME="gitPrompt"
 OPERATING_SYSTEM="$(uname -s | tr '[:upper:]' '[:lower:]')"
 CPU_ARCHITECTURE="$(uname -m)"
 
@@ -469,19 +469,19 @@ case "$CPU_ARCHITECTURE" in
     ;;
 esac
 
-INSTALL_DIR="$HOME/.prompt"
+INSTALL_DIR="$HOME/.gitPrompt"
 
 if [ "$TARGET_OS" = "windows" ]; then
-  RELEASE_ASSET_NAME="prompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.zip"
-  EXTRACTED_BINARY_NAME="prompt.exe"
+  RELEASE_ASSET_NAME="gitPrompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.zip"
+  EXTRACTED_BINARY_NAME="gitPrompt.exe"
   INSTALLED_BINARY_NAME="${BINARY_BASENAME}.exe"
 else
-  RELEASE_ASSET_NAME="prompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.tar.gz"
-  EXTRACTED_BINARY_NAME="prompt"
+  RELEASE_ASSET_NAME="gitPrompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.tar.gz"
+  EXTRACTED_BINARY_NAME="gitPrompt"
   INSTALLED_BINARY_NAME="${BINARY_BASENAME}"
 fi
 
-RELEASE_ASSET_URL="https://github.com/Eqwerty/Prompt/releases/download/latest/${RELEASE_ASSET_NAME}"
+RELEASE_ASSET_URL="https://github.com/Eqwerty/GitPrompt/releases/download/latest/${RELEASE_ASSET_NAME}"
 
 TEMPORARY_DIRECTORY="$(mktemp -d)"
 trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT INT TERM
@@ -513,7 +513,7 @@ write_default_config
 
 CONFIGURE_SHELL=1
 if [ "$YES_MODE" -eq 0 ] && [ -e /dev/tty ]; then
-  printf '\nConfigure shell automatically? (writes %s/.promptrc and sources it from ~/.bashrc) [Y/n] ' "$INSTALL_DIR" >/dev/tty
+  printf '\nConfigure shell automatically? (writes %s/.gitPromptrc and sources it from ~/.bashrc) [Y/n] ' "$INSTALL_DIR" >/dev/tty
   read -r CONFIGURE_ANSWER </dev/tty
   case "$CONFIGURE_ANSWER" in
     [nN]*) CONFIGURE_SHELL=0 ;;

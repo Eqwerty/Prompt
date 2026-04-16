@@ -27,7 +27,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-          pattern: prompt-*
+          pattern: gitprompt-*
           merge-multiple: true
 
       - name: Delete previous latest release
