@@ -1,4 +1,5 @@
 using System.Text;
+using GitPrompt;
 using GitPrompt.Git;
 using GitPrompt.Platform;
 using GitPrompt.Prompting;
@@ -6,14 +7,7 @@ using static GitPrompt.Constants.PromptColors;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-foreach (var argument in args)
-{
-    if (string.Equals(argument, "--invalidate-status-cache", StringComparison.Ordinal))
-    {
-        GitStatusSharedCache.Invalidate();
-        return 0;
-    }
-}
+ArgumentProcessor.HandleArguments(args);
 
 var platformProvider = PlatformProvider.System;
 var workingDirectoryPath = platformProvider.WorkingDirectory.Path;
