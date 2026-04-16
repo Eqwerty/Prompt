@@ -143,6 +143,35 @@ Example:
 
 In that example, `+1 ~2` is staged, and `+3 -1` is unstaged.
 
+## Configuration
+
+`prompt` optionally reads a `config.json` file co-located with the binary:
+
+- Linux/macOS: `$HOME/.prompt/config.json`
+- Windows Git Bash: `$HOME/.prompt/config.json`
+
+If the file is absent or cannot be parsed, all settings fall back to their defaults. The parser is case-insensitive and accepts comments and trailing commas.
+
+### Cache
+
+Controls how long `prompt` reuses cached results before re-running a Git command. TTL values are specified in **seconds**. Setting a value to `0` disables caching for that entry.
+
+| Key | Default | Description |
+|---|---|---|
+| `cache.gitStatusTtl` | `5` | TTL for cached Git status results (staged, unstaged, untracked, etc.) |
+| `cache.repositoryTtl` | `60` | TTL for cached repository detection results |
+
+Example `config.json`:
+
+```json
+{
+  "cache": {
+    "gitStatusTtl": 3,
+    "repositoryTtl": 30
+  }
+}
+```
+
 ## Local Development
 
 Run the local dev install script:
