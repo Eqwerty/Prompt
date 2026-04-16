@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
 using System.Text;
+using Prompt.Config;
 
 namespace Prompt.Git;
 
 internal static class GitStatusSharedCache
 {
-    private const string CacheTtlMillisecondsEnvironmentVariable = "PROMPT_GIT_STATUS_CACHE_TTL_MS";
     private const string CacheDirectoryName = "git-status-cache-v1";
     private const string InvalidationTokenFileName = "status-invalidation.token";
 
@@ -154,10 +154,10 @@ internal static class GitStatusSharedCache
 
     private static TimeSpan GetCacheTtl()
     {
-        var configuredValue = Environment.GetEnvironmentVariable(CacheTtlMillisecondsEnvironmentVariable);
-        if (int.TryParse(configuredValue, out var ttlMilliseconds))
+        var configured = PromptConfigReader.Config.Cache.GitStatusTtl;
+        if (configured.HasValue)
         {
-            return ttlMilliseconds > 0 ? TimeSpan.FromMilliseconds(ttlMilliseconds) : TimeSpan.Zero;
+            return configured.Value > TimeSpan.Zero ? configured.Value : TimeSpan.Zero;
         }
 
         return DefaultCacheTtl;

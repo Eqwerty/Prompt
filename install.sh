@@ -294,6 +294,7 @@ fi
 
 alias updateprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
 alias uninstallprompt='curl -fsSL --ssl-no-revoke https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w > '"'"' && source ~/.bashrc'
+alias promptconfig='vim "$INSTALL_DIR/config.json"'
 EOF
   else
     cat > "$PROMPT_RC_PATH" <<EOF
@@ -330,6 +331,7 @@ fi
 
 alias updateprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/install.sh | sh -s -- --yes && source ~/.bashrc'
 alias uninstallprompt='curl -fsSL https://raw.githubusercontent.com/Eqwerty/Prompt/master/uninstall.sh | sh && trap - DEBUG && PROMPT_COMMAND="" && PS1='"'"'\w \$ '"'"' && source ~/.bashrc'
+alias promptrc='vim "$INSTALL_DIR/config.json"'
 EOF
   fi
 
@@ -351,6 +353,30 @@ EOF
   printf '\n%s\n' "$EXPECTED_SOURCE_LINE" >> "$SHELL_CONFIG"
 }
 
+
+write_default_config() {
+  config_file="$INSTALL_DIR/config.json"
+  if [ -f "$config_file" ]; then
+    return 0
+  fi
+
+  cat > "$config_file" <<'CONFIGEOF'
+{
+  // Cache configuration
+  "cache": {
+
+    // How long to cache the git status segment, in seconds.
+    // Set to 0 to disable git status caching.
+    "gitStatusTtl": 5,
+
+    // How long to cache the repository location, in seconds.
+    // Set to 0 to disable repository location caching.
+    "repositoryTtl": 60
+
+  }
+}
+CONFIGEOF
+}
 
 download_release_asset() {
   download_completed=0
@@ -482,6 +508,8 @@ run_step "2" "Extracting release archive" "$LOG_DIRECTORY/extract.log" \
 
 run_step "3" "Installing to $FINAL_BINARY_PATH" "$LOG_DIRECTORY/install.log" \
   install_binary
+
+write_default_config
 
 CONFIGURE_SHELL=1
 if [ "$YES_MODE" -eq 0 ] && [ -e /dev/tty ]; then

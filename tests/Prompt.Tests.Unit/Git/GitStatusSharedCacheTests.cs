@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Prompt.Config;
 using Prompt.Git;
 
 namespace Prompt.Tests.Unit.Git;
@@ -11,7 +12,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
         var gitDirectoryPath = Path.Combine(repositoryPath, ".git");
@@ -38,7 +40,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
         var gitDirectoryPath = Path.Combine(repositoryPath, ".git");
@@ -66,7 +69,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
         var gitDirectoryPath = Path.Combine(repositoryPath, ".git");
@@ -101,7 +105,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
         var commonGitDirectoryPath = Path.Combine(cacheDirectory.DirectoryPath, "common", ".git");
@@ -133,7 +138,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 500);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(500) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         var fakeClock = new FakeTimeProvider(DateTimeOffset.UtcNow);
         using var timeOverride = GitStatusSharedCache.OverrideTimeProviderForTesting(fakeClock);
 
@@ -162,7 +168,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 0);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.Zero } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
         var gitDirectoryPath = Path.Combine(repositoryPath, ".git");
@@ -186,7 +193,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
         var gitDirectoryPath = Path.Combine(repositoryPath, ".git");
@@ -214,7 +222,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var tokenFilePath = Path.Combine(cacheDirectory.DirectoryPath, "status-invalidation.token");
 
@@ -237,7 +246,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         var fakeClock = new FakeTimeProvider(DateTimeOffset.UtcNow.AddYears(1));
         using var timeOverride = GitStatusSharedCache.OverrideTimeProviderForTesting(fakeClock);
         GitStatusSharedCache.ResetCleanupScheduleForTesting();
@@ -267,7 +277,8 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var environmentOverride = new GitStatusCacheEnvironmentOverride(cacheDirectory.DirectoryPath, ttlMilliseconds: 5000);
+        using var configOverride = PromptConfigReader.OverrideForTesting(new PromptConfig { Cache = new() { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         var fakeClock = new FakeTimeProvider(DateTimeOffset.UtcNow.AddYears(1));
         using var timeOverride = GitStatusSharedCache.OverrideTimeProviderForTesting(fakeClock);
         GitStatusSharedCache.ResetCleanupScheduleForTesting();
@@ -297,24 +308,5 @@ public sealed class GitStatusSharedCacheTests
         File.WriteAllText(Path.Combine(gitDirectoryPath, "HEAD"), "ref: refs/heads/main\n");
         File.WriteAllText(Path.Combine(gitDirectoryPath, "index"), "index-v1");
         File.WriteAllText(Path.Combine(branchRefPath, "main"), "0000000000000000000000000000000000000001\n");
-    }
-
-    private sealed class GitStatusCacheEnvironmentOverride : IDisposable
-    {
-        private readonly string? _originalTtl;
-        private readonly IDisposable _cacheDirectoryOverride;
-
-        public GitStatusCacheEnvironmentOverride(string cacheDirectoryPath, int ttlMilliseconds)
-        {
-            _originalTtl = Environment.GetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_TTL_MS");
-            Environment.SetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_TTL_MS", ttlMilliseconds.ToString());
-            _cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectoryPath);
-        }
-
-        public void Dispose()
-        {
-            Environment.SetEnvironmentVariable("PROMPT_GIT_STATUS_CACHE_TTL_MS", _originalTtl);
-            _cacheDirectoryOverride.Dispose();
-        }
     }
 }

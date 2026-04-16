@@ -295,13 +295,8 @@ remove_binary() {
     printf 'Binary not found at %s — already removed.\n' "$FINAL_BINARY_PATH"
   fi
 
-  # Remove .promptrc before attempting directory cleanup.
-  if [ -f "$PROMPT_RC_PATH" ]; then
-    rm -f "$PROMPT_RC_PATH"
-  fi
-
-  # ~/.prompt is a dedicated folder on all platforms — safe to remove when empty.
-  rmdir "$INSTALL_DIR" 2>/dev/null || true
+  # Remove the entire install directory (binary, .promptrc, config.json, cache folders).
+  rm -rf "$INSTALL_DIR"
 }
 
 OPERATING_SYSTEM="$(uname -s | tr '[:upper:]' '[:lower:]')"

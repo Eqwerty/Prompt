@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using System.Text;
+using Prompt.Config;
 
 namespace Prompt.Git;
 
 internal static class GitRepositorySharedCache
 {
     private const string CacheDirectoryName = "repository-cache-v1";
-    private const string CacheTtlSecondsEnvironmentVariable = "PROMPT_REPOSITORY_CACHE_TTL_SECONDS";
     private static readonly TimeSpan DefaultCacheTtl = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan StaleCacheEntryThreshold = TimeSpan.FromDays(7);
     private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(5);
@@ -184,11 +184,10 @@ internal static class GitRepositorySharedCache
 
     private static TimeSpan GetCacheTtl()
     {
-        var configuredValue = Environment.GetEnvironmentVariable(CacheTtlSecondsEnvironmentVariable);
-
-        if (int.TryParse(configuredValue, out var ttlInSeconds))
+        var configured = PromptConfigReader.Config.Cache.RepositoryTtl;
+        if (configured.HasValue)
         {
-            return ttlInSeconds > 0 ? TimeSpan.FromSeconds(ttlInSeconds) : TimeSpan.Zero;
+            return configured.Value > TimeSpan.Zero ? configured.Value : TimeSpan.Zero;
         }
 
         return DefaultCacheTtl;
