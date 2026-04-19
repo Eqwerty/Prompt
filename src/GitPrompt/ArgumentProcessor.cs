@@ -32,6 +32,12 @@ internal static class ArgumentProcessor
                 ShellInitializer.Initialize(shell);
                 Environment.Exit(0);
             }
+
+            if (string.Equals(argument, "config", StringComparison.Ordinal))
+            {
+                ConfigCommand.Run();
+                Environment.Exit(0);
+            }
         }
     }
 }
