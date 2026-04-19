@@ -1,3 +1,4 @@
+using GitPrompt.Commands;
 using GitPrompt.Git;
 using GitPrompt.Prompting;
 
@@ -10,6 +11,14 @@ internal static class ArgumentProcessor
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
+
+            if (string.Equals(argument, "--help", StringComparison.Ordinal) ||
+                string.Equals(argument, "-h", StringComparison.Ordinal) ||
+                string.Equals(argument, "help", StringComparison.Ordinal))
+            {
+                HelpCommand.PrintHelp();
+                Environment.Exit(0);
+            }
 
             if (string.Equals(argument, "--invalidate-status-cache", StringComparison.Ordinal))
             {
