@@ -3,32 +3,13 @@ name: Release
 on:
   workflow_call:
 
-# Only one release workflow runs at a time. If a new push arrives while a
-# release is in progress, the in-progress run is cancelled so the latest
-# commit always wins and assets never race against each other.
-concurrency:
-  group: release
-  cancel-in-progress: true
-
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
-    name: Build
-    uses: ./.github/workflows/build.yml
-
-  publish:
-    name: Publish Artifacts
-    needs: build
-    uses: ./.github/workflows/publish.yml
-
   release:
-    name: Publish GitHub Release
-    needs: publish
+    name: Create GitHub Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
