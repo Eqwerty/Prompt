@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-# Uninstall gitPrompt binary.
+# Uninstall gitprompt binary.
 # Usage:
 #   ./uninstall.sh
 
@@ -273,11 +273,11 @@ case "$OPERATING_SYSTEM" in
 esac
 
 if [ "$TARGET_OS" = "windows" ]; then
-  INSTALL_DIR="$HOME/.gitPrompt"
-  INSTALLED_BINARY_NAME="gitPrompt.exe"
+  INSTALL_DIR="$HOME/.gitprompt"
+  INSTALLED_BINARY_NAME="gitprompt.exe"
 else
-  INSTALL_DIR="$HOME/.gitPrompt"
-  INSTALLED_BINARY_NAME="gitPrompt"
+  INSTALL_DIR="$HOME/.gitprompt"
+  INSTALLED_BINARY_NAME="gitprompt"
 fi
 
 FINAL_BINARY_PATH="$INSTALL_DIR/$INSTALLED_BINARY_NAME"
@@ -295,11 +295,11 @@ print_status "$COLOR_DIM" "INFO" "Binary: $FINAL_BINARY_PATH"
 
 printf '\n'
 
-run_step "1" "Scanning shell configs for gitPrompt references" "$LOG_DIRECTORY/scan.log" \
+run_step "1" "Scanning shell configs for gitprompt references" "$LOG_DIRECTORY/scan.log" \
   scan_shell_configs
 
 if [ -s "$MATCHES_FILE" ]; then
-  print_status "$COLOR_YELLOW" "WARN" "Found gitPrompt references — remove these lines from your shell config manually:"
+  print_status "$COLOR_YELLOW" "WARN" "Found gitprompt references — remove these lines from your shell config manually:"
   while IFS= read -r match; do
     printf '  %s\n' "$match"
   done < "$MATCHES_FILE"

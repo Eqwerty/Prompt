@@ -360,7 +360,7 @@ install_binary() {
 
     rm -f "$STAGED_BINARY_PATH"
     printf '%s\n' "Failed to replace $FINAL_BINARY_PATH." >&2
-    printf '%s\n' "Close shells/processes using gitPrompt.exe and run again." >&2
+    printf '%s\n' "Close shells/processes using gitprompt.exe and run again." >&2
     return 1
   fi
 
@@ -379,7 +379,7 @@ configure_shell() {
   fi
 
   cat > "$GITPROMPT_RC_PATH" <<EOF
-# gitPrompt
+# gitprompt
 _GITPROMPT_BIN="$FINAL_BINARY_PATH"
 
 __gitprompt_preexec_flag=0
@@ -449,7 +449,7 @@ publish_binary() {
 
 parse_arguments "$@"
 
-BINARY_BASENAME="gitPrompt"
+BINARY_BASENAME="gitprompt"
 OPERATING_SYSTEM="$(uname -s | tr '[:upper:]' '[:lower:]')"
 CPU_ARCHITECTURE="$(uname -m)"
 
@@ -471,7 +471,7 @@ case "$CPU_ARCHITECTURE" in
     ;;
 esac
 
-INSTALL_DIR="$HOME/.gitPrompt"
+INSTALL_DIR="$HOME/.gitprompt"
 
 if [ "$TARGET_OS" = "windows" ]; then
   RUNTIME_IDENTIFIER="win-x64"
@@ -552,7 +552,7 @@ run_step "6" "Writing .gitpromptrc" "$LOG_DIRECTORY/configure.log" \
   configure_shell
 printf '\n'
 print_status "$COLOR_DIM" "INFO" "Add the following line to your ~/.bashrc:"
-print_status "$COLOR_DIM" "INFO" "  [ -f \"$GITPROMPT_RC_PATH\" ] && . \"$GITPROMPT_RC_PATH\"  # gitPrompt"
+print_status "$COLOR_DIM" "INFO" "  [ -f \"$GITPROMPT_RC_PATH\" ] && . \"$GITPROMPT_RC_PATH\"  # gitprompt"
 
 SCRIPT_FINISHED_AT="$(current_timestamp)"
 OVERALL_DURATION=$((SCRIPT_FINISHED_AT - SCRIPT_STARTED_AT))

@@ -261,7 +261,7 @@ configure_shell() {
   fi
 
   cat > "$GITPROMPT_RC_PATH" <<EOF
-# gitPrompt
+# gitprompt
 _GITPROMPT_BIN="$FINAL_BINARY_PATH"
 
 __gitprompt_preexec_flag=0
@@ -380,14 +380,14 @@ install_binary() {
 
     rm -f "$STAGED_BINARY_PATH"
     printf '%s\n' "Failed to replace $FINAL_BINARY_PATH." >&2
-    printf '%s\n' "On Windows, a running .exe may be locked. Close shells using gitPrompt and run the installer again." >&2
+    printf '%s\n' "On Windows, a running .exe may be locked. Close shells using gitprompt and run the installer again." >&2
     return 1
   fi
 
   mv -f "$STAGED_BINARY_PATH" "$FINAL_BINARY_PATH"
 }
 
-BINARY_BASENAME="gitPrompt"
+BINARY_BASENAME="gitprompt"
 OPERATING_SYSTEM="$(uname -s | tr '[:upper:]' '[:lower:]')"
 CPU_ARCHITECTURE="$(uname -m)"
 
@@ -409,18 +409,18 @@ case "$CPU_ARCHITECTURE" in
     ;;
 esac
 
-INSTALL_DIR="$HOME/.gitPrompt"
+INSTALL_DIR="$HOME/.gitprompt"
 GITPROMPT_RC_PATH="$INSTALL_DIR/.gitpromptrc"
 
 if [ "$TARGET_OS" = "windows" ]; then
   CURL_SSL_OPT="--ssl-no-revoke"
-  RELEASE_ASSET_NAME="gitPrompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.zip"
-  EXTRACTED_BINARY_NAME="gitPrompt.exe"
+  RELEASE_ASSET_NAME="gitprompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.zip"
+  EXTRACTED_BINARY_NAME="gitprompt.exe"
   INSTALLED_BINARY_NAME="${BINARY_BASENAME}.exe"
 else
   CURL_SSL_OPT=""
-  RELEASE_ASSET_NAME="gitPrompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.tar.gz"
-  EXTRACTED_BINARY_NAME="gitPrompt"
+  RELEASE_ASSET_NAME="gitprompt_${TARGET_OS}_${TARGET_ARCHITECTURE}.tar.gz"
+  EXTRACTED_BINARY_NAME="gitprompt"
   INSTALLED_BINARY_NAME="${BINARY_BASENAME}"
 fi
 
@@ -458,7 +458,7 @@ run_step "4" "Writing .gitpromptrc" "$LOG_DIRECTORY/configure.log" \
   configure_shell
 printf '\n'
 print_status "$COLOR_DIM" "INFO" "Add the following line to your ~/.bashrc:"
-print_status "$COLOR_DIM" "INFO" "  [ -f \"$GITPROMPT_RC_PATH\" ] && . \"$GITPROMPT_RC_PATH\"  # gitPrompt"
+print_status "$COLOR_DIM" "INFO" "  [ -f \"$GITPROMPT_RC_PATH\" ] && . \"$GITPROMPT_RC_PATH\"  # gitprompt"
 
 SCRIPT_FINISHED_AT="$(current_timestamp)"
 OVERALL_DURATION=$((SCRIPT_FINISHED_AT - SCRIPT_STARTED_AT))
