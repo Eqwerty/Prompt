@@ -11,6 +11,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <EmbeddedResource Include="Commands\default-config.json" LogicalName="default-config.json" />
+    </ItemGroup>
+
+    <ItemGroup>
         <InternalsVisibleTo Include="GitPrompt.Tests.Unit"/>
         <InternalsVisibleTo Include="GitPrompt.Tests.Integration"/>
         <InternalsVisibleTo Include="GitPrompt.Benchmarks"/>

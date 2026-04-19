@@ -1,28 +1,11 @@
 using System.Diagnostics;
+using System.Reflection;
 using GitPrompt.Platform;
 
 namespace GitPrompt.Commands;
 
 internal static class ConfigCommand
 {
-    private const string DefaultConfigJson =
-        """
-        {
-          // Cache configuration
-          "cache": {
-
-            // How long to cache the git status segment, in seconds.
-            // Set to 0 to disable git status caching.
-            "gitStatusTtl": 5,
-
-            // How long to cache the repository location, in seconds.
-            // Set to 0 to disable repository location caching.
-            "repositoryTtl": 60
-
-          }
-        }
-        """;
-
     internal static void Run()
     {
         var configPath = GetConfigFilePath();
@@ -62,6 +45,9 @@ internal static class ConfigCommand
     {
         if (File.Exists(configPath)) return;
         Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
-        File.WriteAllText(configPath, DefaultConfigJson);
+
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("default-config.json")!;
+        using var fileStream = File.Create(configPath);
+        stream.CopyTo(fileStream);
     }
 }
