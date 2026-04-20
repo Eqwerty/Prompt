@@ -62,6 +62,11 @@ internal static class CommandRegistry
         return CommandDescriptorsLookup.TryGetValue(verb, out command);
     }
 
+    internal static IReadOnlyList<CommandDescriptor> VisibleCommands()
+    {
+        return Commands.Where(command => !command.IsHidden).ToList();
+    }
+
     private static readonly Dictionary<string, CommandDescriptor> CommandDescriptorsLookup =
         Commands
             .SelectMany(command => command.Verbs, (command, verb) => (verb, command))

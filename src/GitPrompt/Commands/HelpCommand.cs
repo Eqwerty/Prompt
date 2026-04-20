@@ -7,7 +7,7 @@ internal static class HelpCommand
         output ??= Console.Out;
 
         var configPath = ConfigCommand.GetConfigFilePath();
-        var visibleCommands = CommandRegistry.Commands.Where(command => !command.IsHidden).ToList();
+        var visibleCommands = CommandRegistry.VisibleCommands();
         var padWidth = visibleCommands.Max(command => command.Usage.Length) + 5;
 
         output.WriteLine("GitPrompt - fast Git prompt for Bash");
