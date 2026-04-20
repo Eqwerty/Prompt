@@ -280,12 +280,8 @@ remove_binary() {
     printf 'Binary not found at %s — already removed.\n' "$FINAL_BINARY_PATH"
   fi
 
-  # Remove XDG config and cache directories.
   rm -rf "$XDG_CONFIG_DIR"
   rm -rf "$XDG_CACHE_DIR"
-
-  # Remove old install directory from pre-XDG installs.
-  rm -rf "$HOME/.gitprompt"
 }
 
 OPERATING_SYSTEM="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -309,7 +305,6 @@ BIN_DIR="$HOME/.local/bin"
 XDG_CONFIG_DIR="$(get_config_dir)"
 XDG_CACHE_DIR="$(get_cache_dir)"
 FINAL_BINARY_PATH="$BIN_DIR/$INSTALLED_BINARY_NAME"
-GITPROMPT_RC_PATH="$HOME/.gitprompt/.gitpromptrc"
 
 TEMPORARY_DIRECTORY="$(mktemp -d)"
 trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT INT TERM
@@ -337,10 +332,6 @@ fi
 
 run_step "2" "Removing gitprompt files" "$LOG_DIRECTORY/remove.log" \
   remove_binary
-
-if [ -f "$GITPROMPT_RC_PATH" ]; then
-  print_status "$COLOR_GREEN" "INFO" "Removed shell config: $GITPROMPT_RC_PATH"
-fi
 
 SCRIPT_FINISHED_AT="$(current_timestamp)"
 OVERALL_DURATION=$((SCRIPT_FINISHED_AT - SCRIPT_STARTED_AT))

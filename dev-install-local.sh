@@ -328,50 +328,6 @@ run_step() {
   fi
 }
 
-get_config_dir() {
-  if [ "$TARGET_OS" = "windows" ]; then
-    if command -v cygpath >/dev/null 2>&1 && [ -n "${APPDATA:-}" ]; then
-      printf '%s/gitprompt' "$(cygpath -u "$APPDATA")"
-    else
-      printf '%s/.config/gitprompt' "$HOME"
-    fi
-  else
-    printf '%s/gitprompt' "${XDG_CONFIG_HOME:-$HOME/.config}"
-  fi
-}
-
-write_default_config() {
-  config_file="$XDG_CONFIG_DIR/config.json"
-  mkdir -p "$XDG_CONFIG_DIR"
-  if [ -f "$config_file" ]; then
-    return 0
-  fi
-
-  # Migrate from old install location if present.
-  old_config="$HOME/.gitprompt/config.json"
-  if [ -f "$old_config" ]; then
-    cp "$old_config" "$config_file"
-    return 0
-  fi
-
-  cat > "$config_file" <<'CONFIGEOF'
-{
-  // Cache configuration
-  "cache": {
-
-    // How long to cache the git status segment, in seconds.
-    // Set to 0 to disable git status caching.
-    "gitStatusTtl": 5,
-
-    // How long to cache the repository location, in seconds.
-    // Set to 0 to disable repository location caching.
-    "repositoryTtl": 60
-
-  }
-}
-CONFIGEOF
-}
-
 install_binary() {
   if [ "$TARGET_OS" = "windows" ]; then
     if mv -f "$STAGED_BINARY_PATH" "$FINAL_BINARY_PATH" 2>/dev/null; then
@@ -443,7 +399,6 @@ case "$CPU_ARCHITECTURE" in
 esac
 
 BIN_DIR="$HOME/.local/bin"              # binary goes here; typically already on PATH
-XDG_CONFIG_DIR="$(get_config_dir)"     # config.json (matches C# XdgPaths.GetConfigDirectory())
 
 if [ "$TARGET_OS" = "windows" ]; then
   RUNTIME_IDENTIFIER="win-x64"
@@ -472,7 +427,6 @@ mkdir -p "$PUBLISH_DIRECTORY" "$LOG_DIRECTORY"
 
 print_status "$COLOR_DIM" "INFO" "Target runtime: $RUNTIME_IDENTIFIER"
 print_status "$COLOR_DIM" "INFO" "Binary: $BIN_DIR/$INSTALLED_BINARY_NAME"
-print_status "$COLOR_DIM" "INFO" "Config: $XDG_CONFIG_DIR/config.json"
 if [ "$VERBOSE_MODE" -eq 1 ]; then
   print_status "$COLOR_DIM" "INFO" "Output mode: verbose"
 else
@@ -517,8 +471,6 @@ chmod +x "$STAGED_BINARY_PATH" 2>/dev/null || true
 
 run_step "5" "Installing to $FINAL_BINARY_PATH" "$LOG_DIRECTORY/install.log" \
   install_binary
-
-write_default_config
 
 SCRIPT_FINISHED_AT="$(current_timestamp)"
 OVERALL_DURATION=$((SCRIPT_FINISHED_AT - SCRIPT_STARTED_AT))

@@ -1,3 +1,4 @@
+using GitPrompt.Configuration;
 using GitPrompt.Prompting;
 
 namespace GitPrompt.Commands;
@@ -12,8 +13,11 @@ internal static class InitCommand
             Console.Error.WriteLine(error);
             Console.Error.WriteLine("Supported shells: bash");
             Console.Error.WriteLine("Usage: eval \"$(gitprompt init bash)\"");
+
             Environment.Exit(1);
         }
+
+        ConfigInitializer.InitializeDefaultConfig();
 
         var script = ShellInitializer.GenerateBashInit().ReplaceLineEndings("\n");
         var bytes = Console.OutputEncoding.GetBytes(script);

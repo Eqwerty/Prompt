@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Commands\default-config.json" LogicalName="default-config.json" />
+        <EmbeddedResource Include="Configuration\default-config.json" LogicalName="default-config.json" />
     </ItemGroup>
 
     <ItemGroup>
