@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Configuration\default-config.json" LogicalName="default-config.json" />
+        <EmbeddedResource Include="Commands\bash-init.sh" LogicalName="bash-init.sh" />
     </ItemGroup>
 
     <ItemGroup>
