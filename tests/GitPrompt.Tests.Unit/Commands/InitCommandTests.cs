@@ -6,21 +6,21 @@ namespace GitPrompt.Tests.Unit.Commands;
 public sealed class InitCommandTests
 {
     [Fact]
-    public void GetShellError_ReturnsNull_ForBash()
+    public void GetShellError_WhenShellIsBash_ShouldReturnNull()
     {
         // Act & Assert
         InitCommand.GetShellError("bash").Should().BeNull();
     }
 
     [Fact]
-    public void GetShellError_ReturnsNull_ForBashCaseInsensitive()
+    public void GetShellError_WhenShellNameIsUppercase_ShouldReturnNull()
     {
         // Act & Assert
         InitCommand.GetShellError("BASH").Should().BeNull();
     }
 
     [Fact]
-    public void GetShellError_ReturnsError_WhenShellIsEmpty()
+    public void GetShellError_WhenShellIsEmpty_ShouldReturnError()
     {
         // Act
         var error = InitCommand.GetShellError(string.Empty);
@@ -30,7 +30,7 @@ public sealed class InitCommandTests
     }
 
     [Fact]
-    public void GetShellError_ReturnsError_WhenShellIsUnsupported()
+    public void GetShellError_WhenShellIsUnsupported_ShouldReturnError()
     {
         // Act
         var error = InitCommand.GetShellError("zsh");

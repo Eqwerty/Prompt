@@ -24,3 +24,10 @@ GitPrompt is a personal tool that replaces the default shell prompt with a fast,
 - Build and install locally: `sh ./dev-install-local.sh`
 - Run tests: `dotnet test`
 - Run benchmarks: `dotnet run -c Release` inside `benchmarks/GitPrompt.Benchmarks/`
+
+## Test Conventions
+
+- **Assertion library:** FluentAssertions (already referenced in the unit test project).
+- **Naming:** `MethodName_WhenCondition_ShouldExpectedOutcome` — e.g. `GetEditor_WhenNeitherEditorNorVisualIsSet_ShouldReturnVi`.
+- **Structure:** Arrange / Act / Assert comments in every test. Combine into `// Act & Assert` only for genuine one-liners with no separate arrange.
+- **Class modifier:** Test classes are `sealed`.

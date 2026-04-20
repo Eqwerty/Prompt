@@ -6,51 +6,65 @@ namespace GitPrompt.Tests.Unit.Prompting;
 public sealed class ShellInitializerTests
 {
     [Fact]
-    public void GenerateBashInit_ShouldContainPromptCommand()
+    public void GenerateBashInit_WhenCalled_ShouldContainPromptCommand()
     {
-        var script = ShellInitializer.GenerateBashInit("\\w \\$ ");
+        // Act
+        var script = ShellInitializer.GenerateBashInit(@"\w \$ ");
 
+        // Assert
         script.Should().Contain("PROMPT_COMMAND");
     }
 
     [Fact]
-    public void GenerateBashInit_ShouldContainDebugTrap()
+    public void GenerateBashInit_WhenCalled_ShouldContainDebugTrap()
     {
-        var script = ShellInitializer.GenerateBashInit("\\w \\$ ");
+        // Act
+        var script = ShellInitializer.GenerateBashInit(@"\w \$ ");
 
+        // Assert
         script.Should().Contain("trap '__gitprompt_debug_trap' DEBUG");
     }
 
     [Fact]
-    public void GenerateBashInit_ShouldContainInvalidateCacheCall()
+    public void GenerateBashInit_WhenCalled_ShouldContainInvalidateCacheCall()
     {
-        var script = ShellInitializer.GenerateBashInit("\\w \\$ ");
+        // Act
+        var script = ShellInitializer.GenerateBashInit(@"\w \$ ");
 
+        // Assert
         script.Should().Contain("--invalidate-status-cache");
     }
 
     [Fact]
-    public void GenerateBashInit_ShouldResolveBinaryFromPath()
+    public void GenerateBashInit_WhenCalled_ShouldResolveBinaryFromPath()
     {
-        var script = ShellInitializer.GenerateBashInit("\\w \\$ ");
+        // Act
+        var script = ShellInitializer.GenerateBashInit(@"\w \$ ");
 
+        // Assert
         script.Should().Contain("command -v gitprompt");
     }
 
     [Fact]
-    public void GenerateBashInit_ShouldEmbedFallbackPs1()
+    public void GenerateBashInit_WhenFallbackPs1IsProvided_ShouldEmbedItInScript()
     {
+        // Arrange
         const string fallback = "\\w >";
+
+        // Act
         var script = ShellInitializer.GenerateBashInit(fallback);
 
+        // Assert
         script.Should().Contain($"PS1='{fallback}'");
     }
 
     [Fact]
-    public void GenerateBashInit_ShouldNotContainHardcodedAbsolutePath()
+    public void GenerateBashInit_WhenCalled_ShouldNotContainHardcodedAbsolutePath()
     {
-        var script = ShellInitializer.GenerateBashInit("\\w \\$ ");
+        // Act
+        var script = ShellInitializer.GenerateBashInit(@"\w \$ ");
 
+        // Assert
         // The script must resolve the binary from PATH at shell startup, not bake in an absolute path.
         script.Should().NotContain("/home/");
         script.Should().NotContain("/Users/");
@@ -58,10 +72,12 @@ public sealed class ShellInitializerTests
     }
 
     [Fact]
-    public void GenerateBashInit_ShouldRegisterTabCompletion()
+    public void GenerateBashInit_WhenCalled_ShouldRegisterTabCompletion()
     {
-        var script = ShellInitializer.GenerateBashInit("\\w \\$ ");
+        // Act
+        var script = ShellInitializer.GenerateBashInit(@"\w \$ ");
 
+        // Assert
         script.Should().Contain("complete -F _gitprompt_complete gitprompt");
         script.Should().Contain("init config update uninstall --help");
     }
