@@ -4,9 +4,7 @@ internal static class HelpCommand
 {
     internal static void PrintHelp()
     {
-        var configPath = OperatingSystem.IsWindows()
-            ? @"%APPDATA%\gitprompt\config.json"
-            : "~/.config/gitprompt/config.json";
+        var configPath = ConfigCommand.GetConfigFilePath();
 
         Console.WriteLine($"""
             gitprompt - fast Git prompt for Bash

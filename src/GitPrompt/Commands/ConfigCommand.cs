@@ -29,21 +29,30 @@ internal static class ConfigCommand
     internal static string GetConfigFilePath()
         => Path.Combine(XdgPaths.GetConfigDirectory(), "config.json");
 
-    internal static string GetEditor()
-        => GetEditor(
-            Environment.GetEnvironmentVariable("EDITOR"),
-            Environment.GetEnvironmentVariable("VISUAL"));
-
     internal static string GetEditor(string? editorEnv, string? visualEnv)
     {
-        if (!string.IsNullOrEmpty(editorEnv)) return editorEnv;
-        if (!string.IsNullOrEmpty(visualEnv)) return visualEnv;
+        if (!string.IsNullOrEmpty(editorEnv))
+        {
+            return editorEnv;
+        }
+
+        if (!string.IsNullOrEmpty(visualEnv))
+        {
+            return visualEnv;
+        }
+
         return OperatingSystem.IsWindows() ? "notepad.exe" : "vi";
     }
 
+    private static string GetEditor() => GetEditor(Environment.GetEnvironmentVariable("EDITOR"), Environment.GetEnvironmentVariable("VISUAL"));
+
     private static void EnsureConfigFileExists(string configPath)
     {
-        if (File.Exists(configPath)) return;
+        if (File.Exists(configPath))
+        {
+            return;
+        }
+
         Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
 
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("default-config.json")!;
