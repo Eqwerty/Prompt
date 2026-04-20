@@ -5,10 +5,9 @@ namespace GitPrompt.Tests.Unit.Commands;
 
 public sealed class HelpCommandTests
 {
-    private static IReadOnlyList<CommandDescriptor> VisibleCommands =>
-        CommandRegistry.Commands.Where(command => !command.IsHidden).ToList();
+    private static IReadOnlyList<CommandDescriptor> VisibleCommands => CommandRegistry.Commands.Where(command => !command.IsHidden).ToList();
 
-    public static TheoryData<string> VisibleCommandUsages => [.. VisibleCommands.Select(command => command.Usage)];
+    public static TheoryData<string> VisibleCommandUsages => [..VisibleCommands.Select(command => command.Usage)];
 
     [Theory]
     [MemberData(nameof(VisibleCommandUsages))]
@@ -68,7 +67,7 @@ public sealed class HelpCommandTests
         // Arrange
         var output = new StringWriter();
         var expectedPadWidth = VisibleCommands.Max(command => command.Usage.Length) + 5;
-        var expectedDescriptionColumn = 2 + expectedPadWidth; // 2 = leading indent
+        var expectedDescriptionColumn = 2 + expectedPadWidth;
 
         // Act
         HelpCommand.PrintHelp(output);
