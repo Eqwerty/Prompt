@@ -65,6 +65,25 @@ install_binary() {
   fi
 }
 
+add_to_shell_config() {
+  for config in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.profile"; do
+    if [ -f "$config" ]; then
+      if grep -qF "gitprompt init bash" "$config" 2>/dev/null; then
+        printf "${GREEN}✓${R} Shell config already set up (%s)\n" "$config"
+        return
+      fi
+      printf '\n%s\n' "$EVAL_LINE" >> "$config"
+      printf "${GREEN}✓${R} Added gitprompt init to %s\n" "$config"
+      return
+    fi
+  done
+
+  printf '\n'
+  printf "${YELLOW}Next steps — add to your shell startup file:\n"
+  printf "  %s\n" "$EVAL_LINE"
+  printf "${R}"
+}
+
 OPERATING_SYSTEM="$(uname -s | tr '[:upper:]' '[:lower:]')"
 CPU_ARCHITECTURE="$(uname -m)"
 
@@ -101,6 +120,12 @@ fi
 BIN_DIR="$HOME/.local/bin"
 FINAL_BINARY_PATH="$BIN_DIR/$BINARY_NAME"
 STAGED_BINARY_PATH="$BIN_DIR/.$BINARY_NAME.new.$$"
+
+if [ "$TARGET_OS" = "windows" ]; then
+  EVAL_LINE='eval "$($HOME/.local/bin/gitprompt.exe init bash)"'
+else
+  EVAL_LINE='eval "$(gitprompt init bash)"'
+fi
 
 TEMPORARY_DIRECTORY="$(mktemp -d)"
 trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT
@@ -150,10 +175,5 @@ run_step "Installing to $FINAL_BINARY_PATH" "$TEMPORARY_DIRECTORY/install.log" \
   install_binary
 
 printf '\n'
-printf "${YELLOW}Next steps — add to your shell startup file:\n"
-if [ "$TARGET_OS" = "windows" ]; then
-  printf '  eval "$($HOME/.local/bin/gitprompt.exe init bash)"\n'
-else
-  printf '  eval "$(gitprompt init bash)"\n'
-fi
-printf "${R}"
+add_to_shell_config
+printf '\nRestart your terminal or run: source ~/.bashrc\n'
