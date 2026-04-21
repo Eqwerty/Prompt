@@ -1,37 +1,96 @@
 using System.Diagnostics;
+using GitPrompt.Platform;
 
 namespace GitPrompt.Commands;
 
 internal static class UninstallCommand
 {
-    private const string UninstallScriptUrl =
-        "https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/uninstall.sh";
+    private static readonly string[] ShellConfigFiles =
+    [
+        ".bashrc", ".bash_aliases", ".bash_profile", ".bash_login", ".profile",
+        ".zshenv", ".zshrc", ".zprofile"
+    ];
 
     internal static void Run()
     {
-        var sslOpt = OperatingSystem.IsWindows() ? "--ssl-no-revoke " : "";
-        var script = $"curl -fsSL {sslOpt}{UninstallScriptUrl} | sh";
+        var binaryPath = Environment.ProcessPath;
+        var configDir = XdgPaths.GetConfigDirectory();
+        var cacheDir = XdgPaths.GetCacheDirectory();
 
-        try
+        WarnAboutShellConfigReferences();
+
+        if (Directory.Exists(configDir))
         {
-            var psi = new ProcessStartInfo("sh") { UseShellExecute = false };
-            psi.ArgumentList.Add("-c");
-            psi.ArgumentList.Add(script);
-            var process = Process.Start(psi);
-
-            // On Windows the running .exe is locked, so we must exit before the
-            // uninstall script tries to delete the binary. The sh process keeps
-            // running after we exit and can then remove the now-unlocked file.
-            if (OperatingSystem.IsWindows())
-                return;
-
-            process?.WaitForExit();
+            Directory.Delete(configDir, recursive: true);
         }
-        catch (Exception ex)
+
+        if (Directory.Exists(cacheDir))
         {
-            Console.Error.WriteLine($"gitprompt: uninstall failed: {ex.Message}");
-            Console.Error.WriteLine($"gitprompt: to uninstall manually, run: curl -fsSL {UninstallScriptUrl} | sh");
-            Environment.Exit(1);
+            Directory.Delete(cacheDir, recursive: true);
         }
+
+        if (binaryPath is not null)
+        {
+            DeleteBinary(binaryPath);
+        }
+
+        Console.WriteLine("Uninstalled.");
+    }
+
+    private static void WarnAboutShellConfigReferences()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var matches = new List<string>();
+
+        foreach (var fileName in ShellConfigFiles)
+        {
+            var path = Path.Combine(home, fileName);
+            if (!File.Exists(path))
+            {
+                continue;
+            }
+
+            var lines = File.ReadAllLines(path);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains("gitprompt", StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add($"{path}:{i + 1}: {lines[i].Trim()}");
+                }
+            }
+        }
+
+        if (matches.Count is 0)
+        {
+            return;
+        }
+
+        Console.Error.WriteLine("warn: Found gitprompt references — remove from your shell config manually:");
+        foreach (var match in matches)
+        {
+            Console.Error.WriteLine($"  {match}");
+        }
+
+        Console.Error.WriteLine();
+    }
+
+    private static void DeleteBinary(string binaryPath)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            File.Delete(binaryPath);
+            return;
+        }
+
+        // On Windows, the running .exe is locked. Spawn a hidden cmd.exe that waits
+        // 1 second for the lock to release, then force-deletes the binary.
+        var psi = new ProcessStartInfo("cmd.exe")
+        {
+            Arguments = $"/c timeout /T 1 /NOBREAK > nul & del /f /q \"{binaryPath}\"",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        Process.Start(psi);
     }
 }
