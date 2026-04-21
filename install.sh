@@ -389,6 +389,10 @@ printf '\n'
 printf '%s%sNext steps%s\n' "$COLOR_BOLD" "$COLOR_CYAN" "$COLOR_RESET"
 printf 'Add to your Bash startup file (~/.bashrc, or ~/.bash_profile on macOS):\n'
 printf '\n'
-printf '  export PATH="$HOME/.local/bin:$PATH"  # skip if already set\n'
-printf '  eval "$(gitprompt init bash)"          # gitprompt\n'
+if [ "$TARGET_OS" = "windows" ]; then
+  printf '  eval "$($HOME/.local/bin/gitprompt.exe init bash)"  # gitprompt\n'
+else
+  printf '  export PATH="$HOME/.local/bin:$PATH"  # skip if already set\n'
+  printf '  eval "$(gitprompt init bash)"          # gitprompt\n'
+fi
 
