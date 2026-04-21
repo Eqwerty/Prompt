@@ -1,8 +1,16 @@
 #!/usr/bin/env sh
 set -eu
 
+ESC=$(printf '\033')
+if [ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != "dumb" ]; then
+  R="$ESC[0m"; BOLD="$ESC[1m"
+  GREEN="$ESC[32m"; YELLOW="$ESC[33m"; RED="$ESC[31m"
+else
+  R=''; BOLD=''; GREEN=''; YELLOW=''; RED=''
+fi
+
 die() {
-  printf 'error: %s\n' "$1" >&2
+  printf "\n${RED}error:${R} %s\n" "$1" >&2
   exit 1
 }
 
@@ -83,16 +91,18 @@ EXTRACTED_BINARY_PATH="$TEMPORARY_DIRECTORY/$BINARY_NAME"
 FINAL_BINARY_PATH="$BIN_DIR/$BINARY_NAME"
 STAGED_BINARY_PATH="$BIN_DIR/.$BINARY_NAME.new.$$"
 
-printf 'Downloading %s...\n' "$RELEASE_ASSET_NAME"
+printf "${YELLOW}●${R} Downloading %s..." "$RELEASE_ASSET_NAME"
 download_release_asset
+printf "\r${GREEN}✓${R} Downloading %s...\n" "$RELEASE_ASSET_NAME"
 
-printf 'Extracting...\n'
+printf "${YELLOW}●${R} Extracting..."
 extract_release_asset
+printf "\r${GREEN}✓${R} Extracting...\n"
 
-printf 'Installing to %s...\n' "$FINAL_BINARY_PATH"
+printf "${YELLOW}●${R} Installing to %s..." "$FINAL_BINARY_PATH"
 install_binary
+printf "\r${GREEN}✓${R} Installing to %s...\n" "$FINAL_BINARY_PATH"
 
-printf 'Done.\n'
 printf '\n'
 printf 'Next steps — add to your shell startup file:\n'
 if [ "$TARGET_OS" = "windows" ]; then
