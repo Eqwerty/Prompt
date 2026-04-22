@@ -12,23 +12,26 @@ internal static class ConfigCommand
         EnsureConfigFileExists(configPath);
 
         var editor = GetEditor();
+
         try
         {
-            var psi = new ProcessStartInfo(editor) { UseShellExecute = false };
-            psi.ArgumentList.Add(configPath);
-            Process.Start(psi)?.WaitForExit();
+            var processStartInfo = new ProcessStartInfo(editor) { UseShellExecute = false };
+            processStartInfo.ArgumentList.Add(configPath);
+
+            Process.Start(processStartInfo)?.WaitForExit();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            Console.Error.WriteLine($"gitprompt: failed to open editor '{editor}': {ex.Message}");
+            Console.Error.WriteLine($"gitprompt: failed to open editor '{editor}': {exception.Message}");
             Console.Error.WriteLine($"gitprompt: config file is at: {configPath}");
+
             Environment.Exit(1);
         }
     }
 
     internal static string GetConfigFilePath() => Path.Combine(XdgPaths.GetConfigDirectory(), "config.json");
 
-    internal static string GetEditor(string? editorEnv, string? visualEnv)
+    private static string GetEditor(string? editorEnv, string? visualEnv)
     {
         if (!string.IsNullOrEmpty(editorEnv))
         {
@@ -40,7 +43,7 @@ internal static class ConfigCommand
             return visualEnv;
         }
 
-        return "vi";
+        return "vim";
     }
 
     private static string GetEditor() => GetEditor(Environment.GetEnvironmentVariable("EDITOR"), Environment.GetEnvironmentVariable("VISUAL"));

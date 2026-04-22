@@ -32,11 +32,11 @@ internal static class UpdateCommand
                 Environment.Exit(process.ExitCode);
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            Console.Error.WriteLine($"gitprompt: update failed: {ex.Message}");
+            Console.Error.WriteLine($"gitprompt: update failed: {exception.Message}");
             Console.Error.WriteLine($"gitprompt: to update manually, run: curl -fsSL {InstallScriptUrl} | sh");
-            
+
             Environment.Exit(1);
         }
     }
