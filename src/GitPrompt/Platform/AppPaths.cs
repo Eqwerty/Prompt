@@ -4,6 +4,6 @@ internal static class AppPaths
 {
     internal static string GetConfigFilePath()
     {
-        return Path.Combine(XdgPaths.GetConfigDirectory(), "config.json");
+        return Path.Combine(XdgPaths.GetConfigDirectory(), "config.jsonc");
     }
 }

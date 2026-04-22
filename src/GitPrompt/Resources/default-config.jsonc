@@ -1,0 +1,6 @@
+{
+  "cache": {
+    "gitStatusTtl": 5,   // git status cache TTL in seconds (0 = disabled)
+    "repositoryTtl": 60  // repository location cache TTL in seconds (0 = disabled)
+  }
+}

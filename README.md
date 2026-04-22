@@ -160,10 +160,10 @@ In that example, `+1 ~2` is staged, and `+3 -1` is unstaged.
 
 ## Configuration
 
-`gitprompt` optionally reads a `config.json` file from the platform config directory:
+`gitprompt` optionally reads a `config.jsonc` file from the platform config directory:
 
-- Linux/macOS: `$XDG_CONFIG_HOME/gitprompt/config.json` (default: `~/.config/gitprompt/config.json`)
-- Windows Git Bash: `%APPDATA%/gitprompt/config.json`
+- Linux/macOS: `$XDG_CONFIG_HOME/gitprompt/config.jsonc` (default: `~/.config/gitprompt/config.jsonc`)
+- Windows Git Bash: `%APPDATA%/gitprompt/config.jsonc`
 
 If the file is absent or cannot be parsed, all settings fall back to their defaults. The parser is case-insensitive and accepts comments and trailing commas.
 
@@ -176,13 +176,13 @@ Controls how long `gitprompt` reuses cached results before re-running a Git comm
 | `cache.gitStatusTtl` | `5` | TTL for cached Git status results (staged, unstaged, untracked, etc.) |
 | `cache.repositoryTtl` | `60` | TTL for cached repository detection results |
 
-Example `config.json`:
+Example `config.jsonc`:
 
-```json
+```jsonc
 {
   "cache": {
-    "gitStatusTtl": 3,
-    "repositoryTtl": 30
+    "gitStatusTtl": 3,   // git status cache TTL in seconds (0 = disabled)
+    "repositoryTtl": 30  // repository location cache TTL in seconds (0 = disabled)
   }
 }
 ```

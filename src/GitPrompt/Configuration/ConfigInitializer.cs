@@ -17,7 +17,7 @@ internal static class ConfigInitializer
 
             Directory.CreateDirectory(Path.GetDirectoryName(configFile)!);
 
-            using var stream = typeof(ConfigInitializer).Assembly.GetManifestResourceStream("default-config.json")!;
+            using var stream = typeof(ConfigInitializer).Assembly.GetManifestResourceStream("default-config.jsonc")!;
 
             using var fileStream = File.Create(configFile);
             stream.CopyTo(fileStream);

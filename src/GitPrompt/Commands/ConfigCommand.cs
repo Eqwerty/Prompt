@@ -55,7 +55,7 @@ internal static class ConfigCommand
 
         Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
 
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("default-config.json")!;
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("default-config.jsonc")!;
         using var fileStream = File.Create(configPath);
         stream.CopyTo(fileStream);
     }

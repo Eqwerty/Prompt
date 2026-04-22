@@ -19,7 +19,7 @@ internal static class CommandRegistry
 
         new(Verbs: ["config"],
             Usage: "gitprompt config",
-            Description: "Open config.json in $EDITOR",
+            Description: "Open config.jsonc in $EDITOR",
             Execute: _ => ConfigCommand.Run()),
 
         new(Verbs: ["update"],
