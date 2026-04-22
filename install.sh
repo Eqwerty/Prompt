@@ -39,10 +39,6 @@ extract_release_asset() {
 }
 
 install_binary() {
-  mkdir -p "$BIN_DIR"
-  cp "$EXTRACTED_BINARY_PATH" "$STAGED_BINARY_PATH"
-  chmod +x "$STAGED_BINARY_PATH" 2>/dev/null || true
-
   if [ "$TARGET_OS" = "windows" ]; then
     OLD_BINARY_PATH="${FINAL_BINARY_PATH}.old"
     rm -f "$OLD_BINARY_PATH" 2>/dev/null || true
@@ -118,29 +114,36 @@ else
   EVAL_LINE='eval "$(gitprompt init bash)"'
 fi
 
-RELEASE_ASSET_URL="https://github.com/Eqwerty/GitPrompt/releases/download/latest/${RELEASE_ASSET_NAME}"
-
-TEMPORARY_DIRECTORY="$(mktemp -d)"
-trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT
-trap 'printf "\n${RED}error:${R} Cancelled.\n" >&2; exit 130' INT TERM
-
-RELEASE_ASSET_PATH="$TEMPORARY_DIRECTORY/$RELEASE_ASSET_NAME"
-EXTRACTED_BINARY_PATH="$TEMPORARY_DIRECTORY/$BINARY_NAME"
 FINAL_BINARY_PATH="$BIN_DIR/$BINARY_NAME"
 STAGED_BINARY_PATH="$BIN_DIR/.$BINARY_NAME.new.$$"
 
-printf "${YELLOW}●${R} Downloading %s..." "$RELEASE_ASSET_NAME"
-download_release_asset
-printf "\r${GREEN}✓${R} Downloading %s...\n" "$RELEASE_ASSET_NAME"
+if [ -z "${_INSTALL_SOURCED:-}" ]; then
+  RELEASE_ASSET_URL="https://github.com/Eqwerty/GitPrompt/releases/download/latest/${RELEASE_ASSET_NAME}"
 
-printf "${YELLOW}●${R} Extracting..."
-extract_release_asset
-printf "\r${GREEN}✓${R} Extracting...\n"
+  TEMPORARY_DIRECTORY="$(mktemp -d)"
+  trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT
+  trap 'printf "\n${RED}error:${R} Cancelled.\n" >&2; exit 130' INT TERM
 
-printf "${YELLOW}●${R} Installing to %s..." "$FINAL_BINARY_PATH"
-install_binary
-printf "\r${GREEN}✓${R} Installing to %s...\n" "$FINAL_BINARY_PATH"
+  RELEASE_ASSET_PATH="$TEMPORARY_DIRECTORY/$RELEASE_ASSET_NAME"
+  EXTRACTED_BINARY_PATH="$TEMPORARY_DIRECTORY/$BINARY_NAME"
 
-add_to_shell_config
-printf '\nRestart your terminal or run: source ~/.bashrc\n'
-printf "Run 'gitprompt --help' to see available commands.\n"
+  printf "${YELLOW}●${R} Downloading %s..." "$RELEASE_ASSET_NAME"
+  download_release_asset
+  printf "\r${GREEN}✓${R} Downloading %s...\n" "$RELEASE_ASSET_NAME"
+
+  printf "${YELLOW}●${R} Extracting..."
+  extract_release_asset
+  printf "\r${GREEN}✓${R} Extracting...\n"
+
+  mkdir -p "$BIN_DIR"
+  cp "$EXTRACTED_BINARY_PATH" "$STAGED_BINARY_PATH"
+  chmod +x "$STAGED_BINARY_PATH" 2>/dev/null || true
+
+  printf "${YELLOW}●${R} Installing to %s..." "$FINAL_BINARY_PATH"
+  install_binary
+  printf "\r${GREEN}✓${R} Installing to %s...\n" "$FINAL_BINARY_PATH"
+
+  add_to_shell_config
+  printf '\nRestart your terminal or run: source ~/.bashrc\n'
+  printf "Run 'gitprompt --help' to see available commands.\n"
+fi
