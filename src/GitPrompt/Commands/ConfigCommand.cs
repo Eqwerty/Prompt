@@ -8,7 +8,7 @@ internal static class ConfigCommand
 {
     internal static void Run()
     {
-        var configPath = GetConfigFilePath();
+        var configPath = AppPaths.GetConfigFilePath();
         EnsureConfigFileExists(configPath);
 
         var editor = GetEditor();
@@ -28,8 +28,6 @@ internal static class ConfigCommand
             Environment.Exit(1);
         }
     }
-
-    internal static string GetConfigFilePath() => Path.Combine(XdgPaths.GetConfigDirectory(), "config.json");
 
     private static string GetEditor(string? editorEnv, string? visualEnv)
     {

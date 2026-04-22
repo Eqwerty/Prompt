@@ -1,3 +1,5 @@
+using GitPrompt.Platform;
+
 namespace GitPrompt.Commands;
 
 internal static class HelpCommand
@@ -6,7 +8,7 @@ internal static class HelpCommand
     {
         output ??= Console.Out;
 
-        var configPath = ConfigCommand.GetConfigFilePath();
+        var configPath = AppPaths.GetConfigFilePath();
         var visibleCommands = CommandRegistry.VisibleCommands;
         var padWidth = visibleCommands.Max(command => command.Usage.Length) + 5;
 

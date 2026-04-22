@@ -8,15 +8,14 @@ internal static class ConfigInitializer
     {
         try
         {
-            var configDirectory = XdgPaths.GetConfigDirectory();
-            var configFile = Path.Combine(configDirectory, "config.json");
+            var configFile = AppPaths.GetConfigFilePath();
 
             if (File.Exists(configFile))
             {
                 return;
             }
 
-            Directory.CreateDirectory(configDirectory);
+            Directory.CreateDirectory(Path.GetDirectoryName(configFile)!);
 
             using var stream = typeof(ConfigInitializer).Assembly.GetManifestResourceStream("default-config.json")!;
 

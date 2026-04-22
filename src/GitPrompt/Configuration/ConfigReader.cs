@@ -22,7 +22,7 @@ internal static class ConfigReader
     {
         try
         {
-            var configurationPath = Path.Combine(XdgPaths.GetConfigDirectory(), "config.json");
+            var configurationPath = AppPaths.GetConfigFilePath();
             if (!File.Exists(configurationPath))
             {
                 return new Config();
