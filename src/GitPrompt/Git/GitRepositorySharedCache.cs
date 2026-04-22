@@ -208,15 +208,7 @@ internal static class GitRepositorySharedCache
     private static string HashPath(string path)
     {
         var pathBytes = Encoding.UTF8.GetBytes(path);
-        var hashBytes = SHA256.HashData(pathBytes);
-
-        var hashBuilder = new StringBuilder(hashBytes.Length * 2);
-        foreach (var hashByte in hashBytes)
-        {
-            hashBuilder.Append(hashByte.ToString("x2"));
-        }
-
-        return hashBuilder.ToString();
+        return Convert.ToHexStringLower(SHA256.HashData(pathBytes));
     }
 
     private static string NormalizePathOrEmpty(string path)

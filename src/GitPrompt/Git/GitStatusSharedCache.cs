@@ -522,14 +522,13 @@ internal static class GitStatusSharedCache
 
     private static void AppendAbsoluteFileStamp(StringBuilder builder, string filePath, string label)
     {
-        var exists = File.Exists(filePath);
-        if (!exists)
+        var fileInfo = new FileInfo(filePath);
+        if (!fileInfo.Exists)
         {
             builder.Append(label).Append(':').Append('0').Append(';');
             return;
         }
 
-        var fileInfo = new FileInfo(filePath);
         builder.Append(label).Append(':')
             .Append('1').Append(':')
             .Append(fileInfo.Length).Append(':')
@@ -539,15 +538,7 @@ internal static class GitStatusSharedCache
     private static string HashPath(string value)
     {
         var valueBytes = Encoding.UTF8.GetBytes(value);
-        var hashBytes = SHA256.HashData(valueBytes);
-
-        var builder = new StringBuilder(hashBytes.Length * 2);
-        foreach (var hashByte in hashBytes)
-        {
-            builder.Append(hashByte.ToString("x2"));
-        }
-
-        return builder.ToString();
+        return Convert.ToHexStringLower(SHA256.HashData(valueBytes));
     }
 
     private static string NormalizePathOrEmpty(string path)
