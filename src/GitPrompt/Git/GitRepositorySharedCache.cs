@@ -1,5 +1,6 @@
 using System.Text;
 using GitPrompt.Configuration;
+using GitPrompt.Diagnostics;
 using GitPrompt.Platform;
 
 namespace GitPrompt.Git;
@@ -28,22 +29,26 @@ internal static class GitRepositorySharedCache
             var cacheFilePath = GetCacheFilePath(normalizedStartDirectoryPath);
             if (!File.Exists(cacheFilePath))
             {
+                PromptDiagnostics.RecordRepoCacheL2Miss(RepoCacheMissReason.NoEntry);
+
                 return false;
             }
 
             var cacheContent = File.ReadAllText(cacheFilePath);
-            if (!TryParseRecord(cacheContent, out var cacheRecord))
+            if (!TryParseRecord(cacheContent, out var cacheRecord) ||
+                !string.Equals(cacheRecord.StartDirectoryPath, normalizedStartDirectoryPath, Utilities.FileSystemPathComparison))
             {
+                PromptDiagnostics.RecordRepoCacheL2Miss(RepoCacheMissReason.ParseError);
+
                 return false;
             }
 
-            if (!string.Equals(cacheRecord.StartDirectoryPath, normalizedStartDirectoryPath, Utilities.FileSystemPathComparison))
+            var cacheTtl = GetCacheTtl();
+            var cacheAge = GetUtcNow() - new DateTimeOffset(cacheRecord.CachedAtUtcTicks, TimeSpan.Zero);
+            if (cacheTtl <= TimeSpan.Zero || cacheAge > cacheTtl)
             {
-                return false;
-            }
+                PromptDiagnostics.RecordRepoCacheL2Miss(cacheTtl <= TimeSpan.Zero ? RepoCacheMissReason.Disabled : RepoCacheMissReason.TtlExpired);
 
-            if (IsExpired(cacheRecord.CachedAtUtcTicks))
-            {
                 return false;
             }
 
@@ -115,19 +120,6 @@ internal static class GitRepositorySharedCache
                 }
             }
         }
-    }
-
-    private static bool IsExpired(long cachedAtUtcTicks)
-    {
-        var cacheTtl = GetCacheTtl();
-        if (cacheTtl <= TimeSpan.Zero)
-        {
-            return true;
-        }
-
-        var cachedAtUtc = new DateTime(cachedAtUtcTicks, DateTimeKind.Utc);
-
-        return GetUtcNow() - cachedAtUtc > cacheTtl;
     }
 
     private static void TryCleanupStaleEntries(string cacheDirectoryPath)

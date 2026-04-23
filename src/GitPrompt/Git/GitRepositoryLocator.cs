@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using GitPrompt.Diagnostics;
 using static GitPrompt.Git.Utilities;
 
 namespace GitPrompt.Git;
@@ -40,6 +41,7 @@ internal static class GitRepositoryLocator
                 if (TryGetValidCachedRepositoryContext(current, out var cachedContext))
                 {
                     CacheRepositoryContext(scannedPaths, cachedContext);
+                    PromptDiagnostics.RecordRepoCacheL1Hit();
 
                     return cachedContext;
                 }
@@ -47,6 +49,7 @@ internal static class GitRepositoryLocator
                 if (TryGetValidSharedCachedRepositoryContext(current, out var sharedCachedContext))
                 {
                     CacheRepositoryContext(scannedPaths, sharedCachedContext);
+                    PromptDiagnostics.RecordRepoCacheL2Hit();
 
                     return sharedCachedContext;
                 }
@@ -57,6 +60,7 @@ internal static class GitRepositoryLocator
                 {
                     var repositoryContext = new RepositoryContext(current, resolvedGitDirectoryPath);
                     CacheRepositoryContext(scannedPaths, repositoryContext);
+                    PromptDiagnostics.RecordRepoCacheWalk(scannedPaths.Count, repoFound: true);
 
                     return repositoryContext;
                 }
@@ -64,6 +68,8 @@ internal static class GitRepositoryLocator
                 var parent = Directory.GetParent(current);
                 if (parent is null)
                 {
+                    PromptDiagnostics.RecordRepoCacheWalk(scannedPaths.Count, repoFound: false);
+
                     return null;
                 }
 

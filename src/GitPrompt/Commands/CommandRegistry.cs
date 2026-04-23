@@ -36,6 +36,11 @@ internal static class CommandRegistry
             Description: "Remove gitprompt and its config/cache",
             Execute: _ => UninstallCommand.Run()),
 
+        new(Verb: "debug",
+            Usage: "gitprompt debug",
+            Description: "Show a diagnostic report for the current directory",
+            Execute: _ => DebugCommand.RunAsync().GetAwaiter().GetResult()),
+
         new(Verb: "--invalidate-status-cache",
             Usage: "gitprompt --invalidate-status-cache",
             Description: "Invalidate the shared Git status cache",

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GitPrompt.Diagnostics;
 
 namespace GitPrompt.Git;
 
@@ -87,11 +88,18 @@ internal static class Utilities
                 WorkingDirectory = workingDirectory ?? string.Empty
             };
 
+            var sw = PromptDiagnostics.IsEnabled ? Stopwatch.StartNew() : null;
             process.Start();
 
             var stdoutTask = process.StandardOutput.ReadToEndAsync();
             var stderrTask = process.StandardError.ReadToEndAsync();
             await Task.WhenAll(stdoutTask, stderrTask, process.WaitForExitAsync());
+
+            if (sw is not null)
+            {
+                sw.Stop();
+                PromptDiagnostics.RecordGitSubprocessElapsed(sw.Elapsed);
+            }
 
             if (requireSuccess && process.ExitCode is not 0)
             {

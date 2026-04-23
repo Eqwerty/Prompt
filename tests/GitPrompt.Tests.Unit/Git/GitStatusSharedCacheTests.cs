@@ -1,5 +1,6 @@
 using FluentAssertions;
 using GitPrompt.Configuration;
+using GitPrompt.Diagnostics;
 using GitPrompt.Git;
 
 namespace GitPrompt.Tests.Unit.Git;
@@ -326,5 +327,49 @@ public sealed class GitStatusSharedCacheTests
         File.WriteAllText(Path.Combine(gitDirectoryPath, "HEAD"), "ref: refs/heads/main\n");
         File.WriteAllText(Path.Combine(gitDirectoryPath, "index"), "index-v1");
         File.WriteAllText(Path.Combine(branchRefPath, "main"), "0000000000000000000000000000000000000001\n");
+    }
+
+    [Fact]
+    public void TryGet_WhenHitAndDiagnosticsEnabled_ShouldRecordHit()
+    {
+        // Arrange
+        using var cacheDirectory = new TemporaryDirectory();
+        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromSeconds(10) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
+        using var diagnostics = PromptDiagnostics.EnableForTesting();
+
+        var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
+        var gitDirectoryPath = Path.Combine(repositoryPath, ".git");
+        CreateMinimalGitState(gitDirectoryPath);
+        GitStatusSharedCache.Set(repositoryPath, gitDirectoryPath, "segment");
+
+        // Act
+        var hit = GitStatusSharedCache.TryGet(repositoryPath, gitDirectoryPath, out _);
+
+        // Assert
+        hit.Should().BeTrue();
+        var report = PromptDiagnostics.GetReport("/", string.Empty, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero);
+        report.Should().Contain("Status cache    hit");
+    }
+
+    [Fact]
+    public void TryGet_WhenMissNoEntryAndDiagnosticsEnabled_ShouldRecordMiss()
+    {
+        // Arrange
+        using var cacheDirectory = new TemporaryDirectory();
+        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromSeconds(10) } });
+        using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
+        using var diagnostics = PromptDiagnostics.EnableForTesting();
+
+        var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
+        var gitDirectoryPath = Path.Combine(repositoryPath, ".git");
+
+        // Act — no Set() call, so no cache entry exists
+        var hit = GitStatusSharedCache.TryGet(repositoryPath, gitDirectoryPath, out _);
+
+        // Assert
+        hit.Should().BeFalse();
+        var report = PromptDiagnostics.GetReport("/", string.Empty, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero);
+        report.Should().Contain("miss · no entry");
     }
 }

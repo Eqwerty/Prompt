@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using GitPrompt.Configuration;
+using GitPrompt.Diagnostics;
 using GitPrompt.Platform;
 
 namespace GitPrompt.Git;
@@ -24,6 +25,8 @@ internal static class GitStatusSharedCache
         {
             if (!IsCacheEnabled())
             {
+                PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.Disabled);
+
                 return false;
             }
 
@@ -37,40 +40,50 @@ internal static class GitStatusSharedCache
             var cacheFilePath = GetCacheFilePath(normalizedRepositoryRootPath);
             if (!File.Exists(cacheFilePath))
             {
+                PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.NoEntry);
+
                 return false;
             }
 
             using var cacheReader = OpenSmallReader(cacheFilePath, bufferSize: 512);
             Span<char> cacheBuffer = stackalloc char[512];
             var charsRead = cacheReader.Read(cacheBuffer);
-            if (!TryParseRecord(cacheBuffer[..charsRead], out var cacheRecord))
+            if (!TryParseRecord(cacheBuffer[..charsRead], out var cacheRecord) ||
+                !string.Equals(cacheRecord.RepositoryRootPath, normalizedRepositoryRootPath, Utilities.FileSystemPathComparison))
             {
+                PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.ParseError);
+
                 return false;
             }
 
-            if (!string.Equals(cacheRecord.RepositoryRootPath, normalizedRepositoryRootPath, Utilities.FileSystemPathComparison))
+            var cacheTtl = GetCacheTtl();
+            var cacheAge = GetUtcNow() - new DateTimeOffset(cacheRecord.CachedAtUtcTicks, TimeSpan.Zero);
+            if (cacheAge > cacheTtl)
             {
-                return false;
-            }
+                PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.TtlExpired, cacheAge, cacheTtl);
 
-            if (IsExpired(cacheRecord.CachedAtUtcTicks))
-            {
                 return false;
             }
 
             var currentInvalidationTokenValue = ReadInvalidationTokenValue();
             if (!string.Equals(cacheRecord.InvalidationTokenValue, currentInvalidationTokenValue, StringComparison.Ordinal))
             {
+                PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.InvalidationToken);
+
                 return false;
             }
 
             var currentFingerprint = BuildFingerprint(normalizedGitDirectoryPath);
             if (!string.Equals(cacheRecord.Fingerprint, currentFingerprint, StringComparison.Ordinal))
             {
+                PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.FingerprintChanged);
+
                 return false;
             }
 
             segment = cacheRecord.Segment;
+            PromptDiagnostics.RecordStatusCacheHit(cacheAge, cacheTtl);
+
             return true;
         }
         catch
@@ -143,19 +156,6 @@ internal static class GitStatusSharedCache
     private static bool IsCacheEnabled()
     {
         return GetCacheTtl() > TimeSpan.Zero;
-    }
-
-    private static bool IsExpired(long cachedAtUtcTicks)
-    {
-        var cacheTtl = GetCacheTtl();
-        if (cacheTtl <= TimeSpan.Zero)
-        {
-            return true;
-        }
-
-        var cachedAtUtc = new DateTimeOffset(cachedAtUtcTicks, TimeSpan.Zero);
-
-        return GetUtcNow() - cachedAtUtc > cacheTtl;
     }
 
     private static TimeSpan GetCacheTtl()
@@ -466,8 +466,7 @@ internal static class GitStatusSharedCache
 
         string? activeBranchSection = null;
         using var configReader = OpenSmallReader(configPath, bufferSize: 256);
-        string? rawLine;
-        while ((rawLine = configReader.ReadLine()) is not null)
+        while (configReader.ReadLine() is { } rawLine)
         {
             var line = rawLine.Trim();
             if (line.Length == 0 || line.StartsWith('#') || line.StartsWith(';'))
@@ -553,19 +552,19 @@ internal static class GitStatusSharedCache
 
     private static string HashPath(string value)
     {
-        const int StackAllocThreshold = 512;
+        const int stackAllocThreshold = 512;
         var byteCount = Encoding.UTF8.GetByteCount(value);
         ulong hash;
 
-        if (byteCount <= StackAllocThreshold)
+        if (byteCount <= stackAllocThreshold)
         {
-            Span<byte> bytes = stackalloc byte[StackAllocThreshold];
+            Span<byte> bytes = stackalloc byte[stackAllocThreshold];
             var written = Encoding.UTF8.GetBytes(value.AsSpan(), bytes);
-            hash = Fnv1a64(bytes[..written]);
+            hash = Fnv1A64(bytes[..written]);
         }
         else
         {
-            hash = Fnv1a64(Encoding.UTF8.GetBytes(value));
+            hash = Fnv1A64(Encoding.UTF8.GetBytes(value));
         }
 
         Span<char> chars = stackalloc char[16];
@@ -573,7 +572,7 @@ internal static class GitStatusSharedCache
         return new string(chars);
     }
 
-    private static ulong Fnv1a64(ReadOnlySpan<byte> data)
+    private static ulong Fnv1A64(ReadOnlySpan<byte> data)
     {
         const ulong offsetBasis = 14695981039346656037UL;
         const ulong prime = 1099511628211UL;
@@ -583,6 +582,7 @@ internal static class GitStatusSharedCache
             hash ^= b;
             hash *= prime;
         }
+
         return hash;
     }
 
@@ -610,23 +610,31 @@ internal static class GitStatusSharedCache
         var span = fileContent;
 
         if (!TryReadLine(ref span, out var versionLine) || !versionLine.Equals("v3", StringComparison.Ordinal))
+        {
             return false;
+        }
 
         if (!TryReadLine(ref span, out var ticksLine) || !long.TryParse(ticksLine, out var cachedAtUtcTicks))
+        {
             return false;
+        }
 
         if (!TryReadLine(ref span, out var repoLine) ||
             !TryReadLine(ref span, out var fingerprintLine) ||
             !TryReadLine(ref span, out var segmentLine) ||
             !TryReadLine(ref span, out var tokenLine))
+        {
             return false;
+        }
 
         var repositoryRootPath = Decode(repoLine);
         var fingerprint = Decode(fingerprintLine);
         var segment = Decode(segmentLine);
         var invalidationTokenValue = Decode(tokenLine);
         if (string.IsNullOrEmpty(repositoryRootPath) || string.IsNullOrEmpty(fingerprint))
+        {
             return false;
+        }
 
         cacheRecord = new GitStatusSharedCacheRecord(repositoryRootPath, fingerprint, segment, cachedAtUtcTicks, invalidationTokenValue);
         return true;
@@ -651,7 +659,10 @@ internal static class GitStatusSharedCache
         line = span[..newlineIndex];
         var next = span[(newlineIndex + 1)..];
         if (!next.IsEmpty && span[newlineIndex] == '\r' && next[0] == '\n')
+        {
             next = next[1..];
+        }
+
         span = next;
         return true;
     }
@@ -665,19 +676,25 @@ internal static class GitStatusSharedCache
     {
         try
         {
-            const int StackAllocThreshold = 512;
-            var maxByteCount = ((encoded.Length + 3) / 4) * 3;
-            if (maxByteCount <= StackAllocThreshold)
+            const int stackAllocThreshold = 512;
+            var maxByteCount = (encoded.Length + 3) / 4 * 3;
+            if (maxByteCount <= stackAllocThreshold)
             {
-                Span<byte> buffer = stackalloc byte[StackAllocThreshold];
+                Span<byte> buffer = stackalloc byte[stackAllocThreshold];
                 if (!Convert.TryFromBase64Chars(encoded, buffer, out var bytesWritten))
+                {
                     return string.Empty;
+                }
+
                 return Encoding.UTF8.GetString(buffer[..bytesWritten]);
             }
 
             var bytes = new byte[maxByteCount];
             if (!Convert.TryFromBase64Chars(encoded, bytes, out var written))
+            {
                 return string.Empty;
+            }
+
             return Encoding.UTF8.GetString(bytes, 0, written);
         }
         catch
@@ -693,18 +710,13 @@ internal static class GitStatusSharedCache
         long CachedAtUtcTicks,
         string InvalidationTokenValue);
 
-    private struct FingerprintHasher
+    private struct FingerprintHasher()
     {
         private const ulong OffsetBasis = 14695981039346656037UL;
         private const ulong Prime = 1099511628211UL;
         private const int StackAllocThreshold = 512;
 
-        private ulong _hash;
-
-        public FingerprintHasher()
-        {
-            _hash = OffsetBasis;
-        }
+        private ulong _hash = OffsetBasis;
 
         public void AppendString(ReadOnlySpan<char> value)
         {
