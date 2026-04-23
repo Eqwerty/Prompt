@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using GitPrompt.Git;
 
 namespace GitPrompt.Commands;
@@ -51,13 +50,13 @@ internal static class CommandRegistry
             return;
         }
 
-        if (args.Length > 1 && TryGetCommandByVerb($"{args[0]} {args[1]}", out var subCommand))
+        if (args.Length > 1 && CommandDescriptorsLookup.TryGetValue($"{args[0]} {args[1]}", out var subCommand))
         {
             subCommand.Execute(args);
             Environment.Exit(0);
         }
 
-        if (!TryGetCommandByVerb(args[0], out var command))
+        if (!CommandDescriptorsLookup.TryGetValue(args[0], out var command))
         {
             Console.Error.WriteLine($"gitprompt: '{args[0]}' is not a gitprompt command. See gitprompt --help.");
             Environment.Exit(1);
@@ -66,11 +65,6 @@ internal static class CommandRegistry
         command.Execute(args);
 
         Environment.Exit(0);
-    }
-
-    internal static bool TryGetCommandByVerb(string verb, [NotNullWhen(returnValue: true)] out CommandDescriptor? command)
-    {
-        return CommandDescriptorsLookup.TryGetValue(verb, out command);
     }
 
     internal static readonly IReadOnlyList<CommandDescriptor> VisibleCommands =
