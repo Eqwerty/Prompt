@@ -22,8 +22,18 @@ __gitprompt_debug_trap() {
   fi
 }
 
+__gitprompt_prompt_sp() {
+  [ -t 1 ] || return
+  local pos
+  printf '\e[6n' >&1
+  IFS='[;' read -d R -a pos -rs -t 0.1 2>/dev/null || return
+  local col="${pos[2]:-1}"
+  [ "${col}" -gt 1 ] && printf '\n'
+}
+
 _gitprompt_update_ps1() {
   __gitprompt_running=1
+  __gitprompt_prompt_sp
   if [ "$__gitprompt_preexec_flag" -eq 1 ]; then
     __gitprompt_preexec_flag=0
     "$_GITPROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
