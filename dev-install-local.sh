@@ -57,8 +57,8 @@ else
 fi
 
 TEMPORARY_DIRECTORY="$(mktemp -d)"
-trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT
-trap 'printf "${SHOW_CURSOR}\n${RED}error:${R} Cancelled.\n" >&2; exit 130' INT TERM
+trap '_stop_spinner; rm -rf "$TEMPORARY_DIRECTORY"' EXIT
+trap '_stop_spinner; printf "${SHOW_CURSOR}\n${RED}error:${R} Cancelled.\n" >&2; exit 130' INT TERM
 
 PUBLISH_DIRECTORY="$TEMPORARY_DIRECTORY/publish"
 mkdir -p "$PUBLISH_DIRECTORY"

@@ -16,6 +16,16 @@ die() {
   exit 1
 }
 
+_CURRENT_SPINNER_PID=""
+
+_stop_spinner() {
+  if [ -n "${_CURRENT_SPINNER_PID:-}" ]; then
+    kill "$_CURRENT_SPINNER_PID" 2>/dev/null || true
+    wait "$_CURRENT_SPINNER_PID" 2>/dev/null || true
+    _CURRENT_SPINNER_PID=""
+  fi
+}
+
 _run_animated_step() {
   _ra_msg="$1"; _ra_log="$2"; shift 2
   printf "${HIDE_CURSOR}${YELLOW}●${R} %s%-3s" "$_ra_msg" "."
@@ -32,11 +42,10 @@ _run_animated_step() {
       printf "\r${YELLOW}●${R} %s%-3s" "$_ra_msg" "$_sp_d"
     done
   ) &
-  _ra_pid=$!
+  _CURRENT_SPINNER_PID=$!
   ( "$@" ) >"$_ra_log" 2>&1
   _ra_code=$?
-  kill "$_ra_pid" 2>/dev/null || true
-  wait "$_ra_pid" 2>/dev/null || true
+  _stop_spinner
   printf "${SHOW_CURSOR}"
   return $_ra_code
 }
@@ -148,8 +157,8 @@ if [ -z "${_INSTALL_SOURCED:-}" ]; then
   RELEASE_ASSET_URL="https://github.com/Eqwerty/GitPrompt/releases/download/latest/${RELEASE_ASSET_NAME}"
 
   TEMPORARY_DIRECTORY="$(mktemp -d)"
-  trap 'rm -rf "$TEMPORARY_DIRECTORY"' EXIT
-  trap 'printf "${SHOW_CURSOR}\n${RED}error:${R} Cancelled.\n" >&2; exit 130' INT TERM
+  trap '_stop_spinner; rm -rf "$TEMPORARY_DIRECTORY"' EXIT
+  trap '_stop_spinner; printf "${SHOW_CURSOR}\n${RED}error:${R} Cancelled.\n" >&2; exit 130' INT TERM
 
   RELEASE_ASSET_PATH="$TEMPORARY_DIRECTORY/$RELEASE_ASSET_NAME"
   EXTRACTED_BINARY_PATH="$TEMPORARY_DIRECTORY/$BINARY_NAME"
