@@ -7,7 +7,7 @@ namespace GitPrompt.Git;
 
 internal static class GitRepositorySharedCache
 {
-    private const string CacheDirectoryName = "repository-cache-v2";
+    private const string CacheDirectoryName = "repository-cache";
     private static readonly TimeSpan StaleCacheEntryThreshold = TimeSpan.FromDays(7);
     private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(5);
     private static TimeProvider _timeProvider = TimeProvider.System;

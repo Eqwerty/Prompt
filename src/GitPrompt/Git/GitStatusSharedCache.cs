@@ -7,7 +7,7 @@ namespace GitPrompt.Git;
 
 internal static class GitStatusSharedCache
 {
-    private const string CacheDirectoryName = "git-status-cache-v2";
+    private const string CacheDirectoryName = "git-status-cache";
     private const string InvalidationTokenFileName = "status-invalidation.token";
 
     private static readonly TimeSpan StaleCacheEntryThreshold = TimeSpan.FromDays(7);
