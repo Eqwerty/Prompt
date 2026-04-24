@@ -1,4 +1,5 @@
 using FluentAssertions;
+using GitPrompt.Configuration;
 using GitPrompt.Diagnostics;
 using GitPrompt.Prompting;
 
@@ -21,7 +22,7 @@ public sealed class PromptDiagnosticsTests
         var report = PromptDiagnostics.GetReport("/home/user/repo", result);
 
         // Assert
-        report.Should().Contain("Status cache    hit");
+        report.Should().Contain("Status      hit");
         report.Should().Contain("2s old");
         report.Should().Contain("TTL 5s");
         report.Should().Contain("Git segment served from cache.");
@@ -103,7 +104,7 @@ public sealed class PromptDiagnosticsTests
         var report = PromptDiagnostics.GetReport("/home/user/documents", result);
 
         // Assert
-        report.Should().Contain("Status cache    skipped");
+        report.Should().Contain("Status      skipped");
         report.Should().Contain("walked 4 dirs, no repo found");
         report.Should().Contain("Not in a git repository.");
     }
@@ -122,7 +123,7 @@ public sealed class PromptDiagnosticsTests
         var report = PromptDiagnostics.GetReport("/home/user/repo", result);
 
         // Assert
-        report.Should().Contain("Repository      hit (in-process)");
+        report.Should().Contain("Repository  hit (in-process)");
     }
 
     [Fact]
@@ -175,5 +176,139 @@ public sealed class PromptDiagnosticsTests
         // Assert
         report.Should().Contain("miss · cache disabled");
         report.Should().Contain("Status cache is disabled");
+    }
+
+    [Fact]
+    public void GetReport_WhenConfigLoaded_ShouldShowPathAndEffectiveTtls()
+    {
+        // Arrange
+        using var scope = PromptDiagnostics.EnableForTesting();
+        var config = new Config();
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Loaded, config);
+        PromptDiagnostics.RecordConfigLoaded(loadResult);
+        var result = new PromptResult(string.Empty, string.Empty, "$",
+            TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
+
+        // Act
+        var report = PromptDiagnostics.GetReport("/home/user/repo", result);
+
+        // Assert
+        report.Should().Contain("Config     /home/user/.config/gitprompt/config.jsonc");
+        report.Should().Contain("Status      loaded");
+        report.Should().Contain("gitStatus 5s · repo 60s");
+    }
+
+    [Fact]
+    public void GetReport_WhenConfigMissing_ShouldShowMissingStatusAndDefaultTtls()
+    {
+        // Arrange
+        using var scope = PromptDiagnostics.EnableForTesting();
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Missing, new Config());
+        PromptDiagnostics.RecordConfigLoaded(loadResult);
+        var result = new PromptResult(string.Empty, string.Empty, "$",
+            TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
+
+        // Act
+        var report = PromptDiagnostics.GetReport("/home/user/repo", result);
+
+        // Assert
+        report.Should().Contain("Status      missing (using defaults)");
+        report.Should().Contain("gitStatus 5s");
+    }
+
+    [Fact]
+    public void GetReport_WhenConfigParseFailed_ShouldShowParseErrorStatus()
+    {
+        // Arrange
+        using var scope = PromptDiagnostics.EnableForTesting();
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ParseFailed, new Config());
+        PromptDiagnostics.RecordConfigLoaded(loadResult);
+        var result = new PromptResult(string.Empty, string.Empty, "$",
+            TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
+
+        // Act
+        var report = PromptDiagnostics.GetReport("/home/user/repo", result);
+
+        // Assert
+        report.Should().Contain("Status      invalid JSON (using defaults)");
+    }
+
+    [Fact]
+    public void GetReport_WhenConfigReadFailed_ShouldShowReadErrorStatus()
+    {
+        // Arrange
+        using var scope = PromptDiagnostics.EnableForTesting();
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ReadFailed, new Config());
+        PromptDiagnostics.RecordConfigLoaded(loadResult);
+        var result = new PromptResult(string.Empty, string.Empty, "$",
+            TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
+
+        // Act
+        var report = PromptDiagnostics.GetReport("/home/user/repo", result);
+
+        // Assert
+        report.Should().Contain("Status      read error (using defaults)");
+    }
+
+    [Fact]
+    public void GetReport_WhenConfigLoadedWithTtlZero_ShouldShowCacheDisabledAnnotation()
+    {
+        // Arrange
+        using var scope = PromptDiagnostics.EnableForTesting();
+        var config = new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 0 } };
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Loaded, config);
+        PromptDiagnostics.RecordConfigLoaded(loadResult);
+        var result = new PromptResult(string.Empty, string.Empty, "$",
+            TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
+
+        // Act
+        var report = PromptDiagnostics.GetReport("/home/user/repo", result);
+
+        // Assert
+        report.Should().Contain("gitStatus 0s (disabled)");
+    }
+
+    [Fact]
+    public void GetReport_WhenConfigNotRecorded_ShouldNotShowConfigSection()
+    {
+        // Arrange
+        using var scope = PromptDiagnostics.EnableForTesting();
+        var result = new PromptResult(string.Empty, string.Empty, "$",
+            TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
+
+        // Act
+        var report = PromptDiagnostics.GetReport("/home/user/repo", result);
+
+        // Assert
+        report.Should().NotContain("Config     ");
+    }
+
+    [Fact]
+    public void RecordConfigLoaded_WhenNotEnabled_ShouldNotBeReflectedInReport()
+    {
+        // Arrange — diagnostics not enabled
+        PromptDiagnostics.Reset();
+        var loadResult = new ConfigLoadResult("/some/path", ConfigLoadStatus.Loaded, new Config());
+
+        // Act & Assert
+        var act = () => PromptDiagnostics.RecordConfigLoaded(loadResult);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void GetReport_WhenConfigPathHasBackslashes_ShouldNormalizeToForwardSlashes()
+    {
+        // Arrange
+        using var scope = PromptDiagnostics.EnableForTesting();
+        var loadResult = new ConfigLoadResult(@"C:\Users\user\AppData\Roaming\gitprompt\config.jsonc", ConfigLoadStatus.Loaded, new Config());
+        PromptDiagnostics.RecordConfigLoaded(loadResult);
+        var result = new PromptResult(string.Empty, string.Empty, "$",
+            TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
+
+        // Act
+        var report = PromptDiagnostics.GetReport("/home/user/repo", result);
+
+        // Assert
+        report.Should().Contain("C:/Users/user/AppData/Roaming/gitprompt/config.jsonc");
     }
 }

@@ -5,28 +5,24 @@ namespace GitPrompt.Configuration;
 
 internal sealed record Config
 {
+    [JsonInclude]
     internal CacheConfig Cache { get; init; } = new();
 
     internal sealed record CacheConfig
     {
-        [JsonConverter(typeof(TimeSpanSecondsConverter))]
-        internal TimeSpan GitStatusTtl { get; init; } = TimeSpan.FromSeconds(5);
+        [JsonInclude]
+        [JsonPropertyName("gitStatusTtl")]
+        internal double? GitStatusTtlSeconds { get; init; }
 
-        [JsonConverter(typeof(TimeSpanSecondsConverter))]
-        internal TimeSpan RepositoryTtl { get; init; } = TimeSpan.FromSeconds(60);
-    }
-}
+        [JsonInclude]
+        [JsonPropertyName("repositoryTtl")]
+        internal double? RepositoryTtlSeconds { get; init; }
 
-internal sealed class TimeSpanSecondsConverter : JsonConverter<TimeSpan>
-{
-    public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        return TimeSpan.FromSeconds(reader.GetDouble());
-    }
+        [JsonIgnore]
+        internal TimeSpan GitStatusTtl => TimeSpan.FromSeconds(GitStatusTtlSeconds ?? 5.0);
 
-    public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
-    {
-        writer.WriteNumberValue(value.TotalSeconds);
+        [JsonIgnore]
+        internal TimeSpan RepositoryTtl => TimeSpan.FromSeconds(RepositoryTtlSeconds ?? 60.0);
     }
 }
 

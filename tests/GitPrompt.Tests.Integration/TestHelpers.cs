@@ -82,14 +82,25 @@ internal static class TestHelpers
         return "\"" + value.Replace("\\", @"\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
     }
 
-    internal static string TrackedBranchLabel(string branchName) => $"{BranchLabelOpen}{branchName}{BranchLabelClose}";
+    internal static string TrackedBranchLabel(string branchName)
+    {
+        return $"{BranchLabelOpen}{branchName}{BranchLabelClose}";
+    }
 
-    internal static string NoUpstreamBranchLabel(string branchName) => $"{NoUpstreamBranchMarker}{TrackedBranchLabel(branchName)}";
+    internal static string NoUpstreamBranchLabel(string branchName)
+    {
+        return $"{NoUpstreamBranchMarker}{TrackedBranchLabel(branchName)}";
+    }
 
-    internal static string BranchLabelWithOperation(string branchLabel, string operation) =>
-        branchLabel.Replace(BranchLabelClose, $"|{operation}{BranchLabelClose}", StringComparison.Ordinal);
+    internal static string BranchLabelWithOperation(string branchLabel, string operation)
+    {
+        return branchLabel.Replace(BranchLabelClose, $"|{operation}{BranchLabelClose}", StringComparison.Ordinal);
+    }
 
-    internal static string Indicator(char icon, int count) => $"{icon}{count}";
+    internal static string Indicator(char icon, int count)
+    {
+        return $"{icon}{count}";
+    }
 
     internal readonly record struct GitCommandResult(int ExitCode, string StandardOutput, string StandardError);
 
@@ -101,7 +112,11 @@ internal static class TestHelpers
         public GitStatusCacheOverride(string cacheDirectoryPath, TimeSpan ttl = default)
         {
             var effectiveTtl = ttl == default ? TimeSpan.FromMinutes(1) : ttl;
-            _configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = effectiveTtl } });
+            _configOverride = ConfigReader.OverrideForTesting(new Config
+            {
+                Cache = new Config.CacheConfig { GitStatusTtlSeconds = effectiveTtl.TotalSeconds }
+            });
+
             _cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectoryPath);
         }
 

@@ -38,7 +38,7 @@ public class GitStatusCacheBenchmarks
         // the entire benchmark run.
         _configOverride = ConfigReader.OverrideForTesting(new Config
         {
-            Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromHours(1) }
+            Cache = new Config.CacheConfig { GitStatusTtlSeconds = 3600.0 }
         });
 
         _cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(_cachePath);

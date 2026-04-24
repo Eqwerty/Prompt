@@ -15,7 +15,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
@@ -45,7 +45,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
@@ -76,7 +76,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
@@ -114,7 +114,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
@@ -149,7 +149,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(500) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 0.5 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         var fakeClock = new FakeTimeProvider(DateTimeOffset.UtcNow);
@@ -180,7 +180,7 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.Zero } });
+        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 0 } });
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
         var repositoryPath = Path.Combine(cacheDirectory.DirectoryPath, "repo");
@@ -206,7 +206,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
@@ -237,7 +237,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
 
@@ -263,7 +263,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         var fakeClock = new FakeTimeProvider(DateTimeOffset.UtcNow.AddYears(1));
@@ -296,7 +296,7 @@ public sealed class GitStatusSharedCacheTests
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
         using var configOverride =
-            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromMilliseconds(5000) } });
+            ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 5.0 } });
 
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         var fakeClock = new FakeTimeProvider(DateTimeOffset.UtcNow.AddYears(1));
@@ -335,7 +335,7 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromSeconds(10) } });
+        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 10.0 } });
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         using var diagnostics = PromptDiagnostics.EnableForTesting();
 
@@ -350,7 +350,7 @@ public sealed class GitStatusSharedCacheTests
         // Assert
         hit.Should().BeTrue();
         var report = PromptDiagnostics.GetReport("/", new PromptResult(string.Empty, string.Empty, string.Empty, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero));
-        report.Should().Contain("Status cache    hit");
+        report.Should().Contain("Status      hit");
     }
 
     [Fact]
@@ -358,7 +358,7 @@ public sealed class GitStatusSharedCacheTests
     {
         // Arrange
         using var cacheDirectory = new TemporaryDirectory();
-        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtl = TimeSpan.FromSeconds(10) } });
+        using var configOverride = ConfigReader.OverrideForTesting(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 10.0 } });
         using var cacheDirectoryOverride = GitStatusSharedCache.OverrideCacheDirectoryForTesting(cacheDirectory.DirectoryPath);
         using var diagnostics = PromptDiagnostics.EnableForTesting();
 

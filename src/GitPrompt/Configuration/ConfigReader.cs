@@ -5,10 +5,12 @@ namespace GitPrompt.Configuration;
 
 internal static class ConfigReader
 {
-    private static readonly Lazy<Config> LazyConfig = new(ReadConfig);
+    private static readonly Lazy<ConfigLoadResult> LazyLoadResult = new(LoadConfig);
     private static Config? _configOverride;
 
-    internal static Config Config => _configOverride ?? LazyConfig.Value;
+    internal static Config Config => _configOverride ?? LazyLoadResult.Value.Config;
+
+    internal static ConfigLoadResult LoadResult => LazyLoadResult.Value;
 
     internal static IDisposable OverrideForTesting(Config config)
     {
@@ -18,26 +20,34 @@ internal static class ConfigReader
         return new ConfigOverride(() => _configOverride = previous);
     }
 
-    private static Config ReadConfig()
+    private static ConfigLoadResult LoadConfig()
     {
+        var filePath = AppPaths.GetConfigFilePath();
+
+        if (!File.Exists(filePath))
+        {
+            return new ConfigLoadResult(filePath, ConfigLoadStatus.Missing, new Config());
+        }
+
+        string json;
         try
         {
-            var configurationPath = AppPaths.GetConfigFilePath();
-            if (!File.Exists(configurationPath))
-            {
-                return new Config();
-            }
-
-            var json = File.ReadAllText(configurationPath);
-            var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
-
-            return config is null
-                ? new Config()
-                : config with { Cache = config.Cache };
+            json = File.ReadAllText(filePath);
         }
         catch
         {
-            return new Config();
+            return new ConfigLoadResult(filePath, ConfigLoadStatus.ReadFailed, new Config());
+        }
+
+        try
+        {
+            var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+            var resolved = config is null ? new Config() : config with { Cache = config.Cache };
+            return new ConfigLoadResult(filePath, ConfigLoadStatus.Loaded, resolved);
+        }
+        catch
+        {
+            return new ConfigLoadResult(filePath, ConfigLoadStatus.ParseFailed, new Config());
         }
     }
 

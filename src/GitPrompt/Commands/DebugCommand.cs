@@ -1,3 +1,4 @@
+using GitPrompt.Configuration;
 using GitPrompt.Diagnostics;
 using GitPrompt.Platform;
 using GitPrompt.Prompting;
@@ -10,6 +11,8 @@ internal static class DebugCommand
     {
         PromptDiagnostics.Enable();
         PromptDiagnostics.Reset();
+
+        PromptDiagnostics.RecordConfigLoaded(ConfigReader.LoadResult);
 
         var platformProvider = PlatformProvider.System;
         var result = PromptBuilder.Build(platformProvider);

@@ -1,5 +1,6 @@
-using GitPrompt.Prompting;
 using System.Text;
+using GitPrompt.Configuration;
+using GitPrompt.Prompting;
 
 namespace GitPrompt.Diagnostics;
 
@@ -23,6 +24,8 @@ internal static class PromptDiagnostics
     private static TimeSpan _gitSubprocessElapsed;
     private static int _gitSubprocessCount;
 
+    private static ConfigLoadResult? _configLoadResult;
+
     internal static bool IsEnabled { get; private set; }
 
     internal static void Enable() => IsEnabled = true;
@@ -44,6 +47,7 @@ internal static class PromptDiagnostics
         _statusCacheMissAge = default;
         _gitSubprocessElapsed = default;
         _gitSubprocessCount = 0;
+        _configLoadResult = null;
     }
 
     internal static IDisposable EnableForTesting()
@@ -52,6 +56,16 @@ internal static class PromptDiagnostics
         Reset();
 
         return new DiagnosticsScope();
+    }
+
+    internal static void RecordConfigLoaded(ConfigLoadResult result)
+    {
+        if (!IsEnabled)
+        {
+            return;
+        }
+
+        _configLoadResult = result;
     }
 
     internal static void RecordRepoCacheL1Hit()
@@ -147,31 +161,69 @@ internal static class PromptDiagnostics
         var sb = new StringBuilder();
 
         sb.AppendLine("GitPrompt — diagnostic report");
+        sb.AppendLine();
 
         var displayDirectory = directory.Replace('\\', '/');
-        sb.AppendLine($"  Directory         {displayDirectory}");
+        sb.AppendLine($"  {"Directory",-9}  {displayDirectory}");
 
         var displayPrompt = StripAnsi(result.PromptLine);
         if (!string.IsNullOrEmpty(displayPrompt))
         {
-            sb.AppendLine($"  Prompt            {displayPrompt} {result.PromptSymbol}");
+            sb.AppendLine($"  {"Prompt",-9}  {displayPrompt} {result.PromptSymbol}");
         }
 
         sb.AppendLine();
-        sb.AppendLine($"  Context segment   {FormatMs(result.ContextElapsed)}");
-        sb.AppendLine($"  Git segment       {FormatMs(result.GitElapsed)}");
+        sb.AppendLine($"  {"Context",-9}  {FormatMs(result.ContextElapsed)}");
+        sb.AppendLine($"  {"Git",-9}  {FormatMs(result.GitElapsed)}");
 
-        sb.Append("    Repository      ");
+        sb.Append($"    {"Repository",-10}  ");
         AppendRepoCacheStatus(sb);
 
-        sb.Append("    Status cache    ");
+        sb.Append($"    {"Status",-10}  ");
         AppendStatusCacheStatus(sb);
 
-        sb.AppendLine($"  Total             {FormatMs(result.TotalElapsed)}");
+        sb.AppendLine($"  {"Total",-9}  {FormatMs(result.TotalElapsed)}");
+
+        if (_configLoadResult is not null)
+        {
+            sb.AppendLine();
+            AppendConfigSection(sb);
+        }
+
         sb.AppendLine();
         sb.Append(BuildSummary());
 
         return sb.ToString();
+    }
+
+    private static void AppendConfigSection(StringBuilder sb)
+    {
+        if (_configLoadResult is null)
+        {
+            return;
+        }
+
+        var displayPath = _configLoadResult.FilePath.Replace('\\', '/');
+        sb.AppendLine($"  {"Config",-9}  {displayPath}");
+
+        var statusText = _configLoadResult.Status switch
+        {
+            ConfigLoadStatus.Loaded => "loaded",
+            ConfigLoadStatus.Missing => "missing (using defaults)",
+            ConfigLoadStatus.ParseFailed => "invalid JSON (using defaults)",
+            ConfigLoadStatus.ReadFailed => "read error (using defaults)",
+            _ => "unknown"
+        };
+        sb.AppendLine($"    {"Status",-10}  {statusText}");
+
+        var config = _configLoadResult.Config;
+        var gitStatusTtlText = config.Cache.GitStatusTtl == TimeSpan.Zero
+            ? "0s (disabled)"
+            : FormatSeconds(config.Cache.GitStatusTtl);
+        var repoTtlText = config.Cache.RepositoryTtl == TimeSpan.Zero
+            ? "0s (disabled)"
+            : FormatSeconds(config.Cache.RepositoryTtl);
+        sb.AppendLine($"    {"TTL",-10}  gitStatus {gitStatusTtlText} · repo {repoTtlText}");
     }
 
     private static void AppendRepoCacheStatus(StringBuilder sb)
