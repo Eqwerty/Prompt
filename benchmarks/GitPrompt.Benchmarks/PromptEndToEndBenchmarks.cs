@@ -39,6 +39,8 @@ public class PromptEndToEndBenchmarks
             return;
         }
 
+        Directory.SetCurrentDirectory(Path.GetTempPath());
+
         foreach (var filePath in Directory.EnumerateFiles(_sandboxRootPath, searchPattern: "*", SearchOption.AllDirectories))
         {
             File.SetAttributes(filePath, FileAttributes.Normal);
