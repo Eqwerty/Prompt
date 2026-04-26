@@ -24,9 +24,10 @@ __gitprompt_debug_trap() {
 
 __gitprompt_prompt_sp() {
   [ -t 1 ] || return
-  local pos
+  local pos _d
+  while IFS= read -d R -rs -t 0.02 _d 2>/dev/null; do :; done
   printf '\e[6n' >&1
-  IFS='[;' read -d R -a pos -rs -t 0.1 2>/dev/null || return
+  IFS='[;' read -d R -a pos -rs -t 0.3 2>/dev/null || return
   local col="${pos[2]:-1}"
   [ "${col}" -gt 1 ] && printf '\n'
 }
