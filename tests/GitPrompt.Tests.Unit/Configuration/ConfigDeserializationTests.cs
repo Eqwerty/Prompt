@@ -63,13 +63,13 @@ public sealed class ConfigDeserializationTests
     {
         // Arrange — matches the real config file format
         var json = """
-            {
-              "cache": {
-                "gitStatusTtl": 0,   // git status cache TTL in seconds (0 = disabled)
-                "repositoryTtl": 60  // repository location cache TTL in seconds (0 = disabled)
-              }
-            }
-            """;
+                   {
+                     "cache": {
+                       "gitStatusTtl": 0,   // git status cache TTL in seconds (0 = disabled)
+                       "repositoryTtl": 60  // repository location cache TTL in seconds (0 = disabled)
+                     }
+                   }
+                   """;
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
@@ -90,5 +90,57 @@ public sealed class ConfigDeserializationTests
 
         // Assert
         config!.Cache.GitStatusTtl.Should().Be(TimeSpan.FromSeconds(2.5));
+    }
+
+    [Fact]
+    public void CommandTimeout_WhenCommandTimeoutMsIsAbsent_ShouldReturnDefault2000Ms()
+    {
+        // Arrange
+        var json = "{}";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.CommandTimeout.Should().Be(TimeSpan.FromMilliseconds(2000));
+    }
+
+    [Fact]
+    public void CommandTimeout_WhenCommandTimeoutMsIsExplicitValue_ShouldReturnCorrectTimeSpan()
+    {
+        // Arrange
+        var json = """{"commandTimeoutMs": 500}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.CommandTimeout.Should().Be(TimeSpan.FromMilliseconds(500));
+    }
+
+    [Fact]
+    public void CommandTimeout_WhenCommandTimeoutMsIsZero_ShouldReturnNull()
+    {
+        // Arrange
+        var json = """{"commandTimeoutMs": 0}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.CommandTimeout.Should().BeNull();
+    }
+
+    [Fact]
+    public void CommandTimeout_WhenCommandTimeoutMsIsNegative_ShouldReturnNull()
+    {
+        // Arrange
+        var json = """{"commandTimeoutMs": -1}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.CommandTimeout.Should().BeNull();
     }
 }

@@ -1,10 +1,25 @@
+using static GitPrompt.Constants.PromptColors;
 using static GitPrompt.Git.Utilities;
 
 namespace GitPrompt.Git;
 
 internal static class GitStatusSegmentBuilder
 {
+    private static readonly string TimeoutSegment = $"{ColorTimeout}[timeout]{ColorReset}";
+
     internal static string Build(string workingDirectoryPath)
+    {
+        try
+        {
+            return BuildCore(workingDirectoryPath);
+        }
+        catch (GitCommandTimeoutException)
+        {
+            return TimeoutSegment;
+        }
+    }
+
+    private static string BuildCore(string workingDirectoryPath)
     {
         var repositoryContext = GitRepositoryLocator.FindRepositoryContext(workingDirectoryPath);
         if (repositoryContext is null)

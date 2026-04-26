@@ -8,6 +8,21 @@ internal sealed record Config
     [JsonInclude]
     internal CacheConfig Cache { get; init; } = new();
 
+    [JsonInclude]
+    [JsonPropertyName("commandTimeoutMs")]
+    internal double? CommandTimeoutMs { get; init; }
+
+    [JsonIgnore]
+    internal TimeSpan? CommandTimeout
+    {
+        get
+        {
+            var ms = CommandTimeoutMs ?? 2000.0;
+
+            return ms > 0 && double.IsFinite(ms) ? TimeSpan.FromMilliseconds(ms) : null;
+        }
+    }
+
     internal sealed record CacheConfig
     {
         [JsonInclude]

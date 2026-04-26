@@ -24,6 +24,7 @@ internal static class PromptDiagnostics
 
     private static TimeSpan _gitSubprocessElapsed;
     private static int _gitSubprocessCount;
+    private static int _gitSubprocessTimeoutCount;
 
     private static ConfigLoadResult? _configLoadResult;
 
@@ -48,6 +49,7 @@ internal static class PromptDiagnostics
         _statusCacheMissAge = default;
         _gitSubprocessElapsed = default;
         _gitSubprocessCount = 0;
+        _gitSubprocessTimeoutCount = 0;
         _configLoadResult = null;
     }
 
@@ -165,6 +167,19 @@ internal static class PromptDiagnostics
         _gitSubprocessCount++;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void RecordGitSubprocessTimeout(TimeSpan elapsed)
+    {
+        if (!IsEnabled)
+        {
+            return;
+        }
+
+        _gitSubprocessElapsed += elapsed;
+        _gitSubprocessCount++;
+        _gitSubprocessTimeoutCount++;
+    }
+
     internal static string GetReport(string directory, PromptResult result)
     {
         var sb = new StringBuilder();
@@ -233,6 +248,11 @@ internal static class PromptDiagnostics
             ? "0s (disabled)"
             : FormatSeconds(config.Cache.RepositoryTtl);
         sb.AppendLine($"    {"TTL",-10}  gitStatus {gitStatusTtlText} · repo {repoTtlText}");
+
+        var timeoutText = config.CommandTimeout.HasValue
+            ? FormatMs(config.CommandTimeout.Value)
+            : "disabled";
+        sb.AppendLine($"    {"Timeout",-10}  {timeoutText}");
     }
 
     private static void AppendRepoCacheStatus(StringBuilder sb)
@@ -290,7 +310,9 @@ internal static class PromptDiagnostics
         };
 
         var gitRunSuffix = _gitSubprocessCount > 0
-            ? $" → ran git ({FormatMs(_gitSubprocessElapsed)})"
+            ? _gitSubprocessTimeoutCount > 0
+                ? $" → ran git ({FormatMs(_gitSubprocessElapsed)}) [timed out]"
+                : $" → ran git ({FormatMs(_gitSubprocessElapsed)})"
             : string.Empty;
 
         sb.AppendLine($"miss · {missDescription}{gitRunSuffix}");

@@ -1,7 +1,13 @@
 using System.Diagnostics;
+using GitPrompt.Configuration;
 using GitPrompt.Diagnostics;
 
 namespace GitPrompt.Git;
+
+internal sealed class GitCommandTimeoutException : Exception
+{
+    internal GitCommandTimeoutException() : base("Git command timed out.") { }
+}
 
 internal static class Utilities
 {
@@ -94,9 +100,14 @@ internal static class Utilities
 
     private static async Task<string?> RunProcessForOutputAsync(string fileName, string arguments, string? workingDirectory, bool requireSuccess)
     {
+        var timeout = ConfigReader.Config.CommandTimeout;
+        using var cts = timeout.HasValue ? new CancellationTokenSource(timeout.Value) : null;
+        var token = cts?.Token ?? CancellationToken.None;
+
+        Process? process = null;
         try
         {
-            using var process = new Process();
+            process = new Process();
             process.StartInfo = new ProcessStartInfo
             {
                 FileName = fileName,
@@ -111,15 +122,45 @@ internal static class Utilities
             var sw = PromptDiagnostics.IsEnabled ? Stopwatch.StartNew() : null;
             process.Start();
 
-            var stdoutTask = process.StandardOutput.ReadToEndAsync();
-            var stderrTask = process.StandardError.ReadToEndAsync();
-            await Task.WhenAll(stdoutTask, stderrTask, process.WaitForExitAsync());
+            var stdoutTask = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
+            var stderrTask = process.StandardError.ReadToEndAsync(CancellationToken.None);
 
-            if (sw is not null)
+            try
             {
-                sw.Stop();
-                PromptDiagnostics.RecordGitSubprocessElapsed(sw.Elapsed);
+                await process.WaitForExitAsync(token);
             }
+            catch (OperationCanceledException) when (!process.HasExited)
+            {
+                sw?.Stop();
+                PromptDiagnostics.RecordGitSubprocessTimeout(sw?.Elapsed ?? TimeSpan.Zero);
+
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    /* process may have already exited */
+                }
+
+                await process.WaitForExitAsync(CancellationToken.None);
+
+                try
+                {
+                    await Task.WhenAll(stdoutTask, stderrTask);
+                }
+                catch
+                {
+                    /* ignore drain failures during cleanup */
+                }
+
+                throw new GitCommandTimeoutException();
+            }
+
+            await Task.WhenAll(stdoutTask, stderrTask);
+
+            sw?.Stop();
+            PromptDiagnostics.RecordGitSubprocessElapsed(sw?.Elapsed ?? TimeSpan.Zero);
 
             if (requireSuccess && process.ExitCode is not 0)
             {
@@ -128,9 +169,13 @@ internal static class Utilities
 
             return process.ExitCode is 0 ? stdoutTask.Result : string.Empty;
         }
-        catch
+        catch (Exception exception) when (exception is not GitCommandTimeoutException)
         {
             return null;
+        }
+        finally
+        {
+            process?.Dispose();
         }
     }
 }

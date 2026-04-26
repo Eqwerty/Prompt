@@ -148,6 +148,14 @@ Controls how long `gitprompt` reuses cached results before re-running a Git comm
 | `cache.gitStatusTtl` | `5` | Git status results (staged, unstaged, untracked, etc.) |
 | `cache.repositoryTtl` | `60` | Repository detection results |
 
+### Timeout
+
+Controls how long `gitprompt` waits for a Git subprocess before killing it and showing `[timeout]` in place of the git status segment. Set to `0` to disable the timeout.
+
+| Key | Default | Description |
+|---|---|---|
+| `commandTimeoutMs` | `2000` | Git subprocess timeout in milliseconds |
+
 Example `config.jsonc`:
 
 ```jsonc
@@ -155,7 +163,8 @@ Example `config.jsonc`:
   "cache": {
     "gitStatusTtl": 3,   // git status cache TTL in seconds (0 = disabled)
     "repositoryTtl": 30  // repository location cache TTL in seconds (0 = disabled)
-  }
+  },
+  "commandTimeoutMs": 500  // kill git subprocess after 500ms (0 = disabled)
 }
 ```
 
