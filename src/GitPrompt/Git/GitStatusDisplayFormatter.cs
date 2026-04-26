@@ -15,11 +15,10 @@ internal static class GitStatusDisplayFormatter
         int commitsBehind,
         int stashEntryCount,
         GitStatusCounts gitStatusCounts,
-        string gitDirectoryPath)
+        string operationName)
     {
         var statusBuilder = new StringBuilder();
 
-        var operationName = GitOperationDetector.ReadGitOperationMarker(gitDirectoryPath);
         branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
 
         var noUpstreamPrefix = NoUpstreamBranchMarker + BranchLabelOpen;
@@ -92,7 +91,7 @@ internal static class GitStatusDisplayFormatter
         return branchLabel + branchOperationSeparator + operationName;
     }
 
-    private static void AppendCountIndicators(StringBuilder sb, params CountStyle[] items)
+    private static void AppendCountIndicators(StringBuilder sb, params ReadOnlySpan<CountStyle> items)
     {
         foreach (var item in items)
         {

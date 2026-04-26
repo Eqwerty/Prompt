@@ -9,12 +9,9 @@ namespace GitPrompt.Tests.Unit.Git;
 public sealed class GitStatusDisplayFormatterTests
 {
     [Fact]
-    public async Task BuildDisplay_WhenRepositoryHasCountsAndOperation_ShouldIncludeAllIndicators()
+    public void BuildDisplay_WhenRepositoryHasCountsAndOperation_ShouldIncludeAllIndicators()
     {
         // Arrange
-        using var gitDirectory = new TemporaryDirectory();
-        await File.WriteAllTextAsync(Path.Combine(gitDirectory.DirectoryPath, "MERGE_HEAD"), "merge\n");
-
         var statusCounts = new GitStatusCounts(
             StagedRenamed: 1,
             UnstagedModified: 1,
@@ -28,7 +25,7 @@ public sealed class GitStatusDisplayFormatterTests
                 commitsBehind: 2,
                 stashEntryCount: 2,
                 statusCounts,
-                gitDirectory.DirectoryPath);
+                operationName: "MERGE");
 
         // Assert
         gitStatusDisplay.Should().Contain(BranchLabelWithOperation(TrackedBranchLabel("main"), "MERGE"));
@@ -42,12 +39,9 @@ public sealed class GitStatusDisplayFormatterTests
     }
 
     [Fact]
-    public async Task BuildDisplay_WhenAllIndicatorTypesExist_ShouldRenderIndicatorsInExpectedOrder()
+    public void BuildDisplay_WhenAllIndicatorTypesExist_ShouldRenderIndicatorsInExpectedOrder()
     {
         // Arrange
-        using var gitDirectory = new TemporaryDirectory();
-        await File.WriteAllTextAsync(Path.Combine(gitDirectory.DirectoryPath, "MERGE_HEAD"), "merge\n");
-
         var statusCounts = new GitStatusCounts(
             StagedAdded: 1,
             StagedModified: 2,
@@ -66,7 +60,7 @@ public sealed class GitStatusDisplayFormatterTests
             commitsBehind: 13,
             stashEntryCount: 2,
             statusCounts,
-            gitDirectory.DirectoryPath);
+            operationName: "MERGE");
 
         // Assert
         AssertInOrder(
@@ -88,16 +82,12 @@ public sealed class GitStatusDisplayFormatterTests
     }
 
     [Theory]
-    [InlineData("MERGE_HEAD", "MERGE")]
-    [InlineData("CHERRY_PICK_HEAD", "CHERRY-PICK")]
-    public async Task BuildDisplay_WhenNoUpstreamBranchHasOperation_ShouldRenderOperationInsideBranchLabel(
-        string operationMarkerFileName,
-        string expectedOperationMarker)
+    [InlineData("MERGE")]
+    [InlineData("CHERRY-PICK")]
+    public void BuildDisplay_WhenNoUpstreamBranchHasOperation_ShouldRenderOperationInsideBranchLabel(
+        string operationName)
     {
         // Arrange
-        using var gitDirectory = new TemporaryDirectory();
-        await File.WriteAllTextAsync(Path.Combine(gitDirectory.DirectoryPath, operationMarkerFileName), "head\n");
-
         var statusCounts = new GitStatusCounts();
 
         // Act
@@ -106,17 +96,16 @@ public sealed class GitStatusDisplayFormatterTests
             commitsBehind: 0,
             stashEntryCount: 0,
             statusCounts,
-            gitDirectory.DirectoryPath);
+            operationName);
 
         // Assert
-        gitStatusDisplay.Should().Contain(BranchLabelWithOperation(NoUpstreamBranchLabel("feature"), expectedOperationMarker));
+        gitStatusDisplay.Should().Contain(BranchLabelWithOperation(NoUpstreamBranchLabel("feature"), operationName));
     }
 
     [Fact]
     public void BuildDisplay_WhenBranchIsTracked_ShouldUseTrackedBranchColor()
     {
         // Arrange
-        using var gitDirectory = new TemporaryDirectory();
         var statusCounts = new GitStatusCounts();
 
         // Act
@@ -126,7 +115,7 @@ public sealed class GitStatusDisplayFormatterTests
                 commitsBehind: 0,
                 stashEntryCount: 0,
                 statusCounts,
-                gitDirectory.DirectoryPath);
+                operationName: string.Empty);
 
         // Assert
         gitStatusDisplay.Should().StartWith(Colored(ColorBranch, TrackedBranchLabel("main")));
@@ -136,7 +125,6 @@ public sealed class GitStatusDisplayFormatterTests
     public void BuildDisplay_WhenBranchHasNoUpstream_ShouldUseNoUpstreamBranchColor()
     {
         // Arrange
-        using var gitDirectory = new TemporaryDirectory();
         var statusCounts = new GitStatusCounts();
 
         // Act
@@ -145,7 +133,7 @@ public sealed class GitStatusDisplayFormatterTests
             commitsBehind: 0,
             stashEntryCount: 0,
             statusCounts,
-            gitDirectory.DirectoryPath);
+            operationName: string.Empty);
 
         // Assert
         gitStatusDisplay.Should().StartWith(Colored(ColorBranchNoUpstream, NoUpstreamBranchLabel("feature")));
@@ -155,7 +143,6 @@ public sealed class GitStatusDisplayFormatterTests
     public void BuildDisplay_WhenAheadBehindCountsExist_ShouldUseAheadAndBehindColors()
     {
         // Arrange
-        using var gitDirectory = new TemporaryDirectory();
         var statusCounts = new GitStatusCounts();
 
         // Act
@@ -165,7 +152,7 @@ public sealed class GitStatusDisplayFormatterTests
                 commitsBehind: 3,
                 stashEntryCount: 0,
                 statusCounts,
-                gitDirectory.DirectoryPath);
+                operationName: string.Empty);
 
         // Assert
         gitStatusDisplay.Should().Contain($" {Colored(ColorAhead, Indicator(PromptIcons.IconAhead, 2))}");
@@ -176,8 +163,6 @@ public sealed class GitStatusDisplayFormatterTests
     public void BuildDisplay_WhenMultipleSegmentsAreRendered_ShouldResetColorBetweenSegments()
     {
         // Arrange
-        using var gitDirectory = new TemporaryDirectory();
-
         var statusCounts = new GitStatusCounts(
             StagedAdded: 1,
             StagedRenamed: 1,
@@ -191,7 +176,7 @@ public sealed class GitStatusDisplayFormatterTests
             commitsBehind: 1,
             stashEntryCount: 0,
             statusCounts,
-            gitDirectory.DirectoryPath);
+            operationName: string.Empty);
 
         // Assert
         gitStatusDisplay.Should().Contain(Colored(ColorBranch, TrackedBranchLabel("main")));

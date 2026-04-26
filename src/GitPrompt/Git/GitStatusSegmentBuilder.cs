@@ -60,6 +60,8 @@ internal static class GitStatusSegmentBuilder
         var hasAheadBehindCounts = snapshot.HasAheadBehindCounts;
         var statusCounts = snapshot.GitStatusCounts;
 
+        var operationName = GitOperationDetector.ReadGitOperationMarker(gitDirectoryPath);
+
         if (branchHeadName is "(detached)" || string.IsNullOrEmpty(branchHeadName))
         {
             var rebaseBranchName = GitOperationDetector.ResolveRebaseBranchName(gitDirectoryPath);
@@ -71,7 +73,7 @@ internal static class GitStatusSegmentBuilder
                     commitsBehind,
                     stashEntryCount,
                     statusCounts,
-                    gitDirectoryPath));
+                    operationName));
             }
 
             var shortObjectId = ShortenCommitHash(headObjectId);
@@ -92,7 +94,7 @@ internal static class GitStatusSegmentBuilder
                 commitsBehind,
                 stashEntryCount,
                 statusCounts,
-                gitDirectoryPath));
+                operationName));
         }
 
         if (hasUpstream && !hasAheadBehindCounts && !string.IsNullOrEmpty(upstreamReference))
@@ -109,7 +111,7 @@ internal static class GitStatusSegmentBuilder
             commitsBehind = 0;
         }
 
-        var isInOperation = !string.IsNullOrEmpty(GitOperationDetector.ReadGitOperationMarker(gitDirectoryPath));
+        var isInOperation = !string.IsNullOrEmpty(operationName);
         var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel(branchHeadName, hasUpstream || isInOperation);
 
         return CacheAndReturn(GitStatusDisplayFormatter.BuildDisplay(branchLabel,
@@ -117,7 +119,7 @@ internal static class GitStatusSegmentBuilder
             commitsBehind,
             stashEntryCount,
             statusCounts,
-            gitDirectoryPath));
+            operationName));
 
         string CacheAndReturn(string segment)
         {

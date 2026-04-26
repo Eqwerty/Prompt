@@ -6,8 +6,6 @@ namespace GitPrompt.Benchmarks;
 [MemoryDiagnoser]
 public class GitStatusDisplayBenchmarks
 {
-    private string _gitDirectoryPath = string.Empty;
-
     private GitStatusCounts _cleanCounts = new();
 
     private GitStatusCounts _busyCounts = new(
@@ -22,9 +20,6 @@ public class GitStatusDisplayBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        _gitDirectoryPath = Path.Combine(Path.GetTempPath(), "Prompt.Benchmarks", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_gitDirectoryPath);
-
         _cleanCounts = new GitStatusCounts();
 
         _busyCounts = new GitStatusCounts(
@@ -37,24 +32,15 @@ public class GitStatusDisplayBenchmarks
             Conflicts: 1);
     }
 
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        if (Directory.Exists(_gitDirectoryPath))
-        {
-            Directory.Delete(_gitDirectoryPath, recursive: true);
-        }
-    }
-
     [Benchmark]
     public string BuildDisplay_CleanRepository()
     {
-        return GitStatusDisplayFormatter.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, _cleanCounts, _gitDirectoryPath);
+        return GitStatusDisplayFormatter.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, _cleanCounts, operationName: string.Empty);
     }
 
     [Benchmark]
     public string BuildDisplay_BusyRepository()
     {
-        return GitStatusDisplayFormatter.BuildDisplay("(feature)", commitsAhead: 4, commitsBehind: 2, stashEntryCount: 0, _busyCounts, _gitDirectoryPath);
+        return GitStatusDisplayFormatter.BuildDisplay("(feature)", commitsAhead: 4, commitsBehind: 2, stashEntryCount: 0, _busyCounts, operationName: string.Empty);
     }
 }
