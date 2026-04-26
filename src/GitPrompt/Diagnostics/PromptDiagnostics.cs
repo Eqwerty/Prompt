@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text;
 using GitPrompt.Configuration;
 using GitPrompt.Prompting;
@@ -58,6 +59,7 @@ internal static class PromptDiagnostics
         return new DiagnosticsScope();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordConfigLoaded(ConfigLoadResult result)
     {
         if (!IsEnabled)
@@ -68,6 +70,7 @@ internal static class PromptDiagnostics
         _configLoadResult = result;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordRepoCacheL1Hit()
     {
         if (!IsEnabled)
@@ -79,6 +82,7 @@ internal static class PromptDiagnostics
         _repoCacheL1Hit = true;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordRepoCacheL2Hit()
     {
         if (!IsEnabled)
@@ -90,6 +94,7 @@ internal static class PromptDiagnostics
         _repoCacheL1Hit = false;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordRepoCacheL2Miss(RepoCacheMissReason reason)
     {
         if (!IsEnabled)
@@ -106,6 +111,7 @@ internal static class PromptDiagnostics
         _repoCacheMissReason = reason;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordRepoCacheWalk(int dirsWalked, bool repoFound)
     {
         if (!IsEnabled)
@@ -118,6 +124,7 @@ internal static class PromptDiagnostics
         _repoCacheRepoFound = repoFound;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordStatusCacheHit(TimeSpan age, TimeSpan ttl)
     {
         if (!IsEnabled)
@@ -131,6 +138,7 @@ internal static class PromptDiagnostics
         _statusCacheTtl = ttl;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordStatusCacheMiss(StatusCacheMissReason reason, TimeSpan age = default, TimeSpan ttl = default)
     {
         if (!IsEnabled)
@@ -145,6 +153,7 @@ internal static class PromptDiagnostics
         _statusCacheTtl = ttl;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void RecordGitSubprocessElapsed(TimeSpan elapsed)
     {
         if (!IsEnabled)
