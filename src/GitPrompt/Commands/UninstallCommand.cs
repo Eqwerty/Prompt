@@ -7,8 +7,7 @@ internal static class UninstallCommand
 {
     private static readonly string[] ShellConfigFiles =
     [
-        ".bashrc", ".bash_aliases", ".bash_profile", ".bash_login", ".profile",
-        ".zshenv", ".zshrc", ".zprofile"
+        ".bashrc", ".bash_aliases", ".bash_profile", ".bash_login", ".profile", ".zshenv", ".zshrc", ".zprofile"
     ];
 
     internal static void Run()
@@ -34,7 +33,7 @@ internal static class UninstallCommand
             DeleteBinary(binaryPath);
         }
 
-        Console.WriteLine("Uninstalled. Restart your terminal to restore your original prompt.");
+        Console.WriteLine("Uninstalled.");
     }
 
     private static void CleanShellConfigs()
@@ -85,10 +84,11 @@ internal static class UninstallCommand
     private static bool IsGitPromptInitEvalLine(string line)
     {
         var trimmed = line.TrimStart();
+
         return trimmed.StartsWith("eval", StringComparison.OrdinalIgnoreCase)
-            && trimmed.Contains("gitprompt", StringComparison.OrdinalIgnoreCase)
-            && trimmed.Contains("init", StringComparison.OrdinalIgnoreCase)
-            && trimmed.Contains("bash", StringComparison.OrdinalIgnoreCase);
+               && trimmed.Contains("gitprompt", StringComparison.OrdinalIgnoreCase)
+               && trimmed.Contains("init", StringComparison.OrdinalIgnoreCase)
+               && trimmed.Contains("bash", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void DeleteBinary(string binaryPath)
@@ -99,11 +99,26 @@ internal static class UninstallCommand
             return;
         }
 
-        // On Windows, the running .exe is locked. Spawn a hidden cmd.exe that waits
-        // 1 second for the lock to release, then force-deletes the binary.
+        // Windows blocks deletion of a running .exe but allows renaming it.
+        // Rename first so the binary immediately disappears from its known path:
+        // this lets the shell prompt fall back to the original PS1 on the next
+        // render without requiring a terminal restart.
+        // Then spawn a hidden cmd.exe to delete the renamed file once the process exits.
+        var renamedPath = binaryPath + ".old";
+        string pathToDelete;
+        try
+        {
+            File.Move(binaryPath, renamedPath, overwrite: true);
+            pathToDelete = renamedPath;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            pathToDelete = binaryPath;
+        }
+
         var psi = new ProcessStartInfo("cmd.exe")
         {
-            Arguments = $"/c timeout /T 1 /NOBREAK > nul & del /f /q \"{binaryPath}\"",
+            Arguments = $"/c timeout /T 3 /NOBREAK > nul & del /f /q \"{pathToDelete}\"",
             UseShellExecute = false,
             CreateNoWindow = true
         };
