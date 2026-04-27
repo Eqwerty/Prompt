@@ -9,21 +9,24 @@ internal static class ConfigInitializer
     {
         try
         {
-            var configFile = AppPaths.GetConfigFilePath();
-
-            if (File.Exists(configFile))
-            {
-                return;
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(configFile)!);
-
-            File.WriteAllText(configFile, BuildDefaultConfigContent());
+            EnsureConfigFileExists(AppPaths.GetConfigFilePath());
         }
         catch
         {
             // Non-critical: the binary works fine with default settings even when the config file is absent.
         }
+    }
+
+    internal static void EnsureConfigFileExists(string configPath)
+    {
+        if (File.Exists(configPath))
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+
+        File.WriteAllText(configPath, BuildDefaultConfigContent());
     }
 
     internal static string BuildDefaultConfigContent()

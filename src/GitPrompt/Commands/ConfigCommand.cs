@@ -9,7 +9,7 @@ internal static class ConfigCommand
     internal static void Run()
     {
         var configPath = AppPaths.GetConfigFilePath();
-        EnsureConfigFileExists(configPath);
+        ConfigInitializer.EnsureConfigFileExists(configPath);
 
         var editor = GetEditor();
 
@@ -45,16 +45,4 @@ internal static class ConfigCommand
     }
 
     private static string GetEditor() => GetEditor(Environment.GetEnvironmentVariable("EDITOR"), Environment.GetEnvironmentVariable("VISUAL"));
-
-    private static void EnsureConfigFileExists(string configPath)
-    {
-        if (File.Exists(configPath))
-        {
-            return;
-        }
-
-        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
-
-        File.WriteAllText(configPath, ConfigInitializer.BuildDefaultConfigContent());
-    }
 }

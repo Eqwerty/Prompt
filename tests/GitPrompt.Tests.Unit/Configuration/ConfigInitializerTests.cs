@@ -6,6 +6,39 @@ namespace GitPrompt.Tests.Unit.Configuration;
 public sealed class ConfigInitializerTests
 {
     [Fact]
+    public void EnsureConfigFileExists_WhenFileDoesNotExist_ShouldCreateDirectoryAndWriteDefaultContent()
+    {
+        // Arrange
+        var configPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "config.jsonc");
+
+        // Act
+        ConfigInitializer.EnsureConfigFileExists(configPath);
+
+        // Assert
+        File.ReadAllText(configPath).Should().Be(ConfigInitializer.BuildDefaultConfigContent());
+
+        File.Delete(configPath);
+        Directory.Delete(Path.GetDirectoryName(configPath)!);
+    }
+
+    [Fact]
+    public void EnsureConfigFileExists_WhenFileAlreadyExists_ShouldNotOverwriteContent()
+    {
+        // Arrange
+        var configPath = Path.GetTempFileName();
+        const string originalContent = "custom content";
+        File.WriteAllText(configPath, originalContent);
+
+        // Act
+        ConfigInitializer.EnsureConfigFileExists(configPath);
+
+        // Assert
+        File.ReadAllText(configPath).Should().Be(originalContent);
+
+        File.Delete(configPath);
+    }
+
+    [Fact]
     public void BuildDefaultConfigContent_ShouldIncludeCommandTimeoutMs()
     {
         // Act & Assert
