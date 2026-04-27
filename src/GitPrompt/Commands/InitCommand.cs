@@ -12,7 +12,9 @@ internal static class InitCommand
 
         var script = GenerateBashInit().ReplaceLineEndings("\n");
         var bytes = Console.OutputEncoding.GetBytes(script);
+
         using var stdout = Console.OpenStandardOutput();
+
         stdout.Write(bytes);
     }
 
@@ -37,11 +39,14 @@ internal static class InitCommand
     {
         using var stream = typeof(InitCommand).Assembly.GetManifestResourceStream("bash-init.sh")!;
         using var reader = new StreamReader(stream);
+
         var template = reader.ReadToEnd();
 
-        var commands = string.Join(" ", CommandRegistry.VisibleCommands
-            .Select(command => command.Verb)
-            .Where(verb => !verb.Contains(' ')));
+        var commands = string.Join(" ",
+            CommandRegistry.VisibleCommands
+                .Select(command => command.Verb)
+                .Where(verb => !verb.Contains(' ')));
+
         return template.Replace("{{GITPROMPT_COMMANDS}}", commands);
     }
 }
