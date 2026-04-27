@@ -34,4 +34,24 @@ public sealed class ConfigInitializerTests
         // Assert — check that known placeholder tokens are not present
         content.Should().NotMatchRegex(@"\{[a-zA-Z]+\}");
     }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldIncludeShowCommandDuration()
+    {
+        // Act & Assert
+        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("showCommandDuration");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderShowCommandDurationAsDefaultValue()
+    {
+        // Arrange
+        var expectedValue = new Config().ShowCommandDuration ? "true" : "false";
+
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"\"showCommandDuration\": {expectedValue}");
+    }
 }

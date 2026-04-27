@@ -18,6 +18,8 @@ internal abstract class PlatformProvider
 
     internal abstract string? HomeDirectoryPath { get; }
 
+    internal abstract long? LastCommandDurationMs { get; }
+
     private sealed class SystemPlatformProvider : PlatformProvider
     {
         internal override bool IsWindows() => OperatingSystem.IsWindows();
@@ -44,5 +46,14 @@ internal abstract class PlatformProvider
         }
 
         internal override string HomeDirectoryPath => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+        internal override long? LastCommandDurationMs
+        {
+            get
+            {
+                var raw = Environment.GetEnvironmentVariable("GITPROMPT_LAST_CMD_MS");
+                return long.TryParse(raw, out var ms) && ms >= 0 ? ms : null;
+            }
+        }
     }
 }

@@ -3,5 +3,6 @@
     "gitStatusTtl": {gitStatusTtl},   // git status cache TTL in seconds (0 = disabled)
     "repositoryTtl": {repositoryTtl}  // repository location cache TTL in seconds (0 = disabled)
   },
-  "commandTimeoutMs": {commandTimeoutMs}  // git subprocess timeout in milliseconds (0 = disabled)
+  "commandTimeoutMs": {commandTimeoutMs},  // git subprocess timeout in milliseconds (0 = disabled)
+  "showCommandDuration": {showCommandDuration}  // show last command duration in the prompt (true/false)
 }

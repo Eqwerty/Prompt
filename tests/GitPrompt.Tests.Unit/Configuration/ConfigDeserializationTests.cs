@@ -143,4 +143,43 @@ public sealed class ConfigDeserializationTests
         // Assert
         config!.CommandTimeout.Should().BeNull();
     }
+
+    [Fact]
+    public void ShowCommandDuration_WhenAbsent_ShouldDefaultToFalse()
+    {
+        // Arrange
+        var json = "{}";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.ShowCommandDuration.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ShowCommandDuration_WhenExplicitlyTrue_ShouldReturnTrue()
+    {
+        // Arrange
+        var json = """{"showCommandDuration": true}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.ShowCommandDuration.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShowCommandDuration_WhenExplicitlyFalse_ShouldReturnFalse()
+    {
+        // Arrange
+        var json = """{"showCommandDuration": false}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.ShowCommandDuration.Should().BeFalse();
+    }
 }

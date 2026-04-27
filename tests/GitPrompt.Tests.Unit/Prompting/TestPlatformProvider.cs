@@ -9,7 +9,8 @@ internal sealed class TestPlatformProvider(
     string? windowsUserName = null,
     string? host = null,
     string? workingDirectoryPath = null,
-    string? homeDirectoryPath = null) : PlatformProvider
+    string? homeDirectoryPath = null,
+    long? lastCommandDurationMs = null) : PlatformProvider
 {
     private readonly bool _isWindows = isWindows;
 
@@ -24,4 +25,6 @@ internal sealed class TestPlatformProvider(
     internal override WorkingDirectoryContext WorkingDirectory { get; } = new(workingDirectoryPath ?? string.Empty, isWorkingDirectoryFromFallback);
 
     internal override string? HomeDirectoryPath { get; } = homeDirectoryPath;
+
+    internal override long? LastCommandDurationMs { get; } = lastCommandDurationMs;
 }

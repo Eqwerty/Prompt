@@ -15,7 +15,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         PromptDiagnostics.RecordRepoCacheL2Hit();
         PromptDiagnostics.RecordStatusCacheHit(age: TimeSpan.FromSeconds(2), ttl: TimeSpan.FromSeconds(5));
-        var result = new PromptResult("user host ~/repo", "(main)", "$",
+        var result = new PromptResult("user host ~/repo", string.Empty, "(main)", "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(3), TimeSpan.FromMilliseconds(4));
 
         // Act
@@ -36,7 +36,7 @@ public sealed class PromptDiagnosticsTests
         PromptDiagnostics.RecordRepoCacheL2Hit();
         PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.FingerprintChanged);
         PromptDiagnostics.RecordGitSubprocessElapsed(TimeSpan.FromMilliseconds(50));
-        var result = new PromptResult("user host ~/repo", "(main) ~2", "$",
+        var result = new PromptResult("user host ~/repo", string.Empty, "(main) ~2", "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(51), TimeSpan.FromMilliseconds(52));
 
         // Act
@@ -58,7 +58,7 @@ public sealed class PromptDiagnosticsTests
             StatusCacheMissReason.TtlExpired,
             age: TimeSpan.FromSeconds(6),
             ttl: TimeSpan.FromSeconds(5));
-        var result = new PromptResult("user host ~/repo", "(main)", "$",
+        var result = new PromptResult("user host ~/repo", string.Empty, "(main)", "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(51));
 
         // Act
@@ -79,7 +79,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         PromptDiagnostics.RecordRepoCacheWalk(dirsWalked: 2, repoFound: true);
         PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.NoEntry);
-        var result = new PromptResult("user host ~/repo", "(main)", "$",
+        var result = new PromptResult("user host ~/repo", string.Empty, "(main)", "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(55), TimeSpan.FromMilliseconds(56));
 
         // Act
@@ -97,7 +97,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         PromptDiagnostics.RecordRepoCacheL2Miss(RepoCacheMissReason.NoEntry);
         PromptDiagnostics.RecordRepoCacheWalk(dirsWalked: 4, repoFound: false);
-        var result = new PromptResult("user host ~/documents", string.Empty, "$",
+        var result = new PromptResult("user host ~/documents", string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -116,7 +116,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         PromptDiagnostics.RecordRepoCacheL1Hit();
         PromptDiagnostics.RecordStatusCacheHit(age: TimeSpan.FromSeconds(1), ttl: TimeSpan.FromSeconds(5));
-        var result = new PromptResult("user host ~/repo", "(main)", "$",
+        var result = new PromptResult("user host ~/repo", string.Empty, "(main)", "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2), TimeSpan.FromMilliseconds(3));
 
         // Act
@@ -134,7 +134,7 @@ public sealed class PromptDiagnosticsTests
         PromptDiagnostics.RecordRepoCacheL2Miss(RepoCacheMissReason.NoEntry);
         PromptDiagnostics.RecordRepoCacheWalk(dirsWalked: 3, repoFound: true);
         PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.NoEntry);
-        var result = new PromptResult("user host ~/repo", "(main)", "$",
+        var result = new PromptResult("user host ~/repo", string.Empty, "(main)", "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(55), TimeSpan.FromMilliseconds(56));
 
         // Act
@@ -167,7 +167,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         PromptDiagnostics.RecordRepoCacheL2Hit();
         PromptDiagnostics.RecordStatusCacheMiss(StatusCacheMissReason.Disabled);
-        var result = new PromptResult("user host ~/repo", string.Empty, "$",
+        var result = new PromptResult("user host ~/repo", string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -186,7 +186,7 @@ public sealed class PromptDiagnosticsTests
         var config = new Config();
         var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Loaded, config);
         PromptDiagnostics.RecordConfigLoaded(loadResult);
-        var result = new PromptResult(string.Empty, string.Empty, "$",
+        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -205,7 +205,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Missing, new Config());
         PromptDiagnostics.RecordConfigLoaded(loadResult);
-        var result = new PromptResult(string.Empty, string.Empty, "$",
+        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -223,7 +223,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ParseFailed, new Config());
         PromptDiagnostics.RecordConfigLoaded(loadResult);
-        var result = new PromptResult(string.Empty, string.Empty, "$",
+        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -240,7 +240,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ReadFailed, new Config());
         PromptDiagnostics.RecordConfigLoaded(loadResult);
-        var result = new PromptResult(string.Empty, string.Empty, "$",
+        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -258,7 +258,7 @@ public sealed class PromptDiagnosticsTests
         var config = new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 0 } };
         var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Loaded, config);
         PromptDiagnostics.RecordConfigLoaded(loadResult);
-        var result = new PromptResult(string.Empty, string.Empty, "$",
+        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -273,7 +273,7 @@ public sealed class PromptDiagnosticsTests
     {
         // Arrange
         using var scope = PromptDiagnostics.EnableForTesting();
-        var result = new PromptResult(string.Empty, string.Empty, "$",
+        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
@@ -302,7 +302,7 @@ public sealed class PromptDiagnosticsTests
         using var scope = PromptDiagnostics.EnableForTesting();
         var loadResult = new ConfigLoadResult(@"C:\Users\user\AppData\Roaming\gitprompt\config.jsonc", ConfigLoadStatus.Loaded, new Config());
         PromptDiagnostics.RecordConfigLoaded(loadResult);
-        var result = new PromptResult(string.Empty, string.Empty, "$",
+        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act

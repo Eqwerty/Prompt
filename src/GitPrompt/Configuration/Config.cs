@@ -9,6 +9,10 @@ internal sealed record Config
     internal CacheConfig Cache { get; init; } = new();
 
     [JsonInclude]
+    [JsonPropertyName("showCommandDuration")]
+    internal bool ShowCommandDuration { get; init; } = false;
+
+    [JsonInclude]
     [JsonPropertyName("commandTimeoutMs")]
     internal double? CommandTimeoutMs { get; init; }
 

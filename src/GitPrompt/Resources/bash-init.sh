@@ -15,9 +15,13 @@ fi
 
 __gitprompt_preexec_flag=0
 __gitprompt_running=0
+__gitprompt_cmd_start_us=""
 
 __gitprompt_debug_trap() {
   if [ "$__gitprompt_running" -eq 0 ] && [ "$BASH_COMMAND" != "_gitprompt_update_ps1" ]; then
+    if [ "$__gitprompt_preexec_flag" -eq 0 ] && [ -n "${EPOCHREALTIME+x}" ]; then
+      __gitprompt_cmd_start_us=${EPOCHREALTIME/./}
+    fi
     __gitprompt_preexec_flag=1
   fi
 }
@@ -34,12 +38,20 @@ __gitprompt_prompt_sp() {
 
 _gitprompt_update_ps1() {
   __gitprompt_running=1
+  local _last_cmd_ms=""
+  if [ -n "$__gitprompt_cmd_start_us" ]; then
+    local _end_us=${EPOCHREALTIME/./}
+    _last_cmd_ms=$(( (_end_us - __gitprompt_cmd_start_us) / 1000 ))
+    __gitprompt_cmd_start_us=""
+  elif [ -n "${EPOCHREALTIME+x}" ]; then
+    _last_cmd_ms="0"
+  fi
   __gitprompt_prompt_sp
   if [ "$__gitprompt_preexec_flag" -eq 1 ]; then
     __gitprompt_preexec_flag=0
     "$_GITPROMPT_BIN" --invalidate-status-cache >/dev/null 2>&1 || true
   fi
-  if output="$("$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "$output" ]; then
+  if output="$(GITPROMPT_LAST_CMD_MS="$_last_cmd_ms" "$_GITPROMPT_BIN" 2>/dev/null)" && [ -n "$output" ]; then
     PS1="$output"
   else
     PS1="${_GITPROMPT_ORIGINAL_PS1:-$_GITPROMPT_FALLBACK_PS1}"

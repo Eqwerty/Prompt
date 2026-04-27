@@ -4,7 +4,7 @@ A fast cross-platform shell prompt binary for Git repositories.
 
 `gitprompt` prints a two-line prompt:
 
-1. `user host path [git-status]`
+1. `user host path [duration] [git-status]`
 2. prompt symbol (`$`, `#`, or `>`)
 
 ## Quick Install
@@ -59,7 +59,7 @@ Removes the binary, config, and cache files. Automatically cleans up `gitprompt 
 
 Line 1:
 
-`<user> <host> <path> [git-status]`
+`<user> <host> <path> [duration] [git-status]`
 
 Line 2:
 
@@ -155,6 +155,16 @@ Controls how long `gitprompt` waits for a Git subprocess before killing it and s
 |---|---|---|
 | `commandTimeoutMs` | `2000` | Git subprocess timeout in milliseconds |
 
+### Command Duration
+
+Shows the elapsed time of the last command in the prompt, rendered in pink between the path and the git status segment. Off by default.
+
+| Key | Default | Description |
+|---|---|---|
+| `showCommandDuration` | `false` | Show last command duration (e.g. `42ms`) |
+
+Requires bash 5+ (`EPOCHREALTIME`). Silently no-ops on older bash versions.
+
 Example `config.jsonc`:
 
 ```jsonc
@@ -163,7 +173,8 @@ Example `config.jsonc`:
     "gitStatusTtl": 3,   // git status cache TTL in seconds (0 = disabled)
     "repositoryTtl": 30  // repository location cache TTL in seconds (0 = disabled)
   },
-  "commandTimeoutMs": 500  // kill git subprocess after 500ms (0 = disabled)
+  "commandTimeoutMs": 500,  // kill git subprocess after 500ms (0 = disabled)
+  "showCommandDuration": true  // show last command duration in the prompt
 }
 ```
 

@@ -17,6 +17,8 @@ internal static class PromptBuilder
         var contextSegment = ContextSegmentBuilder.Build(platformProvider);
         contextSw?.Stop();
 
+        var commandDurationSegment = CommandDurationSegmentBuilder.Build(platformProvider);
+
         var gitSw = PromptDiagnostics.IsEnabled ? Stopwatch.StartNew() : null;
         var gitStatusSegment = GitStatusSegmentBuilder.Build(workingDirectoryPath);
         gitSw?.Stop();
@@ -26,6 +28,7 @@ internal static class PromptBuilder
 
         return new PromptResult(
             contextSegment,
+            commandDurationSegment,
             gitStatusSegment,
             promptSymbol,
             contextSw?.Elapsed ?? TimeSpan.Zero,
