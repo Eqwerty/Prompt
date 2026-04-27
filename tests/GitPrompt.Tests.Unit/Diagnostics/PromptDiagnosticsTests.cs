@@ -296,19 +296,26 @@ public sealed class PromptDiagnosticsTests
     }
 
     [Fact]
-    public void GetReport_WhenConfigPathHasBackslashes_ShouldNormalizeToForwardSlashes()
+    public void GetReport_WhenPromptLineContainsReadlineMarkers_ShouldNotInflateBoxWidth()
     {
-        // Arrange
+        // Arrange — simulate a real prompt line with \u0001...\u0002 readline markers wrapping ANSI codes
         using var scope = PromptDiagnostics.EnableForTesting();
-        var loadResult = new ConfigLoadResult(@"C:\Users\user\AppData\Roaming\gitprompt\config.jsonc", ConfigLoadStatus.Loaded, new Config());
-        PromptDiagnostics.RecordConfigLoaded(loadResult);
-        var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
+        PromptDiagnostics.RecordRepoCacheL2Hit();
+        PromptDiagnostics.RecordStatusCacheHit(age: TimeSpan.FromSeconds(1), ttl: TimeSpan.FromSeconds(5));
+
+        const string color = "\u0001\x1b[0;32m\u0002";
+        const string reset = "\u0001\x1b[0m\u0002";
+        var promptLine = $"{color}user{reset} {color}host{reset} {color}~/repo{reset}";
+
+        var result = new PromptResult(promptLine, string.Empty, "(main)", "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
 
         // Act
         var report = PromptDiagnostics.GetReport("/home/user/repo", result);
 
-        // Assert
-        report.Should().Contain("C:/Users/user/AppData/Roaming/gitprompt/config.jsonc");
+        // Assert — the prompt row should contain only the visible text, no invisible marker chars
+        report.Should().Contain("user host ~/repo");
+        report.Should().NotContain("\u0001");
+        report.Should().NotContain("\u0002");
     }
 }

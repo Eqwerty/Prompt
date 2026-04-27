@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using GitPrompt.Configuration;
+using GitPrompt.Constants;
 using GitPrompt.Prompting;
 
 namespace GitPrompt.Diagnostics;
@@ -182,45 +183,34 @@ internal static class PromptDiagnostics
 
     internal static string GetReport(string directory, PromptResult result)
     {
-        var sb = new StringBuilder();
-
-        sb.AppendLine("GitPrompt — diagnostic report");
-        sb.AppendLine();
+        var lines = new List<string?>();
 
         var displayDirectory = directory.Replace('\\', '/');
-        sb.AppendLine($"  {"Directory",-9}  {displayDirectory}");
+        lines.Add($"  {"Directory",-9}  {displayDirectory}");
 
         var displayPrompt = StripAnsi(result.PromptLine);
         if (!string.IsNullOrEmpty(displayPrompt))
         {
-            sb.AppendLine($"  {"Prompt",-9}  {displayPrompt} {result.PromptSymbol}");
+            lines.Add($"  {"Prompt",-9}  {displayPrompt} {result.PromptSymbol}");
         }
 
-        sb.AppendLine();
-        sb.AppendLine($"  {"Context",-9}  {FormatMs(result.ContextElapsed)}");
-        sb.AppendLine($"  {"Git",-9}  {FormatMs(result.GitElapsed)}");
-
-        sb.Append($"    {"Repository",-10}  ");
-        AppendRepoCacheStatus(sb);
-
-        sb.Append($"    {"Status",-10}  ");
-        AppendStatusCacheStatus(sb);
-
-        sb.AppendLine($"  {"Total",-9}  {FormatMs(result.TotalElapsed)}");
+        lines.Add(null);
+        lines.Add($"  {"Context",-9}  {FormatMs(result.ContextElapsed)}");
+        lines.Add($"  {"Git",-9}  {FormatMs(result.GitElapsed)}");
+        lines.Add($"    {"Repository",-10}  {GetRepoCacheStatus()}");
+        lines.Add($"    {"Status",-10}  {GetStatusCacheStatus()}");
+        lines.Add($"  {"Total",-9}  {FormatMs(result.TotalElapsed)}");
 
         if (_configLoadResult is not null)
         {
-            sb.AppendLine();
-            AppendConfigSection(sb);
+            lines.Add(null);
+            AddConfigLines(lines);
         }
 
-        sb.AppendLine();
-        sb.Append(BuildSummary());
-
-        return sb.ToString();
+        return BoxRenderer.Render("GitPrompt diagnostic", lines, AnsiColors.LightGray) + BuildSummary();
     }
 
-    private static void AppendConfigSection(StringBuilder sb)
+    private static void AddConfigLines(List<string?> lines)
     {
         if (_configLoadResult is null)
         {
@@ -228,7 +218,7 @@ internal static class PromptDiagnostics
         }
 
         var displayPath = _configLoadResult.FilePath.Replace('\\', '/');
-        sb.AppendLine($"  {"Config",-9}  {displayPath}");
+        lines.Add($"  {"Config",-9}  {displayPath}");
 
         var statusText = _configLoadResult.Status switch
         {
@@ -238,7 +228,7 @@ internal static class PromptDiagnostics
             ConfigLoadStatus.ReadFailed => "read error (using defaults)",
             _ => "unknown"
         };
-        sb.AppendLine($"    {"Status",-10}  {statusText}");
+        lines.Add($"    {"Status",-10}  {statusText}");
 
         var config = _configLoadResult.Config;
         var gitStatusTtlText = config.Cache.GitStatusTtl == TimeSpan.Zero
@@ -247,21 +237,19 @@ internal static class PromptDiagnostics
         var repoTtlText = config.Cache.RepositoryTtl == TimeSpan.Zero
             ? "0s (disabled)"
             : FormatSeconds(config.Cache.RepositoryTtl);
-        sb.AppendLine($"    {"TTL",-10}  gitStatus {gitStatusTtlText} · repo {repoTtlText}");
+        lines.Add($"    {"TTL",-10}  gitStatus {gitStatusTtlText} · repo {repoTtlText}");
 
         var timeoutText = config.CommandTimeout.HasValue
             ? FormatMs(config.CommandTimeout.Value)
             : "disabled";
-        sb.AppendLine($"    {"Timeout",-10}  {timeoutText}");
+        lines.Add($"    {"Timeout",-10}  {timeoutText}");
     }
 
-    private static void AppendRepoCacheStatus(StringBuilder sb)
+    private static string GetRepoCacheStatus()
     {
         if (_repoCacheHit)
         {
-            sb.AppendLine(_repoCacheL1Hit ? "hit (in-process)" : "hit (disk)");
-
-            return;
+            return _repoCacheL1Hit ? "hit (in-process)" : "hit (disk)";
         }
 
         if (_repoCacheWalkRecorded)
@@ -274,28 +262,22 @@ internal static class PromptDiagnostics
                 : string.Empty;
 
             var repoSuffix = _repoCacheRepoFound ? string.Empty : ", no repo found";
-            sb.AppendLine($"miss · {missReason}walked {dirs} {dirWord}{repoSuffix}");
-
-            return;
+            return $"miss · {missReason}walked {dirs} {dirWord}{repoSuffix}";
         }
 
-        sb.AppendLine("(not recorded)");
+        return "(not recorded)";
     }
 
-    private static void AppendStatusCacheStatus(StringBuilder sb)
+    private static string GetStatusCacheStatus()
     {
         if (!_statusCacheRecorded)
         {
-            sb.AppendLine("skipped");
-
-            return;
+            return "skipped";
         }
 
         if (_statusCacheHit)
         {
-            sb.AppendLine($"hit ({FormatSeconds(_statusCacheAge)} old · TTL {FormatSeconds(_statusCacheTtl)})");
-
-            return;
+            return $"hit ({FormatSeconds(_statusCacheAge)} old · TTL {FormatSeconds(_statusCacheTtl)})";
         }
 
         var missDescription = _statusCacheMissReason switch
@@ -315,7 +297,7 @@ internal static class PromptDiagnostics
                 : $" → ran git ({FormatMs(_gitSubprocessElapsed)})"
             : string.Empty;
 
-        sb.AppendLine($"miss · {missDescription}{gitRunSuffix}");
+        return $"miss · {missDescription}{gitRunSuffix}";
     }
 
     private static string BuildSummary()
@@ -385,6 +367,11 @@ internal static class PromptDiagnostics
                 {
                     i++;
                 }
+            }
+            else if (text[i] is '\u0001' or '\u0002')
+            {
+                // Skip readline marker characters that wrap ANSI codes in prompt strings
+                i++;
             }
             else
             {
