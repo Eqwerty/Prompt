@@ -9,13 +9,12 @@ on:
       - ".github/workflows/aliases.yml"
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   validate:
     name: Validate Git Aliases
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -33,3 +32,18 @@ jobs:
 
       - name: Test
         run: dotnet test GitPrompt.slnx --configuration Release --no-build --nologo
+
+  release:
+    name: Upload to Release
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Upload aliases to latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload latest git_aliases.sh --clobber

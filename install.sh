@@ -152,7 +152,7 @@ case "$CPU_ARCHITECTURE" in
 esac
 
 BIN_DIR="$HOME/.local/bin"
-ALIASES_URL="https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/git_aliases.sh"
+ALIASES_URL="https://github.com/Eqwerty/GitPrompt/releases/download/latest/git_aliases.sh"
 ALIASES_DIR="$HOME/.local/share/gitprompt"
 ALIASES_FILE_PATH="$ALIASES_DIR/git_aliases.sh"
 

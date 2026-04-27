@@ -187,11 +187,13 @@ Aliases are installed to `~/.local/share/gitprompt/git_aliases.sh`.
 
 ### Update aliases
 
-To get the latest aliases without reinstalling:
+To get the latest validated aliases without reinstalling:
 
 ```sh
 gitprompt update aliases
 ```
+
+Aliases are published as part of the `latest` GitHub release after CI validates them. This means a broken push to `git_aliases.sh` won't be downloaded — only tested versions are released.
 
 ### Skip alias installation
 

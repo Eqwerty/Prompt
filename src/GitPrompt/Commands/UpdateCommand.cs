@@ -6,7 +6,7 @@ namespace GitPrompt.Commands;
 internal static class UpdateCommand
 {
     private const string InstallScriptUrl = "https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/install.sh";
-    private const string AliasesUrl = "https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/git_aliases.sh";
+    private const string AliasesUrl = "https://github.com/Eqwerty/GitPrompt/releases/download/latest/git_aliases.sh";
     private const string AliasesFileName = "git_aliases.sh";
 
     internal static void Run()
