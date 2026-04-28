@@ -6,4 +6,9 @@ internal static class AppPaths
     {
         return Path.Combine(XdgPaths.GetConfigDirectory(), "config.jsonc");
     }
+
+    internal static string GetAliasesFilePath()
+    {
+        return Path.Combine(XdgPaths.GetDataDirectory(), "git_aliases.sh");
+    }
 }

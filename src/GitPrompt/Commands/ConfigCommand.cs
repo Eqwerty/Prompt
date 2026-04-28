@@ -11,7 +11,7 @@ internal static class ConfigCommand
         var configPath = AppPaths.GetConfigFilePath();
         ConfigInitializer.EnsureConfigFileExists(configPath);
 
-        var editor = GetEditor();
+        var editor = EditorResolver.GetEditor();
 
         try
         {
@@ -28,21 +28,4 @@ internal static class ConfigCommand
             Environment.Exit(1);
         }
     }
-
-    private static string GetEditor(string? editorEnv, string? visualEnv)
-    {
-        if (!string.IsNullOrEmpty(editorEnv))
-        {
-            return editorEnv;
-        }
-
-        if (!string.IsNullOrEmpty(visualEnv))
-        {
-            return visualEnv;
-        }
-
-        return "vim";
-    }
-
-    private static string GetEditor() => GetEditor(Environment.GetEnvironmentVariable("EDITOR"), Environment.GetEnvironmentVariable("VISUAL"));
 }

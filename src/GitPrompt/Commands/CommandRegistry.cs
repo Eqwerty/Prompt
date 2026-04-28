@@ -26,6 +26,11 @@ internal static class CommandRegistry
             Description: "Reset config.jsonc to defaults (-y to skip confirmation)",
             Execute: args => ConfigResetCommand.Run(skipConfirmation: args.Contains("-y"))),
 
+        new(Verb: "aliases",
+            Usage: "gitprompt aliases",
+            Description: "Open git_aliases.sh in $EDITOR (if installed)",
+            Execute: _ => AliasesCommand.Run()),
+
         new(Verb: "update",
             Usage: "gitprompt update",
             Description: "Update to the latest release",
