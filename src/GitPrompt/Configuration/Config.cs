@@ -25,6 +25,10 @@ internal sealed record Config
     internal bool MultilinePrompt { get; init; } = true;
 
     [JsonInclude]
+    [JsonPropertyName("newlineBeforePrompt")]
+    internal bool NewlineBeforePrompt { get; init; } = false;
+
+    [JsonInclude]
     [JsonPropertyName("showCommandDuration")]
     internal bool ShowCommandDuration { get; init; } = true;
 

@@ -8,5 +8,6 @@
   "showUser": {showUser},  // show username in the prompt (true/false)
   "showHost": {showHost},  // show hostname in the prompt (true/false)
   "maxPathDepth": {maxPathDepth},  // max path segments shown (0 = full path)
-  "multilinePrompt": {multilinePrompt}  // put the prompt symbol on its own line (true/false)
+  "multilinePrompt": {multilinePrompt},  // put the prompt symbol on its own line (true/false)
+  "newlineBeforePrompt": {newlineBeforePrompt}  // add a blank line before the prompt (true/false)
 }

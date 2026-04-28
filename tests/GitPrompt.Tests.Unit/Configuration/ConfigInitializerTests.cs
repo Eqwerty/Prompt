@@ -154,4 +154,24 @@ public sealed class ConfigInitializerTests
         // Assert
         content.Should().Contain($"\"multilinePrompt\": {expectedValue}");
     }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldIncludeNewlineBeforePrompt()
+    {
+        // Act & Assert
+        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("newlineBeforePrompt");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderNewlineBeforePromptAsDefaultValue()
+    {
+        // Arrange
+        var expectedValue = new Config().NewlineBeforePrompt ? "true" : "false";
+
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"\"newlineBeforePrompt\": {expectedValue}");
+    }
 }

@@ -188,6 +188,7 @@ Controls the overall shape of the prompt output.
 | Key | Default | Description |
 |---|---|---|
 | `multilinePrompt` | `true` | Put the prompt symbol (`$`, `#`, `>`) on its own line |
+| `newlineBeforePrompt` | `false` | Add a blank line before the prompt |
 
 When `multilinePrompt: false`, the symbol appears at the end of the status line:
 
@@ -199,6 +200,8 @@ $
 # single-line
 user host ~/repo (main) $ 
 ```
+
+When `newlineBeforePrompt: true`, a blank line is prepended before the first prompt line. This is useful to visually separate commands from each other.
 
 Example `config.jsonc`:
 

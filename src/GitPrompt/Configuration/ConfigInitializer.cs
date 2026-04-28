@@ -45,6 +45,7 @@ internal static class ConfigInitializer
             .Replace("{showUser}", config.ShowUser.ToString().ToLowerInvariant())
             .Replace("{showHost}", config.ShowHost.ToString().ToLowerInvariant())
             .Replace("{maxPathDepth}", config.MaxPathDepth.ToString(CultureInfo.InvariantCulture))
-            .Replace("{multilinePrompt}", config.MultilinePrompt.ToString().ToLowerInvariant());
+            .Replace("{multilinePrompt}", config.MultilinePrompt.ToString().ToLowerInvariant())
+            .Replace("{newlineBeforePrompt}", config.NewlineBeforePrompt.ToString().ToLowerInvariant());
     }
 }

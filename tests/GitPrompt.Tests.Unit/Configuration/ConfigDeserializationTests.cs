@@ -312,4 +312,43 @@ public sealed class ConfigDeserializationTests
         // Assert
         config!.MultilinePrompt.Should().BeTrue();
     }
+
+    [Fact]
+    public void NewlineBeforePrompt_WhenAbsent_ShouldDefaultToFalse()
+    {
+        // Arrange
+        var json = "{}";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.NewlineBeforePrompt.Should().BeFalse();
+    }
+
+    [Fact]
+    public void NewlineBeforePrompt_WhenExplicitlyTrue_ShouldReturnTrue()
+    {
+        // Arrange
+        var json = """{"newlineBeforePrompt": true}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.NewlineBeforePrompt.Should().BeTrue();
+    }
+
+    [Fact]
+    public void NewlineBeforePrompt_WhenExplicitlyFalse_ShouldReturnFalse()
+    {
+        // Arrange
+        var json = """{"newlineBeforePrompt": false}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.NewlineBeforePrompt.Should().BeFalse();
+    }
 }

@@ -54,4 +54,46 @@ public sealed class PromptResultTests
         // Assert
         output.Should().Be($"ctx (main) {ColorPromptSymbol}${ColorReset} ");
     }
+
+    [Fact]
+    public void Output_WhenNewlineBeforePromptIsTrue_ShouldPrependBlankLine()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = true, NewlineBeforePrompt = true });
+        var result = MakeResult();
+
+        // Act
+        var output = result.Output;
+
+        // Assert
+        output.Should().Be($"\nctx\n{ColorPromptSymbol}${ColorReset} ");
+    }
+
+    [Fact]
+    public void Output_WhenNewlineBeforePromptIsFalse_ShouldNotPrependBlankLine()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = true, NewlineBeforePrompt = false });
+        var result = MakeResult();
+
+        // Act
+        var output = result.Output;
+
+        // Assert
+        output.Should().Be($"ctx\n{ColorPromptSymbol}${ColorReset} ");
+    }
+
+    [Fact]
+    public void Output_WhenNewlineBeforePromptIsTrueAndMultilinePromptIsFalse_ShouldPrependBlankLineToSingleLine()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = false, NewlineBeforePrompt = true });
+        var result = MakeResult();
+
+        // Act
+        var output = result.Output;
+
+        // Assert
+        output.Should().Be($"\nctx {ColorPromptSymbol}${ColorReset} ");
+    }
 }
