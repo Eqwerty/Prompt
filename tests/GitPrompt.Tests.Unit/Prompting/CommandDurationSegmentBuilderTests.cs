@@ -5,6 +5,7 @@ using static GitPrompt.Constants.PromptColors;
 
 namespace GitPrompt.Tests.Unit.Prompting;
 
+[Collection(ConfigIsolationCollection.Name)]
 public sealed class CommandDurationSegmentBuilderTests
 {
     [Fact]

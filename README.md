@@ -166,6 +166,14 @@ Shows the elapsed time of the last command in the prompt, rendered in pink betwe
 
 Requires bash 5+ (`EPOCHREALTIME`). Silently no-ops on older bash versions.
 
+### Context Segment Visibility
+
+Controls which parts of the context segment are rendered.
+
+| Key | Default | Description |
+|---|---|---|
+| `showUser` | `true` | Show the username in the prompt |
+
 Example `config.jsonc`:
 
 ```jsonc

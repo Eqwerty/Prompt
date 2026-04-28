@@ -1,15 +1,18 @@
 using FluentAssertions;
+using GitPrompt.Configuration;
 using GitPrompt.Prompting;
 using static GitPrompt.Constants.PromptColors;
 
 namespace GitPrompt.Tests.Unit.Prompting;
 
+[Collection(ConfigIsolationCollection.Name)]
 public sealed class ContextSegmentBuilderTests
 {
     [Fact]
     public void Build_WhenUserAndUsernameExist_ShouldPreferUser()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var platformProvider = new TestPlatformProvider(
             user: "unix-user",
             windowsUserName: "windows-user",
@@ -27,6 +30,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenOnlyUsernameExists_ShouldUseUsername()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var platformProvider = new TestPlatformProvider(
             user: null,
             windowsUserName: "windows-user",
@@ -46,6 +50,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenNoUserExists_ShouldUseUnknownMarker(string? user)
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var platformProvider = new TestPlatformProvider(
             user: user,
             host: "workstation",
@@ -64,6 +69,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenNoHostExists_ShouldUseUnknownMarker(string? host)
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: host,
@@ -82,6 +88,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenPathIsNotFound_ShouldUseUnknownMarker(string? path)
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "workstation",
@@ -98,6 +105,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenHostExists_ShouldRenderHostValue()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "workstation",
@@ -114,6 +122,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenPathEqualsHome_ShouldRenderTilde()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         using var home = new TemporaryDirectory();
         var platformProvider = new TestPlatformProvider(
             user: "me",
@@ -133,6 +142,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenPathIsInsideHome_ShouldRenderTildeRelativePath()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         using var home = new TemporaryDirectory();
         var projectPath = Path.Combine(home.DirectoryPath, "src", "project");
         Directory.CreateDirectory(projectPath);
@@ -155,6 +165,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenPathContainsBackslashes_ShouldNormalizeToForwardSlashes()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
@@ -172,6 +183,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenWorkingDirectoryComesFromFallbackAndIsMissing_ShouldRenderMissingMarkerWithWarningColor()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         var missingPath = Path.Combine(Path.GetTempPath(), "Prompt.Tests.Unit", Guid.NewGuid().ToString("N"));
         var platformProvider = new TestPlatformProvider(
             user: "me",
@@ -192,6 +204,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenWorkingDirectoryComesFromFallbackAndExists_ShouldNotRenderMissingMarker()
     {
         // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
         using var temp = new TemporaryDirectory();
         var platformProvider = new TestPlatformProvider(
             user: "me",
@@ -205,6 +218,40 @@ public sealed class ContextSegmentBuilderTests
 
         // Assert
         segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}machine{ColorReset} {ColorPath}{temp.DirectoryPath.Replace('\\', '/')}{ColorReset}");
+    }
+
+    [Fact]
+    public void Build_WhenShowUserIsFalse_ShouldOmitUserSegment()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { ShowUser = false });
+        var platformProvider = new TestPlatformProvider(
+            user: "me",
+            host: "machine",
+            workingDirectoryPath: "/repo");
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().Be($"{ColorHost}machine{ColorReset} {ColorPath}/repo{ColorReset}");
+    }
+
+    [Fact]
+    public void Build_WhenShowUserIsFalse_ShouldOmitUserSegment_WhenUserIsUnknown()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { ShowUser = false });
+        var platformProvider = new TestPlatformProvider(
+            user: null,
+            host: "machine",
+            workingDirectoryPath: "/repo");
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().Be($"{ColorHost}machine{ColorReset} {ColorPath}/repo{ColorReset}");
     }
 
     private sealed class TemporaryDirectory : IDisposable

@@ -9,6 +9,10 @@ internal sealed record Config
     internal CacheConfig Cache { get; init; } = new();
 
     [JsonInclude]
+    [JsonPropertyName("showUser")]
+    internal bool ShowUser { get; init; } = true;
+
+    [JsonInclude]
     [JsonPropertyName("showCommandDuration")]
     internal bool ShowCommandDuration { get; init; } = true;
 

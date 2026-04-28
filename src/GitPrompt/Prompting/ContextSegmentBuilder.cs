@@ -1,3 +1,4 @@
+using GitPrompt.Configuration;
 using GitPrompt.Platform;
 using static GitPrompt.Constants.PromptColors;
 
@@ -7,10 +8,18 @@ internal static class ContextSegmentBuilder
 {
     internal static string Build(PlatformProvider platformProvider)
     {
-        var resolvedUser = ResolveUser(platformProvider);
-        var resolvedHost = ResolveHost(platformProvider);
+        var config = ConfigReader.Config;
+
         var (resolvedPath, isMissingPath) = ResolveWorkingDirectoryPath(platformProvider);
         var pathColor = isMissingPath ? ColorMissingPath : ColorPath;
+
+        if (!config.ShowUser)
+        {
+            return $"{ColorHost}{ResolveHost(platformProvider)}{ColorReset} {pathColor}{resolvedPath}{ColorReset}";
+        }
+
+        var resolvedUser = ResolveUser(platformProvider);
+        var resolvedHost = ResolveHost(platformProvider);
 
         return $"{ColorUser}{resolvedUser}{ColorReset} {ColorHost}{resolvedHost}{ColorReset} {pathColor}{resolvedPath}{ColorReset}";
     }

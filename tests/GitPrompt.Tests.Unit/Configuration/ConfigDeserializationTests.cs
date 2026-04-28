@@ -171,15 +171,41 @@ public sealed class ConfigDeserializationTests
     }
 
     [Fact]
-    public void ShowCommandDuration_WhenExplicitlyFalse_ShouldReturnFalse()
+    public void ShowUser_WhenAbsent_ShouldDefaultToFalse()
     {
         // Arrange
-        var json = """{"showCommandDuration": false}""";
+        var json = "{}";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowCommandDuration.Should().BeFalse();
+        config!.ShowUser.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ShowUser_WhenExplicitlyTrue_ShouldReturnTrue()
+    {
+        // Arrange
+        var json = """{"showUser": true}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.ShowUser.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShowUser_WhenExplicitlyFalse_ShouldReturnFalse()
+    {
+        // Arrange
+        var json = """{"showUser": false}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.ShowUser.Should().BeFalse();
     }
 }

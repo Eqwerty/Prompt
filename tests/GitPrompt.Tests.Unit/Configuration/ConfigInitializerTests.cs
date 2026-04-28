@@ -76,15 +76,22 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderShowCommandDurationAsDefaultValue()
+    public void BuildDefaultConfigContent_ShouldIncludeShowUser()
+    {
+        // Act & Assert
+        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("showUser");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderShowUserAsDefaultValue()
     {
         // Arrange
-        var expectedValue = new Config().ShowCommandDuration ? "true" : "false";
+        var expectedValue = new Config().ShowUser ? "true" : "false";
 
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
         // Assert
-        content.Should().Contain($"\"showCommandDuration\": {expectedValue}");
+        content.Should().Contain($"\"showUser\": {expectedValue}");
     }
 }
