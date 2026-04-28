@@ -66,13 +66,9 @@ _gitprompt_update_ps1() {
 
 if [ -x "$_GITPROMPT_BIN" ]; then
   trap '__gitprompt_debug_trap' DEBUG
-  case ";${PROMPT_COMMAND};" in
-    *;_gitprompt_update_ps1;*)
-      ;;
-    *)
-      PROMPT_COMMAND="_gitprompt_update_ps1${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
-      ;;
-  esac
+  if [[ "${PROMPT_COMMAND}" != *_gitprompt_update_ps1* ]]; then
+    PROMPT_COMMAND="_gitprompt_update_ps1${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+  fi
 fi
 
 _gitprompt_complete() {

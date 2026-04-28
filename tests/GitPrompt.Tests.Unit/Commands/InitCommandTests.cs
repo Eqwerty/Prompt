@@ -88,10 +88,10 @@ public sealed class InitCommandTests
         var script = InitCommand.GenerateBashInit();
 
         // Assert
-        script.Should().Contain("case \";${PROMPT_COMMAND};\"",
-            because: "re-sourcing .bashrc must not duplicate _gitprompt_update_ps1 in PROMPT_COMMAND");
-        script.Should().Contain("*;_gitprompt_update_ps1;*)",
-            because: "the guard must detect an already-registered _gitprompt_update_ps1 and skip the assignment");
+        script.Should().Contain("_gitprompt_update_ps1*",
+            because: "the guard must check whether _gitprompt_update_ps1 is already in PROMPT_COMMAND");
+        script.Should().Contain("PROMPT_COMMAND=\"_gitprompt_update_ps1",
+            because: "the guard must prepend _gitprompt_update_ps1 to PROMPT_COMMAND when not already present");
     }
 
     [Fact]
