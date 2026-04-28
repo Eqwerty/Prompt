@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using System.Text;
 using GitPrompt.Platform;
+using GitPrompt.Terminal;
 
 namespace GitPrompt.Commands;
 
@@ -52,44 +52,72 @@ internal static class UpdateCommand
         var dataDir = XdgPaths.GetDataDirectory();
         var aliasesPath = Path.Combine(dataDir, AliasesFileName);
         var completionPath = Path.Combine(dataDir, GitCompletionFileName);
+        string[] curlSslArgs = OperatingSystem.IsWindows() ? ["--ssl-no-revoke"] : [];
 
         Directory.CreateDirectory(dataDir);
 
-        var sslOption = OperatingSystem.IsWindows() ? "--ssl-no-revoke " : "";
-
-        var script = new StringBuilder();
-        script.Append($"curl -fsSL {sslOption}{AliasesUrl} -o \"{aliasesPath}\"");
-        if (File.Exists(completionPath))
+        var cancelled = false;
+        ConsoleCancelEventHandler cancelHandler = (_, e) =>
         {
-            script.Append($" && curl -fsSL {sslOption}{GitCompletionUrl} -o \"{completionPath}\"");
-        }
+            e.Cancel = true;
+            cancelled = true;
+        };
+
+        Console.CancelKeyPress += cancelHandler;
 
         try
         {
-            var processStartInfo = new ProcessStartInfo("sh")
+            bool aliasesOk;
+            using (var spinner = TerminalSpinner.Start("Downloading git aliases"))
             {
-                UseShellExecute = false
-            };
-
-            processStartInfo.ArgumentList.Add("-c");
-            processStartInfo.ArgumentList.Add(script.ToString());
-
-            var process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start shell process.");
-
-            process.WaitForExit();
-
-            if (process.ExitCode is not 0)
-            {
-                Environment.Exit(process.ExitCode);
+                aliasesOk = DownloadFile(AliasesUrl, aliasesPath, curlSslArgs);
+                if (aliasesOk)
+                {
+                    spinner.Complete();
+                }
             }
 
-            Console.WriteLine($"Updated git aliases: {aliasesPath}");
+            if (cancelled)
+            {
+                Console.Error.Write($"\n{AnsiTerminal.Red}error:{AnsiTerminal.Reset} Cancelled.");
+
+                Environment.Exit(130);
+            }
+
+            if (!aliasesOk)
+            {
+                Console.Error.WriteLine("gitprompt: update aliases failed.");
+                Console.Error.WriteLine($"gitprompt: to update manually, run: curl -fsSL {AliasesUrl} -o \"{aliasesPath}\"");
+
+                Environment.Exit(1);
+            }
+
             if (File.Exists(completionPath))
             {
-                Console.WriteLine($"Updated git completion: {completionPath}");
-            }
+                bool completionOk;
+                using (var spinner = TerminalSpinner.Start("Updating git completions"))
+                {
+                    completionOk = DownloadFile(GitCompletionUrl, completionPath, curlSslArgs);
 
-            Console.WriteLine("Restart your terminal to apply changes.");
+                    if (completionOk)
+                    {
+                        spinner.Complete();
+                    }
+                }
+
+                if (cancelled)
+                {
+                    Console.Error.Write($"\n{AnsiTerminal.Red}error:{AnsiTerminal.Reset} Cancelled.");
+
+                    Environment.Exit(130);
+                }
+
+                if (!completionOk)
+                {
+                    Console.Error.WriteLine(
+                        $"{AnsiTerminal.Yellow}warning:{AnsiTerminal.Reset} Git completions update failed. Alias tab completion may not work.");
+                }
+            }
         }
         catch (Exception exception)
         {
@@ -98,6 +126,31 @@ internal static class UpdateCommand
 
             Environment.Exit(1);
         }
+        finally
+        {
+            Console.CancelKeyPress -= cancelHandler;
+        }
+
+        Console.Write("\nRestart your terminal to apply changes.");
+    }
+
+    private static bool DownloadFile(string url, string outputPath, string[] curlSslArgs)
+    {
+        var psi = new ProcessStartInfo("curl") { UseShellExecute = false };
+        psi.ArgumentList.Add("-fsSL");
+        foreach (var arg in curlSslArgs)
+        {
+            psi.ArgumentList.Add(arg);
+        }
+
+        psi.ArgumentList.Add(url);
+        psi.ArgumentList.Add("-o");
+        psi.ArgumentList.Add(outputPath);
+
+        var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start curl process.");
+        process.WaitForExit();
+
+        return process.ExitCode is 0;
     }
 
     private static void CleanUpOldBinary()
