@@ -80,4 +80,29 @@ public sealed class InitCommandTests
         updatePs1Body.Should().Contain("__gitprompt_prompt_sp",
             because: "_gitprompt_update_ps1 must call __gitprompt_prompt_sp so the partial-line check runs on every prompt render");
     }
+
+    [Fact]
+    public void GenerateBashInit_ShouldGuardPromptCommandAgainstDuplication()
+    {
+        // Act
+        var script = InitCommand.GenerateBashInit();
+
+        // Assert
+        script.Should().Contain("case \";${PROMPT_COMMAND};\"",
+            because: "re-sourcing .bashrc must not duplicate _gitprompt_update_ps1 in PROMPT_COMMAND");
+        script.Should().Contain("*;_gitprompt_update_ps1;*)",
+            because: "the guard must detect an already-registered _gitprompt_update_ps1 and skip the assignment");
+    }
+
+    [Fact]
+    public void GenerateBashInit_ShouldGuardTimingVariableInitializationAgainstReset()
+    {
+        // Act
+        var script = InitCommand.GenerateBashInit();
+
+        // Assert
+        script.Should().Contain("[ -z \"${__gitprompt_cmd_start_us+x}\" ]",
+            because: "timing variables must only be initialized on first eval so re-sourcing does not " +
+                     "clear __gitprompt_cmd_start_us while the DEBUG trap is active");
+    }
 }

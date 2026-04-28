@@ -16,9 +16,11 @@ if [ -z "${_GITPROMPT_ORIGINAL_PS1+x}" ]; then
   _GITPROMPT_ORIGINAL_PS1="$PS1"
 fi
 
-__gitprompt_preexec_flag=0
-__gitprompt_running=0
-__gitprompt_cmd_start_us=""
+if [ -z "${__gitprompt_cmd_start_us+x}" ]; then
+  __gitprompt_preexec_flag=0
+  __gitprompt_running=0
+  __gitprompt_cmd_start_us=""
+fi
 
 __gitprompt_debug_trap() {
   if [ "$__gitprompt_running" -eq 0 ] && [ "$BASH_COMMAND" != "_gitprompt_update_ps1" ]; then
@@ -64,7 +66,13 @@ _gitprompt_update_ps1() {
 
 if [ -x "$_GITPROMPT_BIN" ]; then
   trap '__gitprompt_debug_trap' DEBUG
-  PROMPT_COMMAND="_gitprompt_update_ps1${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+  case ";${PROMPT_COMMAND};" in
+    *;_gitprompt_update_ps1;*)
+      ;;
+    *)
+      PROMPT_COMMAND="_gitprompt_update_ps1${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+      ;;
+  esac
 fi
 
 _gitprompt_complete() {
