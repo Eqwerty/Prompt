@@ -10,6 +10,7 @@ internal static class PromptColors
     internal static readonly string ColorUser = PromptColor(AnsiColors.Green);
     internal static readonly string ColorHost = PromptColor(AnsiColors.Magenta);
     internal static readonly string ColorPath = PromptColor(AnsiColors.Orange);
+    internal static readonly string ColorCommandDuration = PromptColor(AnsiColors.Magenta);
     internal static readonly string ColorBranch = PromptColor(AnsiColors.Blue);
     internal static readonly string ColorBranchNoUpstream = PromptColor(AnsiColors.Blue);
     internal static readonly string ColorAhead = PromptColor(AnsiColors.Blue);
@@ -20,7 +21,6 @@ internal static class PromptColors
     internal static readonly string ColorStash = PromptColor(AnsiColors.Magenta);
     internal static readonly string ColorConflict = PromptColor(AnsiColors.BoldRed);
     internal static readonly string ColorMissingPath = PromptColor(AnsiColors.BoldRed);
-    internal static readonly string ColorCommandDuration = PromptColor(AnsiColors.Magenta);
     internal static readonly string ColorTimeout = PromptColor(AnsiColors.Yellow);
     internal static readonly string ColorPromptSymbol = PromptColor(AnsiColors.LightGray);
     internal static readonly string ColorReset = PromptColor(AnsiColors.Reset);
