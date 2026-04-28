@@ -108,6 +108,9 @@ if [ "$INSTALL_ALIASES" = "1" ]; then
   mkdir -p "$ALIASES_DIR"
   run_step "Installing git aliases" "$TEMPORARY_DIRECTORY/aliases.log" \
     cp "$REPOSITORY_ROOT/git_aliases.sh" "$ALIASES_FILE_PATH"
+
+  try_step "Installing git completions" "$TEMPORARY_DIRECTORY/completions.log" \
+    download_git_completion || true
 fi
 
 add_to_shell_config

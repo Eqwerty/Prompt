@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using GitPrompt.Platform;
 
 namespace GitPrompt.Commands;
@@ -8,6 +9,8 @@ internal static class UpdateCommand
     private const string InstallScriptUrl = "https://raw.githubusercontent.com/Eqwerty/GitPrompt/master/install.sh";
     private const string AliasesUrl = "https://github.com/Eqwerty/GitPrompt/releases/download/latest/git_aliases.sh";
     private const string AliasesFileName = "git_aliases.sh";
+    private const string GitCompletionUrl = "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash";
+    private const string GitCompletionFileName = "git-completion.bash";
 
     internal static void Run()
     {
@@ -48,11 +51,18 @@ internal static class UpdateCommand
     {
         var dataDir = XdgPaths.GetDataDirectory();
         var aliasesPath = Path.Combine(dataDir, AliasesFileName);
+        var completionPath = Path.Combine(dataDir, GitCompletionFileName);
 
         Directory.CreateDirectory(dataDir);
 
         var sslOption = OperatingSystem.IsWindows() ? "--ssl-no-revoke " : "";
-        var script = $"curl -fsSL {sslOption}{AliasesUrl} -o \"{aliasesPath}\"";
+
+        var script = new StringBuilder();
+        script.Append($"curl -fsSL {sslOption}{AliasesUrl} -o \"{aliasesPath}\"");
+        if (File.Exists(completionPath))
+        {
+            script.Append($" && curl -fsSL {sslOption}{GitCompletionUrl} -o \"{completionPath}\"");
+        }
 
         try
         {
@@ -62,7 +72,7 @@ internal static class UpdateCommand
             };
 
             processStartInfo.ArgumentList.Add("-c");
-            processStartInfo.ArgumentList.Add(script);
+            processStartInfo.ArgumentList.Add(script.ToString());
 
             var process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start shell process.");
 
@@ -74,6 +84,11 @@ internal static class UpdateCommand
             }
 
             Console.WriteLine($"Updated git aliases: {aliasesPath}");
+            if (File.Exists(completionPath))
+            {
+                Console.WriteLine($"Updated git completion: {completionPath}");
+            }
+
             Console.WriteLine("Restart your terminal to apply changes.");
         }
         catch (Exception exception)

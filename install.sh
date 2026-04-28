@@ -117,6 +117,13 @@ add_to_shell_config() {
   printf "${R}"
 }
 
+download_git_completion() {
+  mkdir -p "$ALIASES_DIR"
+  # shellcheck disable=SC2086
+  curl $CURL_SSL_OPT -fsSL "$GIT_COMPLETION_URL" -o "$GIT_COMPLETION_FILE_PATH" \
+    || return 1
+}
+
 download_aliases() {
   if ! command -v curl >/dev/null 2>&1; then
     die "curl is required but not found."
@@ -155,6 +162,8 @@ BIN_DIR="$HOME/.local/bin"
 ALIASES_URL="https://github.com/Eqwerty/GitPrompt/releases/download/latest/git_aliases.sh"
 ALIASES_DIR="$HOME/.local/share/gitprompt"
 ALIASES_FILE_PATH="$ALIASES_DIR/git_aliases.sh"
+GIT_COMPLETION_URL="https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
+GIT_COMPLETION_FILE_PATH="$ALIASES_DIR/git-completion.bash"
 
 if [ "$TARGET_OS" = "windows" ]; then
   CURL_SSL_OPT="--ssl-no-revoke"
@@ -219,6 +228,14 @@ if [ -z "${_INSTALL_SOURCED:-}" ]; then
     else
       printf '\n'
       printf "${YELLOW}warning:${R} Git aliases install failed. Run 'gitprompt update aliases' later.\n" >&2
+    fi
+
+    if _run_animated_step "Installing git completions" "$TEMPORARY_DIRECTORY/completions.log" \
+        download_git_completion; then
+      printf "\r${GREEN}✓${R} Installing git completions...\n"
+    else
+      printf '\n'
+      printf "${YELLOW}warning:${R} Git completions install failed. Alias tab completion may not work.\n" >&2
     fi
   fi
 

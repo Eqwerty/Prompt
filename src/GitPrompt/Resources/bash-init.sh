@@ -81,6 +81,13 @@ _gitprompt_complete() {
 complete -F _gitprompt_complete gitprompt
 [[ "$OSTYPE" == msys || "$OSTYPE" == cygwin ]] && complete -F _gitprompt_complete gitprompt.exe
 
+if ! type __git_complete >/dev/null 2>&1; then
+  _gitprompt_f="$HOME/.local/share/gitprompt/git-completion.bash"
+  # shellcheck disable=SC1090
+  [ -f "$_gitprompt_f" ] && . "$_gitprompt_f"
+  unset _gitprompt_f
+fi
+
 _gitprompt_aliases="$HOME/.local/share/gitprompt/git_aliases.sh"
 # shellcheck disable=SC1090
 [ -f "$_gitprompt_aliases" ] && . "$_gitprompt_aliases"
