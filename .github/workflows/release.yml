@@ -34,4 +34,5 @@ jobs:
             --title "Latest" \
             --target "${{ github.sha }}" \
             --generate-notes \
-            artifacts/*
+            artifacts/* \
+            git_aliases.sh
