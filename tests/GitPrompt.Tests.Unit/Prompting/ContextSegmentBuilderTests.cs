@@ -288,6 +288,75 @@ public sealed class ContextSegmentBuilderTests
         segment.Should().Be($"{ColorPath}/repo{ColorReset}");
     }
 
+    [Theory]
+    [InlineData("~/a/b/c/d", 2, "~/…/c/d")]
+    [InlineData("~/a/b/c/d", 3, "~/…/b/c/d")]
+    [InlineData("~/a/b/c", 3, "~/a/b/c")]
+    [InlineData("~/a/b/c", 2, "~/…/b/c")]
+    [InlineData("~/a", 1, "~/a")]
+    [InlineData("~", 1, "~")]
+    [InlineData("/etc/nginx/conf.d", 2, "/…/nginx/conf.d")]
+    [InlineData("/etc/nginx/conf.d", 1, "/…/conf.d")]
+    [InlineData("/etc/nginx/conf.d", 3, "/etc/nginx/conf.d")]
+    [InlineData("folder/nested/deep", 2, "…/nested/deep")]
+    [InlineData("folder/nested/deep", 1, "…/deep")]
+    [InlineData("folder/nested", 2, "folder/nested")]
+    public void TruncatePath_ShouldTruncateToMaxDepth(string path, int maxDepth, string expected)
+    {
+        // Act & Assert
+        ContextSegmentBuilder.TruncatePath(path, maxDepth).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void TruncatePath_WhenMaxDepthIsZeroOrNegative_ShouldReturnPathUnchanged(int maxDepth)
+    {
+        // Arrange
+        const string path = "~/a/b/c/d";
+
+        // Act & Assert
+        ContextSegmentBuilder.TruncatePath(path, maxDepth).Should().Be(path);
+    }
+
+    [Fact]
+    public void Build_WhenMaxPathDepthIsSet_ShouldTruncatePath()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { MaxPathDepth = 2 });
+        var platformProvider = new TestPlatformProvider(
+            user: "me",
+            host: "machine",
+            workingDirectoryPath: "/a/b/c/d");
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}machine{ColorReset} {ColorPath}/…/c/d{ColorReset}");
+    }
+
+    [Fact]
+    public void Build_WhenMissingPathAndMaxPathDepthIsSet_ShouldTruncateThenAppendMissingMarker()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { MaxPathDepth = 1 });
+        var missingPath = "/a/b/c/" + Guid.NewGuid().ToString("N");
+        var platformProvider = new TestPlatformProvider(
+            user: "me",
+            host: "machine",
+            workingDirectoryPath: missingPath,
+            isWorkingDirectoryFromFallback: true,
+            isWindows: false);
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        var lastSegment = missingPath.Split('/')[^1];
+        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}machine{ColorReset} {ColorMissingPath}/\u2026/{lastSegment} [missing]{ColorReset}");
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()

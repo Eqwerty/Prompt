@@ -107,11 +107,60 @@ internal static class ContextSegmentBuilder
         }
 
         var displayPath = workingDirectoryPath.Replace('\\', '/');
+        displayPath = TruncatePath(displayPath, ConfigReader.Config.MaxPathDepth);
         if (isMissingPath)
         {
             displayPath += " [missing]";
         }
 
         return (displayPath, isMissingPath);
+    }
+
+    internal static string TruncatePath(string displayPath, int maxDepth)
+    {
+        if (maxDepth <= 0 || string.IsNullOrEmpty(displayPath))
+        {
+            return displayPath;
+        }
+
+        // Determine anchor ("~", "", or "") and content segments.
+        string anchor;
+        string[] segments;
+
+        if (displayPath.StartsWith("~/", StringComparison.Ordinal) || displayPath == "~")
+        {
+            anchor = "~";
+            segments = displayPath.Length > 2
+                ? displayPath[2..].Split('/')
+                : [];
+        }
+        else if (displayPath.StartsWith('/'))
+        {
+            anchor = string.Empty; // represents the leading "/"
+            var withoutLeadingSlash = displayPath[1..];
+            segments = withoutLeadingSlash.Length > 0
+                ? withoutLeadingSlash.Split('/')
+                : [];
+        }
+        else
+        {
+            anchor = null!;
+            segments = displayPath.Split('/');
+        }
+
+        if (segments.Length <= maxDepth)
+        {
+            return displayPath;
+        }
+
+        var kept = segments[^maxDepth..];
+        var joined = string.Join("/", kept);
+
+        return anchor switch
+        {
+            "~" => $"~/\u2026/{joined}",
+            "" => $"/\u2026/{joined}",
+            _ => $"\u2026/{joined}"
+        };
     }
 }

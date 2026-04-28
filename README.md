@@ -174,6 +174,12 @@ Controls which parts of the context segment are rendered.
 |---|---|---|
 | `showUser` | `true` | Show the username in the prompt |
 | `showHost` | `true` | Show the hostname in the prompt |
+| `maxPathDepth` | `0` | Max directory segments shown in the path (`0` = full path) |
+
+When `maxPathDepth` is set, paths deeper than the limit are truncated with `…`. Examples with `maxPathDepth: 2`:
+
+- `~/repos/company/project/src` → `~/…/project/src`
+- `/etc/nginx/conf.d` → `/…/nginx/conf.d`
 
 Example `config.jsonc`:
 

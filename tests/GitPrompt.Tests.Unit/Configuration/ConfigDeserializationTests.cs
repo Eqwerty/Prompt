@@ -247,4 +247,30 @@ public sealed class ConfigDeserializationTests
         // Assert
         config!.ShowHost.Should().BeFalse();
     }
+
+    [Fact]
+    public void MaxPathDepth_WhenAbsent_ShouldDefaultToZero()
+    {
+        // Arrange
+        var json = "{}";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.MaxPathDepth.Should().Be(0);
+    }
+
+    [Fact]
+    public void MaxPathDepth_WhenExplicitlySet_ShouldReturnValue()
+    {
+        // Arrange
+        var json = """{"maxPathDepth": 3}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.MaxPathDepth.Should().Be(3);
+    }
 }

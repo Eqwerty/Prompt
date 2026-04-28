@@ -114,4 +114,24 @@ public sealed class ConfigInitializerTests
         // Assert
         content.Should().Contain($"\"showHost\": {expectedValue}");
     }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldIncludeMaxPathDepth()
+    {
+        // Act & Assert
+        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("maxPathDepth");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderMaxPathDepthAsDefaultValue()
+    {
+        // Arrange
+        var expectedValue = new Config().MaxPathDepth.ToString();
+
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"\"maxPathDepth\": {expectedValue}");
+    }
 }

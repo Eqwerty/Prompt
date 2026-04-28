@@ -17,6 +17,10 @@ internal sealed record Config
     internal bool ShowHost { get; init; } = true;
 
     [JsonInclude]
+    [JsonPropertyName("maxPathDepth")]
+    internal int MaxPathDepth { get; init; } = 0;
+
+    [JsonInclude]
     [JsonPropertyName("showCommandDuration")]
     internal bool ShowCommandDuration { get; init; } = true;
 
