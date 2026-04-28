@@ -222,6 +222,6 @@ if [ -z "${_INSTALL_SOURCED:-}" ]; then
     fi
   fi
 
-  printf '\nRestart your terminal or run: source ~/.bashrc\n'
+  printf '\nRestart your terminal to apply changes.\n'
   printf "Run 'gitprompt --help' to see available commands.\n"
 fi

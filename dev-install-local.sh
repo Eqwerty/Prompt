@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
-set -eu
 
 # Local development installer: builds and installs a local binary.
-# Usage:
-#   sh ./dev-install-local.sh
+# Usage: sh ./dev-install-local.sh
+
+set -eu
 
 SCRIPT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 REPOSITORY_ROOT="$SCRIPT_DIRECTORY"
@@ -111,5 +111,5 @@ if [ "$INSTALL_ALIASES" = "1" ]; then
 fi
 
 add_to_shell_config
-printf '\nRestart your terminal or run: source ~/.bashrc\n'
+printf '\nRestart your terminal to apply changes.\n'
 printf "Run 'gitprompt --help' to see available commands.\n"

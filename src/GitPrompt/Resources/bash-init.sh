@@ -3,11 +3,14 @@
 if [[ "$OSTYPE" == msys || "$OSTYPE" == cygwin ]]; then
   _GITPROMPT_BIN="$HOME/.local/bin/gitprompt.exe"
   _GITPROMPT_FALLBACK_PS1='\w > '
-  gitprompt() { "$_GITPROMPT_BIN" "$@"; }
 else
   _GITPROMPT_BIN="$HOME/.local/bin/gitprompt"
   _GITPROMPT_FALLBACK_PS1='\w \$ '
 fi
+
+gitprompt() {
+  "$_GITPROMPT_BIN" "$@"
+}
 
 if [ -z "${_GITPROMPT_ORIGINAL_PS1+x}" ]; then
   _GITPROMPT_ORIGINAL_PS1="$PS1"

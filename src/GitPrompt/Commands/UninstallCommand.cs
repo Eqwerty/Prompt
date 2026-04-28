@@ -17,22 +17,16 @@ internal static class UninstallCommand
         var cacheDir = XdgPaths.GetCacheDirectory();
         var dataDir = XdgPaths.GetDataDirectory();
 
+        if (IsCwdInsideAnyDirectory(configDir, cacheDir, dataDir))
+        {
+            return;
+        }
+
         CleanShellConfigs();
 
-        if (Directory.Exists(configDir))
-        {
-            Directory.Delete(configDir, recursive: true);
-        }
-
-        if (Directory.Exists(cacheDir))
-        {
-            Directory.Delete(cacheDir, recursive: true);
-        }
-
-        if (Directory.Exists(dataDir))
-        {
-            Directory.Delete(dataDir, recursive: true);
-        }
+        TryDeleteDirectory(configDir);
+        TryDeleteDirectory(cacheDir);
+        TryDeleteDirectory(dataDir);
 
         if (binaryPath is not null)
         {
@@ -40,6 +34,50 @@ internal static class UninstallCommand
         }
 
         Console.WriteLine("Uninstalled.");
+        Console.WriteLine("Restart your terminal to apply changes.");
+    }
+
+    private static bool IsCwdInsideAnyDirectory(params string[] directories)
+    {
+        var cwd = Directory.GetCurrentDirectory();
+
+        foreach (var dir in directories)
+        {
+            if (!Directory.Exists(dir))
+            {
+                continue;
+            }
+
+            var normalizedCwd = Path.GetFullPath(cwd).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var normalizedDir = Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+            if (normalizedCwd.Equals(normalizedDir, comparison)
+                || normalizedCwd.StartsWith(normalizedDir + Path.DirectorySeparatorChar, comparison))
+            {
+                Console.Error.WriteLine($"error: Navigate out of {dir} before uninstalling.");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+
+        try
+        {
+            Directory.Delete(path, recursive: true);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Console.Error.WriteLine($"warn: Could not delete {path} — it may be your current directory. Navigate away and try again.");
+        }
     }
 
     private static void CleanShellConfigs()
