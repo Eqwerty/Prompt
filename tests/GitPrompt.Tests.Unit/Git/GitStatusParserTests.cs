@@ -21,6 +21,24 @@ public sealed class GitStatusParserTests
     }
 
     [Fact]
+    public void Parse_WhenInputIsEmpty_ShouldReturnDefaultSnapshot()
+    {
+        // Act
+        var gitStatusSnapshot = GitStatusParser.Parse(string.Empty);
+
+        // Assert
+        gitStatusSnapshot.BranchHeadName.Should().BeEmpty();
+        gitStatusSnapshot.HeadObjectId.Should().BeEmpty();
+        gitStatusSnapshot.UpstreamReference.Should().BeEmpty();
+        gitStatusSnapshot.HasUpstream.Should().BeFalse();
+        gitStatusSnapshot.HasAheadBehindCounts.Should().BeFalse();
+        gitStatusSnapshot.CommitsAhead.Should().Be(0);
+        gitStatusSnapshot.CommitsBehind.Should().Be(0);
+        gitStatusSnapshot.StashEntryCount.Should().Be(0);
+        gitStatusSnapshot.GitStatusCounts.Should().Be(new GitStatusCounts());
+    }
+
+    [Fact]
     public void Parse_WhenStatusContainsAheadBehindAndCounters_ShouldParseSnapshotValues()
     {
         // Arrange

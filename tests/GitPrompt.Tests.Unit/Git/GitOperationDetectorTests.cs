@@ -253,4 +253,79 @@ public sealed class GitOperationDetectorTests
         // Assert
         matchingRemoteReferences.Should().Equal("origin/release");
     }
+
+    [Fact]
+    public void ReadGitOperationMarker_WhenGitDirectoryPathIsEmpty_ShouldReturnEmpty()
+    {
+        // Act
+        var operationMarker = GitOperationDetector.ReadGitOperationMarker(string.Empty);
+
+        // Assert
+        operationMarker.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ResolveRebaseBranchName_WhenGitDirectoryPathIsEmpty_ShouldReturnEmpty()
+    {
+        // Act
+        var rebaseBranchName = GitOperationDetector.ResolveRebaseBranchName(string.Empty);
+
+        // Assert
+        rebaseBranchName.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ResolveRebaseBranchName_WhenHeadNameFileIsEmpty_ShouldReturnEmpty()
+    {
+        // Arrange
+        using var gitDirectory = new TemporaryDirectory();
+        var rebaseDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "rebase-merge");
+        Directory.CreateDirectory(rebaseDirectoryPath);
+        await File.WriteAllTextAsync(Path.Combine(rebaseDirectoryPath, "head-name"), "   \n");
+
+        // Act
+        var rebaseBranchName = GitOperationDetector.ResolveRebaseBranchName(gitDirectory.DirectoryPath);
+
+        // Assert
+        rebaseBranchName.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ResolveRebaseBranchName_WhenHeadNameContainsNonHeadsRef_ShouldReturnLastPathSegment()
+    {
+        // Arrange
+        using var gitDirectory = new TemporaryDirectory();
+        var rebaseDirectoryPath = Path.Combine(gitDirectory.DirectoryPath, "rebase-merge");
+        Directory.CreateDirectory(rebaseDirectoryPath);
+        await File.WriteAllTextAsync(Path.Combine(rebaseDirectoryPath, "head-name"), "refs/tags/v1.2.3\n");
+
+        // Act
+        var rebaseBranchName = GitOperationDetector.ResolveRebaseBranchName(gitDirectory.DirectoryPath);
+
+        // Assert
+        rebaseBranchName.Should().Be("v1.2.3");
+    }
+
+    [Fact]
+    public void FindMatchingRemoteReferences_WhenGitDirectoryPathIsEmpty_ShouldReturnEmpty()
+    {
+        // Act
+        var matchingRemoteReferences = GitOperationDetector.FindMatchingRemoteReferences(string.Empty, "abcdef1234567890");
+
+        // Assert
+        matchingRemoteReferences.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void FindMatchingRemoteReferences_WhenRefsRemotesDirectoryDoesNotExist_ShouldReturnEmpty()
+    {
+        // Arrange
+        using var gitDirectory = new TemporaryDirectory();
+
+        // Act
+        var matchingRemoteReferences = GitOperationDetector.FindMatchingRemoteReferences(gitDirectory.DirectoryPath, "abcdef1234567890");
+
+        // Assert
+        matchingRemoteReferences.Should().BeEmpty();
+    }
 }

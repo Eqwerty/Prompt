@@ -39,13 +39,6 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldIncludeCommandTimeoutMs()
-    {
-        // Act & Assert
-        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("commandTimeoutMs");
-    }
-
-    [Fact]
     public void BuildDefaultConfigContent_ShouldRenderCommandTimeoutMsAsDefaultValue()
     {
         // Arrange
@@ -76,13 +69,6 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldIncludeShowUser()
-    {
-        // Act & Assert
-        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("showUser");
-    }
-
-    [Fact]
     public void BuildDefaultConfigContent_ShouldRenderShowUserAsDefaultValue()
     {
         // Arrange
@@ -93,13 +79,6 @@ public sealed class ConfigInitializerTests
 
         // Assert
         content.Should().Contain($"\"showUser\": {expectedValue}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldIncludeShowHost()
-    {
-        // Act & Assert
-        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("showHost");
     }
 
     [Fact]
@@ -116,13 +95,6 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldIncludeMaxPathDepth()
-    {
-        // Act & Assert
-        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("maxPathDepth");
-    }
-
-    [Fact]
     public void BuildDefaultConfigContent_ShouldRenderMaxPathDepthAsDefaultValue()
     {
         // Arrange
@@ -136,13 +108,6 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldIncludeMultilinePrompt()
-    {
-        // Act & Assert
-        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("multilinePrompt");
-    }
-
-    [Fact]
     public void BuildDefaultConfigContent_ShouldRenderMultilinePromptAsDefaultValue()
     {
         // Arrange
@@ -153,13 +118,6 @@ public sealed class ConfigInitializerTests
 
         // Assert
         content.Should().Contain($"\"multilinePrompt\": {expectedValue}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldIncludeNewlineBeforePrompt()
-    {
-        // Act & Assert
-        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("newlineBeforePrompt");
     }
 
     [Fact]

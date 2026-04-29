@@ -6,7 +6,7 @@ namespace GitPrompt.Tests.Unit.Commands;
 public sealed class AliasesCommandTests
 {
     [Fact]
-    public void Run_WhenAliasesFileDoesNotExist_ShouldWriteNotFoundError()
+    public void Run_WhenAliasesFileDoesNotExist_ShouldWriteInformativeErrorMessage()
     {
         // Arrange
         var nonExistentPath = Path.Combine(Path.GetTempPath(), $"nonexistent_{Guid.NewGuid()}.sh");
@@ -16,34 +16,9 @@ public sealed class AliasesCommandTests
         AliasesCommand.Run(nonExistentPath, errorOutput);
 
         // Assert
-        errorOutput.ToString().Should().Contain("git aliases not found at:");
-    }
-
-    [Fact]
-    public void Run_WhenAliasesFileDoesNotExist_ShouldSuggestUpdateAliasesCommand()
-    {
-        // Arrange
-        var nonExistentPath = Path.Combine(Path.GetTempPath(), $"nonexistent_{Guid.NewGuid()}.sh");
-        var errorOutput = new StringWriter();
-
-        // Act
-        AliasesCommand.Run(nonExistentPath, errorOutput);
-
-        // Assert
-        errorOutput.ToString().Should().Contain("gitprompt update aliases");
-    }
-
-    [Fact]
-    public void Run_WhenAliasesFileDoesNotExist_ShouldIncludePathInErrorMessage()
-    {
-        // Arrange
-        var nonExistentPath = Path.Combine(Path.GetTempPath(), $"nonexistent_{Guid.NewGuid()}.sh");
-        var errorOutput = new StringWriter();
-
-        // Act
-        AliasesCommand.Run(nonExistentPath, errorOutput);
-
-        // Assert
-        errorOutput.ToString().Should().Contain(nonExistentPath);
+        var error = errorOutput.ToString();
+        error.Should().Contain("git aliases not found at:");
+        error.Should().Contain("gitprompt update aliases");
+        error.Should().Contain(nonExistentPath);
     }
 }

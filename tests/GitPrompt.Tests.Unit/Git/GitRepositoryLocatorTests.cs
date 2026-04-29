@@ -92,4 +92,55 @@ public sealed class GitRepositoryLocatorTests
         // Assert
         resolvedGitDirectoryPath.Should().Be(Path.GetFullPath(actualGitDirectoryPath));
     }
+
+    [Fact]
+    public void ResolveGitDirectoryPath_WhenPathDoesNotExist_ShouldReturnNull()
+    {
+        // Arrange
+        var nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), ".git");
+
+        // Act
+        var resolvedGitDirectoryPath = GitRepositoryLocator.ResolveGitDirectoryPath(nonExistentPath);
+
+        // Assert
+        resolvedGitDirectoryPath.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ResolveGitDirectoryPath_WhenGitdirFileContainsAbsolutePath_ShouldReturnAbsolutePath()
+    {
+        // Arrange
+        using var rootDirectory = new TemporaryDirectory();
+        var actualGitDirectoryPath = Path.Combine(rootDirectory.DirectoryPath, "actual-git");
+        var workingTreePath = Path.Combine(rootDirectory.DirectoryPath, "worktree");
+        Directory.CreateDirectory(actualGitDirectoryPath);
+        Directory.CreateDirectory(workingTreePath);
+
+        var dotGitPath = Path.Combine(workingTreePath, ".git");
+        await File.WriteAllTextAsync(dotGitPath, $"gitdir: {actualGitDirectoryPath}\n");
+
+        // Act
+        var resolvedGitDirectoryPath = GitRepositoryLocator.ResolveGitDirectoryPath(dotGitPath);
+
+        // Assert
+        resolvedGitDirectoryPath.Should().Be(Path.GetFullPath(actualGitDirectoryPath));
+    }
+
+    [Fact]
+    public async Task ResolveGitDirectoryPath_WhenGitdirFilePointsToNonExistentDirectory_ShouldReturnNull()
+    {
+        // Arrange
+        using var rootDirectory = new TemporaryDirectory();
+        var workingTreePath = Path.Combine(rootDirectory.DirectoryPath, "worktree");
+        Directory.CreateDirectory(workingTreePath);
+
+        var dotGitPath = Path.Combine(workingTreePath, ".git");
+        await File.WriteAllTextAsync(dotGitPath, "gitdir: ../does-not-exist\n");
+
+        // Act
+        var resolvedGitDirectoryPath = GitRepositoryLocator.ResolveGitDirectoryPath(dotGitPath);
+
+        // Assert
+        resolvedGitDirectoryPath.Should().BeNull();
+    }
 }

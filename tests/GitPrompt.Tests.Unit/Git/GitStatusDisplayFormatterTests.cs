@@ -187,4 +187,34 @@ public sealed class GitStatusDisplayFormatterTests
         gitStatusDisplay.Should().Contain($" {Colored(ColorUntracked, Indicator(PromptIcons.IconUntracked, 1))}");
         gitStatusDisplay.Should().Contain($" {Colored(ColorConflict, Indicator(PromptIcons.IconConflicts, 1))}");
     }
+
+    [Fact]
+    public void BuildBranchLabel_WhenHasUpstreamIsTrue_ShouldReturnLabelWithoutNoUpstreamMarker()
+    {
+        // Act
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+
+        // Assert
+        label.Should().Be(TrackedBranchLabel("main"));
+    }
+
+    [Fact]
+    public void BuildBranchLabel_WhenHasUpstreamIsFalse_ShouldPrependNoUpstreamMarker()
+    {
+        // Act
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("feature", hasUpstream: false);
+
+        // Assert
+        label.Should().Be(NoUpstreamBranchLabel("feature"));
+    }
+
+    [Fact]
+    public void BuildBranchLabel_WhenHasUpstreamDefaultsToTrue_ShouldReturnTrackedLabel()
+    {
+        // Act
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main");
+
+        // Assert
+        label.Should().Be(TrackedBranchLabel("main"));
+    }
 }
