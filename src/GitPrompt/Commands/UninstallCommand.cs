@@ -5,10 +5,7 @@ namespace GitPrompt.Commands;
 
 internal static class UninstallCommand
 {
-    private static readonly string[] ShellConfigFiles =
-    [
-        ".bashrc", ".bash_aliases", ".bash_profile", ".bash_login", ".profile", ".zshenv", ".zshrc", ".zprofile"
-    ];
+    private static readonly string[] ShellConfigFiles = ShellConfigScanner.GetSearchPaths();
 
     internal static void Run()
     {
@@ -82,19 +79,17 @@ internal static class UninstallCommand
 
     private static void CleanShellConfigs()
     {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var remainingRefs = new List<string>();
 
-        foreach (var fileName in ShellConfigFiles)
+        foreach (var path in ShellConfigFiles)
         {
-            var path = Path.Combine(home, fileName);
             if (!File.Exists(path))
             {
                 continue;
             }
 
             var lines = File.ReadAllLines(path);
-            var filtered = lines.Where(line => !IsGitPromptInitEvalLine(line)).ToArray();
+            var filtered = lines.Where(line => !ShellConfigScanner.IsGitPromptInitEvalLine(line)).ToArray();
 
             if (filtered.Length != lines.Length)
             {
@@ -123,16 +118,6 @@ internal static class UninstallCommand
         }
 
         Console.Error.WriteLine();
-    }
-
-    private static bool IsGitPromptInitEvalLine(string line)
-    {
-        var trimmed = line.TrimStart();
-
-        return trimmed.StartsWith("eval", StringComparison.OrdinalIgnoreCase)
-               && trimmed.Contains("gitprompt", StringComparison.OrdinalIgnoreCase)
-               && trimmed.Contains("init", StringComparison.OrdinalIgnoreCase)
-               && trimmed.Contains("bash", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void DeleteBinary(string binaryPath)

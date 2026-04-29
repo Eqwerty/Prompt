@@ -49,7 +49,12 @@ internal static class CommandRegistry
         new(Verb: "debug",
             Usage: "gitprompt debug",
             Description: "Show a diagnostic report for the current directory",
-            Execute: _ => DebugCommand.Run()),   
+            Execute: _ => DebugCommand.Run()),
+
+        new(Verb: "paths",
+            Usage: "gitprompt paths",
+            Description: "Show paths to the binary, config, aliases, cache, and shell config",
+            Execute: _ => PathsCommand.Run()),
 
         new(Verb: "--invalidate-status-cache",
             Usage: "gitprompt --invalidate-status-cache",
