@@ -9,7 +9,7 @@ alias gap="git add --patch" # Interactively stage changes in the working directo
 
 # Add a file based on a partial name match from modified files
 function gam() {
-  __git_match_and_execute "gam" "$1" "git add"
+  __git_match_and_execute "gam" "$1" git add
 }
 
 # ============================ Commit ============================
@@ -201,12 +201,12 @@ alias gdfu="git diff --name-only --diff-filter=U" # Show files with unmerged cha
 
 # Show the diff of a file based on a partial name match from modified files
 function gdm() {
-  __git_match_and_execute "gdm" "$1" "git diff"
+  __git_match_and_execute "gdm" "$1" git diff
 }
 
 # Show the diff of a staged file based on a partial name match from modified files
 function gdsm() {
-  __git_match_and_execute "gdsm" "$1" "git diff --staged"
+  __git_match_and_execute "gdsm" "$1" git diff --staged
 }
 
 # ============================ Status ============================
@@ -219,7 +219,7 @@ alias gref="git reflog" # Show the reflog
 # ============================ File Checkout ============================
 # Check out a file based on a partial name match from modified files
 function gcofm() {
-  __git_match_and_execute "gcofm" "$1" "git checkout"
+  __git_match_and_execute "gcofm" "$1" git checkout
 }
 
 # ============================ Cherry-Pick ============================
@@ -231,9 +231,18 @@ alias gcpc="git cherry-pick --continue" # Continue the cherry-picking operation 
 # Create a pull request and open it in the default browser
 function pr() {
   local github_url branch_name main_branch pr_url
+
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Error: not in a git repository"; return 1; }
+
   github_url=$(git remote -v | awk '/fetch/{print $2}' | sed -Ee 's#(git@|git://)#https://#' -e 's@cloud:@cloud/@' -e 's@com:@com/@' -e 's%\.git$%%' | awk '/github/')
-  branch_name=$(git symbolic-ref HEAD | cut -d"/" -f 3,4)
+  [ -n "$github_url" ] || { echo "Error: no GitHub remote found"; return 1; }
+
+  branch_name=$(git symbolic-ref HEAD 2>/dev/null | cut -d"/" -f 3,4)
+  [ -n "$branch_name" ] || { echo "Error: could not determine current branch (detached HEAD?)"; return 1; }
+
   main_branch=$(gdefault)
+  [ -n "$main_branch" ] || { echo "Error: could not determine default branch"; return 1; }
+
   pr_url="$github_url/compare/$main_branch...$branch_name"
   explorer.exe "$pr_url"
 }
@@ -241,11 +250,18 @@ function pr() {
 # Open the current branch or the main branch in the GitHub repository
 function gh() {
   local github_url main_branch current_branch url
+
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Error: not in a git repository"; return 1; }
+
   github_url=$(git remote -v | awk '/fetch/{print $2}' | sed -Ee 's#(git@|git://)#https://#' -e 's@cloud:@cloud/@' -e 's@com:@com/@' -e 's%\.git$%%' | awk '/github/')
+  [ -n "$github_url" ] || { echo "Error: no GitHub remote found"; return 1; }
+
   main_branch=$(gdefault)
-  current_branch=$(gcurrent)
+  [ -n "$main_branch" ] || { echo "Error: could not determine default branch"; return 1; }
+
+  current_branch=$(gcurrent 2>/dev/null)
   url="$github_url"
-  if [[ "$main_branch" != "$current_branch" ]]; then
+  if [[ -n "$current_branch" && "$main_branch" != "$current_branch" ]]; then
     url="$github_url/tree/$current_branch"
   fi
   
@@ -276,15 +292,15 @@ alias gcge="git config --global --edit" # Opens the global Git configuration fil
 alias gcfd="git clean -fd" # Remove untracked files and directories
 alias gcfdn="git clean -fdn" # Show which untracked files and directories would be removed
 
-# Execute a Git command on a file matched by partial name from the working directory
-# Usage: __git_match_and_execute <description> <partial-file-name> <git-command>
+# Execute a Git command on a file matched by partial name from modified/untracked files
+# Usage: __git_match_and_execute <description> <partial-file-name> <git-command-words...>
 # - If exactly one match is found, the command is run with that file.
 # - If multiple matches are found, it lists them and exits with code 2.
 # - If no match is found, it exits with code 3.
 function __git_match_and_execute() {
   local description="$1"
   local partial_name="$2"
-  local command="$3"
+  shift 2
 
   if [ -z "$partial_name" ]; then
     echo "Usage: $description <partial-file-name>"
@@ -294,7 +310,7 @@ function __git_match_and_execute() {
   mapfile -t matches < <(git status --porcelain | awk '{print $2}' | grep -i "$partial_name")
 
   case ${#matches[@]} in
-    1) eval "$command \"${matches[0]}\"" ;;
+    1) "$@" -- "${matches[0]}" ;;
     0) echo "No files found matching '$partial_name'" ; return 3 ;;
     *) echo "Multiple matches found:"; printf "  %s\n" "${matches[@]}"; return 2 ;;
   esac
@@ -309,9 +325,7 @@ if type __git_complete >/dev/null 2>&1; then
   __git_complete gco _git_checkout
   __git_complete gcot _git_checkout
   __git_complete gd _git_diff
-  __git_complete gdno _git_diff
   __git_complete gds _git_diff
-  __git_complete gdsno _git_diff
   __git_complete ggr _git_grep
   __git_complete glh _git_log
   __git_complete gm _git_merge
