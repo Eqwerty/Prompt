@@ -1,6 +1,6 @@
 {
   "cache": {
-    "gitStatusTtl": {gitStatusTtl},   // git status cache TTL in seconds (0 = disabled)
+    "gitStatusTtl": {gitStatusTtl},  // git status cache TTL in seconds (0 = disabled)
     "repositoryTtl": {repositoryTtl}  // repository location cache TTL in seconds (0 = disabled)
   },
   "commandTimeoutMs": {commandTimeoutMs},  // git subprocess timeout in milliseconds (0 = disabled)
@@ -12,32 +12,32 @@
   "newlineBeforePrompt": {newlineBeforePrompt},  // add a blank line before the prompt (true/false)
   "promptSymbol": {promptSymbol},  // override prompt symbol (null = automatic: $ / # for root / > on Windows)
   "icons": {
-    "ahead": {iconAhead},      // null = default: {iconAheadDefault}
-    "behind": {iconBehind},     // null = default: {iconBehindDefault}
-    "added": {iconAdded},       // null = default: {iconAddedDefault}
-    "modified": {iconModified},   // null = default: {iconModifiedDefault}
-    "renamed": {iconRenamed},    // null = default: {iconRenamedDefault}
-    "deleted": {iconDeleted},    // null = default: {iconDeletedDefault}
+    "ahead": {iconAhead},  // null = default: {iconAheadDefault}
+    "behind": {iconBehind},  // null = default: {iconBehindDefault}
+    "added": {iconAdded},  // null = default: {iconAddedDefault}
+    "modified": {iconModified},  // null = default: {iconModifiedDefault}
+    "renamed": {iconRenamed},  // null = default: {iconRenamedDefault}
+    "deleted": {iconDeleted},  // null = default: {iconDeletedDefault}
     "untracked": {iconUntracked},  // null = default: {iconUntrackedDefault}
     "conflicts": {iconConflicts},  // null = default: {iconConflictsDefault}
-    "stash": {iconStash}       // null = default: {iconStashDefault}
+    "stash": {iconStash}  // null = default: {iconStashDefault}
   },
   "colors": {
-    "user":             {colorUser},             // null = default: {colorUserDefault}
-    "host":             {colorHost},             // null = default: {colorHostDefault}
-    "path":             {colorPath},             // null = default: {colorPathDefault}
-    "commandDuration":  {colorCommandDuration},  // null = default: {colorCommandDurationDefault}
-    "branch":           {colorBranch},           // null = default: {colorBranchDefault}
-    "branchNoUpstream": {colorBranchNoUpstream}, // null = default: {colorBranchNoUpstreamDefault}
-    "ahead":            {colorAhead},            // null = default: {colorAheadDefault}
-    "behind":           {colorBehind},           // null = default: {colorBehindDefault}
-    "staged":           {colorStaged},           // null = default: {colorStagedDefault}
-    "unstaged":         {colorUnstaged},         // null = default: {colorUnstagedDefault}
-    "untracked":        {colorUntracked},        // null = default: {colorUntrackedDefault}
-    "stash":            {colorStash},            // null = default: {colorStashDefault}
-    "conflict":         {colorConflict},         // null = default: {colorConflictDefault}
-    "missingPath":      {colorMissingPath},      // null = default: {colorMissingPathDefault}
-    "timeout":          {colorTimeout},          // null = default: {colorTimeoutDefault}
-    "promptSymbol":     {colorPromptSymbol}      // null = default: {colorPromptSymbolDefault}
+    "user": {colorUser},  // null = default: {colorUserDefault}
+    "host": {colorHost},  // null = default: {colorHostDefault}
+    "path": {colorPath},  // null = default: {colorPathDefault}
+    "commandDuration": {colorCommandDuration},  // null = default: {colorCommandDurationDefault}
+    "branch": {colorBranch},  // null = default: {colorBranchDefault}
+    "branchNoUpstream": {colorBranchNoUpstream},  // null = default: {colorBranchNoUpstreamDefault}
+    "ahead": {colorAhead},  // null = default: {colorAheadDefault}
+    "behind": {colorBehind},  // null = default: {colorBehindDefault}
+    "staged": {colorStaged},  // null = default: {colorStagedDefault}
+    "unstaged": {colorUnstaged},  // null = default: {colorUnstagedDefault}
+    "untracked": {colorUntracked},  // null = default: {colorUntrackedDefault}
+    "stash": {colorStash},  // null = default: {colorStashDefault}
+    "conflict": {colorConflict},  // null = default: {colorConflictDefault}
+    "missingPath": {colorMissingPath},  // null = default: {colorMissingPathDefault}
+    "timeout": {colorTimeout},  // null = default: {colorTimeoutDefault}
+    "promptSymbol": {colorPromptSymbol}  // null = default: {colorPromptSymbolDefault}
   }
 }
