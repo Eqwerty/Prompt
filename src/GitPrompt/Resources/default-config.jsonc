@@ -10,16 +10,16 @@
   "maxPathDepth": {maxPathDepth},  // max path segments shown (0 = full path)
   "multilinePrompt": {multilinePrompt},  // put the prompt symbol on its own line (true/false)
   "newlineBeforePrompt": {newlineBeforePrompt},  // add a blank line before the prompt (true/false)
-  "promptSymbol": null,  // override prompt symbol (null = automatic: $ / # for root / > on Windows)
+  "promptSymbol": {promptSymbol},  // override prompt symbol (null = automatic: $ / # for root / > on Windows)
   "icons": {
-    "ahead": null,      // null = default: ↑
-    "behind": null,     // null = default: ↓
-    "added": null,      // null = default: +
-    "modified": null,   // null = default: ~
-    "renamed": null,    // null = default: →
-    "deleted": null,    // null = default: -
-    "untracked": null,  // null = default: ?
-    "conflicts": null,  // null = default: !
-    "stash": null       // null = default: @
+    "ahead": {iconAhead},      // null = default: {iconAheadDefault}
+    "behind": {iconBehind},     // null = default: {iconBehindDefault}
+    "added": {iconAdded},       // null = default: {iconAddedDefault}
+    "modified": {iconModified},   // null = default: {iconModifiedDefault}
+    "renamed": {iconRenamed},    // null = default: {iconRenamedDefault}
+    "deleted": {iconDeleted},    // null = default: {iconDeletedDefault}
+    "untracked": {iconUntracked},  // null = default: {iconUntrackedDefault}
+    "conflicts": {iconConflicts},  // null = default: {iconConflictsDefault}
+    "stash": {iconStash}       // null = default: {iconStashDefault}
   }
 }

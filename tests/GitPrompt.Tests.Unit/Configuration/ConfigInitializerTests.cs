@@ -1,5 +1,6 @@
 using FluentAssertions;
 using GitPrompt.Configuration;
+using GitPrompt.Constants;
 
 namespace GitPrompt.Tests.Unit.Configuration;
 
@@ -131,5 +132,51 @@ public sealed class ConfigInitializerTests
 
         // Assert
         content.Should().Contain($"\"newlineBeforePrompt\": {expectedValue}");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderPromptSymbolAsNull()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain("\"promptSymbol\": null");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderAllIconValuesAsNull()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert — all icons default to null
+        content.Should().Contain("\"ahead\": null");
+        content.Should().Contain("\"behind\": null");
+        content.Should().Contain("\"added\": null");
+        content.Should().Contain("\"modified\": null");
+        content.Should().Contain("\"renamed\": null");
+        content.Should().Contain("\"deleted\": null");
+        content.Should().Contain("\"untracked\": null");
+        content.Should().Contain("\"conflicts\": null");
+        content.Should().Contain("\"stash\": null");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderIconDefaultGlyphsFromPromptIcons()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert — comment glyphs come from PromptIcons constants
+        content.Should().Contain($"null = default: {PromptIcons.IconAhead}");
+        content.Should().Contain($"null = default: {PromptIcons.IconBehind}");
+        content.Should().Contain($"null = default: {PromptIcons.IconAdded}");
+        content.Should().Contain($"null = default: {PromptIcons.IconModified}");
+        content.Should().Contain($"null = default: {PromptIcons.IconRenamed}");
+        content.Should().Contain($"null = default: {PromptIcons.IconDeleted}");
+        content.Should().Contain($"null = default: {PromptIcons.IconUntracked}");
+        content.Should().Contain($"null = default: {PromptIcons.IconConflicts}");
+        content.Should().Contain($"null = default: {PromptIcons.IconStash}");
     }
 }
