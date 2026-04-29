@@ -84,6 +84,31 @@ Customise the icon characters shown in the git status segment. Set any key to a 
 | `icons.conflicts` | `!` | Merge conflicts |
 | `icons.stash` | `@` | Stash entries |
 
+## Colors
+
+Customise the color of each prompt segment using `#RRGGBB` hex strings. Set any key to a hex color to override it; `null` restores the default. Use any color picker to choose a value.
+
+| Key | Default | Description |
+|---|---|---|
+| `colors.user` | `#00BB00` | Username |
+| `colors.host` | `#CB06B2` | Hostname |
+| `colors.path` | `#D78700` | Working directory path |
+| `colors.commandDuration` | `#CB06B2` | Last command duration |
+| `colors.branch` | `#48A8CD` | Branch name (tracked upstream) |
+| `colors.branchNoUpstream` | `#48A8CD` | Branch name (no upstream) |
+| `colors.ahead` | `#48A8CD` | Commits ahead indicator |
+| `colors.behind` | `#48A8CD` | Commits behind indicator |
+| `colors.staged` | `#00BB00` | Staged changes |
+| `colors.unstaged` | `#CC0000` | Unstaged changes |
+| `colors.untracked` | `#CC0000` | Untracked files |
+| `colors.stash` | `#CB06B2` | Stash entries |
+| `colors.conflict` | `#FF5555` | Merge conflicts |
+| `colors.missingPath` | `#FF5555` | Missing working directory |
+| `colors.timeout` | `#FFA002` | Git timeout indicator |
+| `colors.promptSymbol` | `#AAAAAA` | Prompt symbol (`$`, `#`, `>`) |
+
+> **Note:** `colors.promptSymbol` controls the *color* of the prompt symbol. To change the symbol character itself, use [`promptSymbol`](#prompt-layout).
+
 ## Example
 
 ```jsonc

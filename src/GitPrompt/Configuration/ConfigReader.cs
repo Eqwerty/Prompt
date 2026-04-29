@@ -45,7 +45,8 @@ internal static class ConfigReader
             var resolved = config is null ? new Config() : config with
             {
                 Cache = config.Cache ?? new(),
-                Icons = config.Icons ?? new()
+                Icons = config.Icons ?? new(),
+                Colors = config.Colors ?? new()
             };
             return new ConfigLoadResult(filePath, ConfigLoadStatus.Loaded, resolved);
         }

@@ -428,4 +428,62 @@ public sealed class ConfigDeserializationTests
         config.Icons.Stash.Should().Be("S");
         config.Icons.Added.Should().BeNull();
     }
+
+    [Fact]
+    public void Colors_WhenAbsent_ShouldBeNull()
+    {
+        // Arrange
+        var json = "{}";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Colors.Should().BeNull();
+    }
+
+    [Fact]
+    public void Colors_WhenPresentButEmpty_ShouldHaveAllNullValues()
+    {
+        // Arrange
+        var json = """{"colors": {}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Colors.Should().NotBeNull();
+        config.Colors!.User.Should().BeNull();
+        config.Colors.Host.Should().BeNull();
+        config.Colors.Path.Should().BeNull();
+        config.Colors.CommandDuration.Should().BeNull();
+        config.Colors.Branch.Should().BeNull();
+        config.Colors.BranchNoUpstream.Should().BeNull();
+        config.Colors.Ahead.Should().BeNull();
+        config.Colors.Behind.Should().BeNull();
+        config.Colors.Staged.Should().BeNull();
+        config.Colors.Unstaged.Should().BeNull();
+        config.Colors.Untracked.Should().BeNull();
+        config.Colors.Stash.Should().BeNull();
+        config.Colors.Conflict.Should().BeNull();
+        config.Colors.MissingPath.Should().BeNull();
+        config.Colors.Timeout.Should().BeNull();
+        config.Colors.PromptSymbol.Should().BeNull();
+    }
+
+    [Fact]
+    public void Colors_WhenExplicitlySet_ShouldReturnValues()
+    {
+        // Arrange
+        var json = """{"colors": {"user": "#FF0000", "branch": "#00FF00", "timeout": "#0000FF"}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Colors.User.Should().Be("#FF0000");
+        config.Colors.Branch.Should().Be("#00FF00");
+        config.Colors.Timeout.Should().Be("#0000FF");
+        config.Colors.Host.Should().BeNull();
+    }
 }

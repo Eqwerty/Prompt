@@ -179,4 +179,46 @@ public sealed class ConfigInitializerTests
         content.Should().Contain($"null = default: {PromptIcons.IconConflicts}");
         content.Should().Contain($"null = default: {PromptIcons.IconStash}");
     }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderAllColorValuesAsNull()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert — all color slots default to null
+        content.Should().Contain("\"user\":             null");
+        content.Should().Contain("\"host\":             null");
+        content.Should().Contain("\"path\":             null");
+        content.Should().Contain("\"commandDuration\":  null");
+        content.Should().Contain("\"branch\":           null");
+        content.Should().Contain("\"branchNoUpstream\": null");
+        content.Should().Contain("\"ahead\":            null");
+        content.Should().Contain("\"behind\":           null");
+        content.Should().Contain("\"staged\":           null");
+        content.Should().Contain("\"unstaged\":         null");
+        content.Should().Contain("\"untracked\":        null");
+        content.Should().Contain("\"stash\":            null");
+        content.Should().Contain("\"conflict\":         null");
+        content.Should().Contain("\"missingPath\":      null");
+        content.Should().Contain("\"timeout\":          null");
+        content.Should().Contain("\"promptSymbol\":     null");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderColorDefaultHexFromAnsiColors()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert — comment hex values come from AnsiColors constants
+        content.Should().Contain($"null = default: {AnsiColors.Green}");
+        content.Should().Contain($"null = default: {AnsiColors.Magenta}");
+        content.Should().Contain($"null = default: {AnsiColors.Orange}");
+        content.Should().Contain($"null = default: {AnsiColors.Blue}");
+        content.Should().Contain($"null = default: {AnsiColors.Red}");
+        content.Should().Contain($"null = default: {AnsiColors.BoldRed}");
+        content.Should().Contain($"null = default: {AnsiColors.Yellow}");
+        content.Should().Contain($"null = default: {AnsiColors.LightGray}");
+    }
 }

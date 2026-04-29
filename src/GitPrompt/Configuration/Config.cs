@@ -40,6 +40,9 @@ internal sealed record Config
     internal IconsConfig Icons { get; init; } = new();
 
     [JsonInclude]
+    internal ColorsConfig Colors { get; init; } = new();
+
+    [JsonInclude]
     [JsonPropertyName("commandTimeoutMs")]
     internal double? CommandTimeoutMs { get; init; }
 
@@ -108,6 +111,72 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("stash")]
         internal string? Stash { get; init; }
+    }
+    internal sealed record ColorsConfig
+    {
+        [JsonInclude]
+        [JsonPropertyName("user")]
+        internal string? User { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("host")]
+        internal string? Host { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("path")]
+        internal string? Path { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("commandDuration")]
+        internal string? CommandDuration { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branch")]
+        internal string? Branch { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchNoUpstream")]
+        internal string? BranchNoUpstream { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("ahead")]
+        internal string? Ahead { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("behind")]
+        internal string? Behind { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("staged")]
+        internal string? Staged { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("unstaged")]
+        internal string? Unstaged { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("untracked")]
+        internal string? Untracked { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("stash")]
+        internal string? Stash { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("conflict")]
+        internal string? Conflict { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("missingPath")]
+        internal string? MissingPath { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("timeout")]
+        internal string? Timeout { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("promptSymbol")]
+        internal string? PromptSymbol { get; init; }
     }
 }
 
