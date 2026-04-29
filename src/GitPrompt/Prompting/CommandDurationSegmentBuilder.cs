@@ -27,11 +27,18 @@ internal static class CommandDurationSegmentBuilder
     {
         if (ms < 1000)
         {
-            return $"{ms.ToString("N0", CultureInfo.InvariantCulture)}ms";
+            return $"{ms.ToString(CultureInfo.InvariantCulture)}ms";
         }
 
         var seconds = ms / 1000.0;
 
-        return $"{seconds:##,###.00}s";
+        if (seconds < 60)
+        {
+            return $"{seconds:##,###.00}s";
+        }
+
+        var minutes = seconds / 60.0;
+
+        return $"{minutes:##,###.00}m";
     }
 }

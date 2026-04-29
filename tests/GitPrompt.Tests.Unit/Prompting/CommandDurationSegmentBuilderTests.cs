@@ -71,7 +71,7 @@ public sealed class CommandDurationSegmentBuilderTests
     [InlineData(1000, "1.00s")]
     [InlineData(1500, "1.50s")]
     [InlineData(12345, "12.35s")]
-    [InlineData(120000, "120.00s")]
+    [InlineData(120000, "2.00m")]
     public void FormatDuration_ShouldRenderCorrectUnitAndPrecision(long ms, string expected)
     {
         // Act & Assert
