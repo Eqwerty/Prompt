@@ -513,4 +513,66 @@ public sealed class ConfigDeserializationTests
         config.Colors.Timeout.Should().Be("#0000FF");
         config.Colors.Host.Should().BeNull();
     }
+
+    [Fact]
+    public void CommandDurationMinMs_WhenAbsent_ShouldBeNull()
+    {
+        // Arrange
+        var json = "{}";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.CommandDurationMinMs.Should().BeNull();
+    }
+
+    [Fact]
+    public void CommandDurationMinMs_WhenPresentAsInteger_ShouldDeserialize()
+    {
+        // Arrange
+        var json = """{"commandDurationMinMs": 5000}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.CommandDurationMinMs.Should().Be(5000.0);
+    }
+
+    [Fact]
+    public void CommandDurationMinMs_WhenPresentWithInlineComment_ShouldDeserialize()
+    {
+        // Arrange - matches the real config file format with JSONC inline comment
+        var json = """
+            {
+              "commandDurationMinMs": 5000,  // minimum duration in ms before showing command duration (null = always show)
+              "showCommandDuration": true
+            }
+            """;
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.CommandDurationMinMs.Should().Be(5000.0);
+        config.ShowCommandDuration.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShowCommandDuration_WhenFalseWithInlineComment_ShouldDeserializeToFalse()
+    {
+        // Arrange - matches the real config file format with JSONC inline comment
+        var json = """
+            {
+              "showCommandDuration": false  // show last command duration in the prompt (true/false)
+            }
+            """;
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.ShowCommandDuration.Should().BeFalse();
+    }
 }

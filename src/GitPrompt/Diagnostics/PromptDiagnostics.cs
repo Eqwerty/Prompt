@@ -244,6 +244,13 @@ internal static class PromptDiagnostics
             ? FormatMs(config.CommandTimeout.Value)
             : "disabled";
         lines.Add($"    {"Timeout",-10}  {timeoutText}");
+
+        var durationText = config.ShowCommandDuration
+            ? config.CommandDurationMinMs is > 0
+                ? $"enabled · min {config.CommandDurationMinMs}ms"
+                : "enabled · always show"
+            : "disabled";
+        lines.Add($"    {"Duration",-10}  {durationText}");
     }
 
     private static string GetRepoCacheStatus()
