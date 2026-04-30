@@ -68,10 +68,18 @@ public sealed class CommandDurationSegmentBuilderTests
     [InlineData(0, "0ms")]
     [InlineData(42, "42ms")]
     [InlineData(999, "999ms")]
-    [InlineData(1000, "1.00s")]
-    [InlineData(1500, "1.50s")]
-    [InlineData(12345, "12.35s")]
-    [InlineData(120000, "2.00m")]
+    [InlineData(1000, "1.0s")]
+    [InlineData(1100, "1.1s")]
+    [InlineData(1500, "1.5s")]
+    [InlineData(1950, "1.9s")]
+    [InlineData(12345, "12.3s")]
+    [InlineData(59999, "59.9s")]
+    [InlineData(60000, "1m0s")]
+    [InlineData(136000, "2m16s")]
+    [InlineData(120000, "2m0s")]
+    [InlineData(3599999, "59m59s")]
+    [InlineData(3600000, "1h0m0s")]
+    [InlineData(3724000, "1h2m4s")]
     public void FormatDuration_ShouldRenderCorrectUnitAndPrecision(long ms, string expected)
     {
         // Act & Assert
