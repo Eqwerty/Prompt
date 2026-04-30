@@ -329,6 +329,7 @@ public sealed class ConfigInitializerTests
         content.Should().Contain("\"noUpstreamMarker\": null");
         content.Should().Contain("\"branchLabelOpen\": null");
         content.Should().Contain("\"branchLabelClose\": null");
+        content.Should().Contain("\"branchOperationSeparator\": null");
     }
 
     [Fact]

@@ -27,7 +27,8 @@
     "clean": {iconClean},  // null = default: {iconCleanDefault} (compact mode only)
     "noUpstreamMarker": {iconNoUpstreamMarker},  // null = default: {iconNoUpstreamMarkerDefault}
     "branchLabelOpen": {iconBranchLabelOpen},  // null = default: {iconBranchLabelOpenDefault}
-    "branchLabelClose": {iconBranchLabelClose}  // null = default: {iconBranchLabelCloseDefault}
+    "branchLabelClose": {iconBranchLabelClose},  // null = default: {iconBranchLabelCloseDefault}
+    "branchOperationSeparator": {iconBranchOperationSeparator}  // null = default: {iconBranchOperationSeparatorDefault}
   },
   "colors": {
     "user": {colorUser},  // null = default: {colorUserDefault}

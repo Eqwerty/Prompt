@@ -86,6 +86,7 @@ Customise the icon characters shown in the git status segment. Set any key to a 
 | `icons.noUpstreamMarker` | `*` | Prefix on branch name when there is no upstream |
 | `icons.branchLabelOpen` | `(` | Opening bracket around the branch name |
 | `icons.branchLabelClose` | `)` | Closing bracket around the branch name |
+| `icons.branchOperationSeparator` | `\|` | Separator between branch name and operation (e.g. `REBASE`) inside the label |
 
 ## Colors
 

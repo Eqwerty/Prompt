@@ -152,14 +152,15 @@ internal static class GitStatusDisplayFormatter
             return branchLabel;
         }
 
-        var close = ConfigReader.Config.Icons.BranchLabelClose ?? BranchLabelClose;
-        const string branchOperationSeparator = "|";
+        var icons = ConfigReader.Config.Icons;
+        var close = icons.BranchLabelClose ?? BranchLabelClose;
+        var separator = icons.BranchOperationSeparator ?? BranchOperationSeparator;
         if (branchLabel.EndsWith(close, StringComparison.Ordinal))
         {
-            return branchLabel[..^close.Length] + branchOperationSeparator + operationName + close;
+            return branchLabel[..^close.Length] + separator + operationName + close;
         }
 
-        return branchLabel + branchOperationSeparator + operationName;
+        return branchLabel + separator + operationName;
     }
 
     private static void AppendCountIndicators(StringBuilder sb, params ReadOnlySpan<CountStyle> items)

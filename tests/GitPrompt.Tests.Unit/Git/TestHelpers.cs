@@ -22,7 +22,7 @@ internal static class TestHelpers
     internal static string NoUpstreamBranchLabel(string branchName) => $"{NoUpstreamBranchMarker}{TrackedBranchLabel(branchName)}";
 
     internal static string BranchLabelWithOperation(string branchLabel, string operation) =>
-        branchLabel.Replace(BranchLabelClose, $"|{operation}{BranchLabelClose}", StringComparison.Ordinal);
+        branchLabel.Replace(BranchLabelClose, $"{BranchOperationSeparator}{operation}{BranchLabelClose}", StringComparison.Ordinal);
 
     internal static string Indicator(char icon, int count) => $"{icon}{count}";
 

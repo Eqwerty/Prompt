@@ -245,4 +245,45 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         // Assert
         label.Should().Be("(main)");
     }
+
+    [Fact]
+    public void BuildDisplay_WhenCustomBranchOperationSeparatorIsConfigured_ShouldUseCustomSeparator()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchOperationSeparator = " | " } });
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+
+        // Act
+        var display = GitStatusDisplayFormatter.BuildDisplay(
+            branchLabel,
+            commitsAhead: 0,
+            commitsBehind: 0,
+            stashEntryCount: 0,
+            new GitStatusCounts(),
+            operationName: "REBASE");
+
+        // Assert
+        display.Should().Contain("(main | REBASE)");
+        display.Should().NotContain("(main|REBASE)");
+    }
+
+    [Fact]
+    public void BuildDisplay_WhenBranchOperationSeparatorIsAbsent_ShouldDefaultToPipe()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig() });
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+
+        // Act
+        var display = GitStatusDisplayFormatter.BuildDisplay(
+            branchLabel,
+            commitsAhead: 0,
+            commitsBehind: 0,
+            stashEntryCount: 0,
+            new GitStatusCounts(),
+            operationName: "MERGE");
+
+        // Assert
+        display.Should().Contain("(main|MERGE)");
+    }
 }

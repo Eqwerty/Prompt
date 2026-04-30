@@ -82,6 +82,8 @@ internal static class ConfigInitializer
             .Replace("{iconBranchLabelOpenDefault}", BranchLabelTokens.BranchLabelOpen)
             .Replace("{iconBranchLabelClose}", JsonValue(config.Icons.BranchLabelClose))
             .Replace("{iconBranchLabelCloseDefault}", BranchLabelTokens.BranchLabelClose)
+            .Replace("{iconBranchOperationSeparator}", JsonValue(config.Icons.BranchOperationSeparator))
+            .Replace("{iconBranchOperationSeparatorDefault}", BranchLabelTokens.BranchOperationSeparator)
             .Replace("{colorUser}", JsonValue(config.Colors.User))
             .Replace("{colorUserDefault}", AnsiColors.Green)
             .Replace("{colorHost}", JsonValue(config.Colors.Host))

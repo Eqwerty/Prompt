@@ -139,6 +139,10 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("branchLabelClose")]
         internal string? BranchLabelClose { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchOperationSeparator")]
+        internal string? BranchOperationSeparator { get; init; }
     }
     internal sealed record ColorsConfig
     {
