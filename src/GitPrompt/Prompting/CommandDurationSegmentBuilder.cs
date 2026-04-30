@@ -20,6 +20,12 @@ internal static class CommandDurationSegmentBuilder
             return string.Empty;
         }
 
+        var minMs = ConfigReader.Config.CommandDurationMinMs;
+        if (minMs is > 0 && ms.Value < minMs)
+        {
+            return string.Empty;
+        }
+
         return $"{ColorCommandDuration}{FormatDuration(ms.Value)}{ColorReset}";
     }
 

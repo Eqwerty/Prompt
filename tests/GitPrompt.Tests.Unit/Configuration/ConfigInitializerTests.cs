@@ -219,6 +219,16 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderCommandDurationMinMsAsNull()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain("\"commandDurationMinMs\": null");
+    }
+
+    [Fact]
     public void BuildDefaultConfigContent_ShouldNotContainUnresolvedPlaceholders()
     {
         // Act

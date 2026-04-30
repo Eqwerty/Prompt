@@ -35,6 +35,7 @@ Shows the elapsed time of the last command in the prompt, rendered in pink betwe
 | Key | Default | Description |
 |---|---|---|
 | `showCommandDuration` | `false` | Show last command duration (e.g. `42ms`) |
+| `commandDurationMinMs` | *(none)* | Minimum duration in ms before the duration is shown. `null` means always show. |
 
 ## Context Segment
 

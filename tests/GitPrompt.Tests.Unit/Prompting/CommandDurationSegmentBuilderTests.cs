@@ -64,6 +64,77 @@ public sealed class CommandDurationSegmentBuilderTests
         segment.Should().Be($"{ColorCommandDuration}0ms{ColorReset}");
     }
 
+    [Fact]
+    public void Build_WhenDurationExceedsMinimumThreshold_ShouldReturnSegment()
+    {
+        // Arrange
+        var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 5000);
+        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 2000 });
+
+        // Act
+        var segment = CommandDurationSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().NotBeEmpty();
+        segment.Should().Contain("5.0s");
+    }
+
+    [Fact]
+    public void Build_WhenDurationIsBelowMinimumThreshold_ShouldReturnEmpty()
+    {
+        // Arrange
+        var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 500);
+        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 2000 });
+
+        // Act
+        var segment = CommandDurationSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Build_WhenDurationEqualsMinimumThreshold_ShouldReturnSegment()
+    {
+        // Arrange
+        var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 2000);
+        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 2000 });
+
+        // Act
+        var segment = CommandDurationSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void Build_WhenMinimumThresholdIsNull_ShouldAlwaysShowDuration()
+    {
+        // Arrange
+        var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 1);
+        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = null });
+
+        // Act
+        var segment = CommandDurationSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void Build_WhenMinimumThresholdIsZero_ShouldAlwaysShowDuration()
+    {
+        // Arrange
+        var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 1);
+        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 0 });
+
+        // Act
+        var segment = CommandDurationSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().NotBeEmpty();
+    }
+
     [Theory]
     [InlineData(0, "0ms")]
     [InlineData(42, "42ms")]

@@ -4,6 +4,7 @@
     "repositoryTtl": {repositoryTtl}  // repository location cache TTL in seconds (0 = disabled)
   },
   "commandTimeoutMs": {commandTimeoutMs},  // git subprocess timeout in milliseconds (0 = disabled)
+  "commandDurationMinMs": {commandDurationMinMs},  // minimum duration in ms before showing command duration (null = always show)
   "showCommandDuration": {showCommandDuration},  // show last command duration in the prompt (true/false)
   "showUser": {showUser},  // show username in the prompt (true/false)
   "showHost": {showHost},  // show hostname in the prompt (true/false)

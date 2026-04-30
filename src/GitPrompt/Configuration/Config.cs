@@ -54,6 +54,10 @@ internal sealed record Config
     [JsonPropertyName("commandTimeoutMs")]
     internal double? CommandTimeoutMs { get; init; }
 
+    [JsonInclude]
+    [JsonPropertyName("commandDurationMinMs")]
+    internal double? CommandDurationMinMs { get; init; }
+
     [JsonIgnore]
     internal TimeSpan? CommandTimeout
     {
