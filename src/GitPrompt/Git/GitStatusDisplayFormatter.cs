@@ -34,7 +34,7 @@ internal static class GitStatusDisplayFormatter
 
         branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
 
-        var noUpstreamPrefix = NoUpstreamBranchMarker + BranchLabelOpen;
+        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + BranchLabelOpen;
         var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
             ? ColorBranchNoUpstream
             : ColorBranch;
@@ -100,7 +100,7 @@ internal static class GitStatusDisplayFormatter
 
         branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
 
-        var noUpstreamPrefix = NoUpstreamBranchMarker + BranchLabelOpen;
+        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + BranchLabelOpen;
         var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
             ? ColorBranchNoUpstream
             : ColorBranch;
@@ -136,7 +136,8 @@ internal static class GitStatusDisplayFormatter
 
     internal static string BuildBranchLabel(string branchName, bool hasUpstream = true)
     {
-        var noUpstreamPrefix = hasUpstream ? string.Empty : NoUpstreamBranchMarker;
+        var marker = ConfigReader.Config.Icons.NoUpstreamMarker ?? NoUpstreamBranchMarker;
+        var noUpstreamPrefix = hasUpstream ? string.Empty : marker;
 
         return $"{noUpstreamPrefix}{BranchLabelOpen}{branchName}{BranchLabelClose}";
     }

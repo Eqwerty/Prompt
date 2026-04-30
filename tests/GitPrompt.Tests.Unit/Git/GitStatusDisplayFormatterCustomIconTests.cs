@@ -1,6 +1,7 @@
 using FluentAssertions;
 using GitPrompt.Configuration;
 using GitPrompt.Git;
+using static GitPrompt.Constants.PromptColors;
 using static GitPrompt.Tests.Unit.Git.TestHelpers;
 
 namespace GitPrompt.Tests.Unit.Git;
@@ -102,5 +103,52 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         // Assert
         display.Should().Contain(Indicator("", 5));
         display.Should().NotContain(Indicator("↑", 5));
+    }
+
+    [Fact]
+    public void BuildDisplay_WhenCustomNoUpstreamMarkerIsConfigured_ShouldUseThatMarkerInBranchLabel()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { NoUpstreamMarker = "!" } });
+
+        // Act
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: false);
+
+        // Assert
+        branchLabel.Should().StartWith("!");
+        branchLabel.Should().NotStartWith("*");
+    }
+
+    [Fact]
+    public void BuildDisplay_WhenCustomNoUpstreamMarkerIsConfigured_ShouldApplyNoUpstreamColor()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { NoUpstreamMarker = "!" } });
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: false);
+
+        // Act
+        var display = GitStatusDisplayFormatter.BuildDisplay(
+            branchLabel,
+            commitsAhead: 0,
+            commitsBehind: 0,
+            stashEntryCount: 0,
+            new GitStatusCounts(),
+            operationName: string.Empty);
+
+        // Assert
+        display.Should().Contain(Colored(ColorBranchNoUpstream, branchLabel));
+    }
+
+    [Fact]
+    public void BuildDisplay_WhenNoUpstreamMarkerIsAbsent_ShouldDefaultToAsterisk()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig() });
+
+        // Act
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: false);
+
+        // Assert
+        branchLabel.Should().StartWith("*");
     }
 }

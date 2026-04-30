@@ -73,6 +73,8 @@ internal static class ConfigInitializer
             .Replace("{iconDirtyDefault}", PromptIcons.IconDirty.ToString())
             .Replace("{iconClean}", JsonValue(config.Icons.Clean))
             .Replace("{iconCleanDefault}", PromptIcons.IconClean.ToString())
+            .Replace("{iconNoUpstreamMarker}", JsonValue(config.Icons.NoUpstreamMarker))
+            .Replace("{iconNoUpstreamMarkerDefault}", BranchLabelTokens.NoUpstreamBranchMarker)
             .Replace("{colorUser}", JsonValue(config.Colors.User))
             .Replace("{colorUserDefault}", AnsiColors.Green)
             .Replace("{colorHost}", JsonValue(config.Colors.Host))

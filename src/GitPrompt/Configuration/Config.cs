@@ -127,6 +127,10 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("clean")]
         internal string? Clean { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("noUpstreamMarker")]
+        internal string? NoUpstreamMarker { get; init; }
     }
     internal sealed record ColorsConfig
     {

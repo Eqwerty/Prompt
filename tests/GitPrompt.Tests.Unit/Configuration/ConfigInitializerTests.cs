@@ -160,6 +160,7 @@ public sealed class ConfigInitializerTests
         content.Should().Contain("\"untracked\": null");
         content.Should().Contain("\"conflicts\": null");
         content.Should().Contain("\"stash\": null");
+        content.Should().Contain("\"noUpstreamMarker\": null");
     }
 
     [Fact]
@@ -178,6 +179,16 @@ public sealed class ConfigInitializerTests
         content.Should().Contain($"null = default: {PromptIcons.IconUntracked}");
         content.Should().Contain($"null = default: {PromptIcons.IconConflicts}");
         content.Should().Contain($"null = default: {PromptIcons.IconStash}");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderNoUpstreamMarkerDefaultGlyph()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"null = default: {BranchLabelTokens.NoUpstreamBranchMarker}");
     }
 
     [Fact]

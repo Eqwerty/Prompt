@@ -411,6 +411,7 @@ public sealed class ConfigDeserializationTests
         config.Icons.Untracked.Should().BeNull();
         config.Icons.Conflicts.Should().BeNull();
         config.Icons.Stash.Should().BeNull();
+        config.Icons.NoUpstreamMarker.Should().BeNull();
     }
 
     [Fact]
@@ -427,6 +428,32 @@ public sealed class ConfigDeserializationTests
         config.Icons.Behind.Should().Be("⬇");
         config.Icons.Stash.Should().Be("S");
         config.Icons.Added.Should().BeNull();
+    }
+
+    [Fact]
+    public void NoUpstreamMarker_WhenAbsent_ShouldBeNull()
+    {
+        // Arrange
+        var json = """{"icons": {}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Icons!.NoUpstreamMarker.Should().BeNull();
+    }
+
+    [Fact]
+    public void NoUpstreamMarker_WhenExplicitlySet_ShouldReturnValue()
+    {
+        // Arrange
+        var json = """{"icons": {"noUpstreamMarker": "!"}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Icons!.NoUpstreamMarker.Should().Be("!");
     }
 
     [Fact]

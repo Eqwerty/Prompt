@@ -24,7 +24,8 @@
     "conflicts": {iconConflicts},  // null = default: {iconConflictsDefault}
     "stash": {iconStash},  // null = default: {iconStashDefault}
     "dirty": {iconDirty},  // null = default: {iconDirtyDefault} (compact mode only)
-    "clean": {iconClean}  // null = default: {iconCleanDefault} (compact mode only)
+    "clean": {iconClean},  // null = default: {iconCleanDefault} (compact mode only)
+    "noUpstreamMarker": {iconNoUpstreamMarker}  // null = default: {iconNoUpstreamMarkerDefault}
   },
   "colors": {
     "user": {colorUser},  // null = default: {colorUserDefault}
