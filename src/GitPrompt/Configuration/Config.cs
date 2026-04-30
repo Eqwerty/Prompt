@@ -131,6 +131,14 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("noUpstreamMarker")]
         internal string? NoUpstreamMarker { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelOpen")]
+        internal string? BranchLabelOpen { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelClose")]
+        internal string? BranchLabelClose { get; init; }
     }
     internal sealed record ColorsConfig
     {

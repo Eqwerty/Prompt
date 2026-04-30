@@ -327,6 +327,8 @@ public sealed class ConfigInitializerTests
         content.Should().Contain("\"conflicts\": null");
         content.Should().Contain("\"stash\": null");
         content.Should().Contain("\"noUpstreamMarker\": null");
+        content.Should().Contain("\"branchLabelOpen\": null");
+        content.Should().Contain("\"branchLabelClose\": null");
     }
 
     [Fact]
@@ -355,6 +357,17 @@ public sealed class ConfigInitializerTests
 
         // Assert
         content.Should().Contain($"null = default: {BranchLabelTokens.NoUpstreamBranchMarker}");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderBranchLabelBracketDefaultGlyphs()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"null = default: {BranchLabelTokens.BranchLabelOpen}");
+        content.Should().Contain($"null = default: {BranchLabelTokens.BranchLabelClose}");
     }
 
     [Fact]

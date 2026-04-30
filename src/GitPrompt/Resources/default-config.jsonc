@@ -25,7 +25,9 @@
     "stash": {iconStash},  // null = default: {iconStashDefault}
     "dirty": {iconDirty},  // null = default: {iconDirtyDefault} (compact mode only)
     "clean": {iconClean},  // null = default: {iconCleanDefault} (compact mode only)
-    "noUpstreamMarker": {iconNoUpstreamMarker}  // null = default: {iconNoUpstreamMarkerDefault}
+    "noUpstreamMarker": {iconNoUpstreamMarker},  // null = default: {iconNoUpstreamMarkerDefault}
+    "branchLabelOpen": {iconBranchLabelOpen},  // null = default: {iconBranchLabelOpenDefault}
+    "branchLabelClose": {iconBranchLabelClose}  // null = default: {iconBranchLabelCloseDefault}
   },
   "colors": {
     "user": {colorUser},  // null = default: {colorUserDefault}

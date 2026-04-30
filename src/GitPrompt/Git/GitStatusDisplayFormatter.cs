@@ -34,7 +34,7 @@ internal static class GitStatusDisplayFormatter
 
         branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
 
-        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + BranchLabelOpen;
+        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + (icons.BranchLabelOpen ?? BranchLabelOpen);
         var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
             ? ColorBranchNoUpstream
             : ColorBranch;
@@ -100,7 +100,7 @@ internal static class GitStatusDisplayFormatter
 
         branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
 
-        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + BranchLabelOpen;
+        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + (icons.BranchLabelOpen ?? BranchLabelOpen);
         var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
             ? ColorBranchNoUpstream
             : ColorBranch;
@@ -136,10 +136,13 @@ internal static class GitStatusDisplayFormatter
 
     internal static string BuildBranchLabel(string branchName, bool hasUpstream = true)
     {
-        var marker = ConfigReader.Config.Icons.NoUpstreamMarker ?? NoUpstreamBranchMarker;
+        var icons = ConfigReader.Config.Icons;
+        var marker = icons.NoUpstreamMarker ?? NoUpstreamBranchMarker;
+        var open = icons.BranchLabelOpen ?? BranchLabelOpen;
+        var close = icons.BranchLabelClose ?? BranchLabelClose;
         var noUpstreamPrefix = hasUpstream ? string.Empty : marker;
 
-        return $"{noUpstreamPrefix}{BranchLabelOpen}{branchName}{BranchLabelClose}";
+        return $"{noUpstreamPrefix}{open}{branchName}{close}";
     }
 
     private static string AppendOperationToBranchLabel(string branchLabel, string operationName)
@@ -149,10 +152,11 @@ internal static class GitStatusDisplayFormatter
             return branchLabel;
         }
 
+        var close = ConfigReader.Config.Icons.BranchLabelClose ?? BranchLabelClose;
         const string branchOperationSeparator = "|";
-        if (branchLabel.EndsWith(BranchLabelClose, StringComparison.Ordinal))
+        if (branchLabel.EndsWith(close, StringComparison.Ordinal))
         {
-            return branchLabel[..^BranchLabelClose.Length] + branchOperationSeparator + operationName + BranchLabelClose;
+            return branchLabel[..^close.Length] + branchOperationSeparator + operationName + close;
         }
 
         return branchLabel + branchOperationSeparator + operationName;
