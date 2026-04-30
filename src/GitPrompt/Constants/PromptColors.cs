@@ -35,6 +35,8 @@ internal static class PromptColors
     internal static string ColorUntracked       => HexColor(ConfigReader.Config.Colors.Untracked,       AnsiColors.Red);
     internal static string ColorStash           => HexColor(ConfigReader.Config.Colors.Stash,           AnsiColors.Magenta);
     internal static string ColorConflict        => HexColor(ConfigReader.Config.Colors.Conflict,        AnsiColors.BoldRed);
+    internal static string ColorDirty           => HexColor(ConfigReader.Config.Colors.Dirty,           AnsiColors.Orange);
+    internal static string ColorClean           => HexColor(ConfigReader.Config.Colors.Clean,           AnsiColors.Green);
     internal static string ColorMissingPath     => HexColor(ConfigReader.Config.Colors.MissingPath,     AnsiColors.BoldRed);
     internal static string ColorTimeout         => HexColor(ConfigReader.Config.Colors.Timeout,         AnsiColors.Yellow);
     internal static string ColorPromptSymbol    => HexColor(ConfigReader.Config.Colors.PromptSymbol,    AnsiColors.LightGray);

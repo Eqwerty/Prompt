@@ -87,6 +87,55 @@ internal static class GitStatusParser
             statusCountsAccumulator.ToGitStatusCounts());
     }
 
+    internal static GitStatusCompactSnapshot ParseCompact(string statusOutput)
+    {
+        var statusText = statusOutput.AsSpan();
+        var branchHeadName = string.Empty;
+        var headObjectId = string.Empty;
+        var commitsAhead = 0;
+        var commitsBehind = 0;
+        var stashEntryCount = 0;
+        var upstreamReference = string.Empty;
+        var hasUpstream = false;
+        var hasAheadBehindCounts = false;
+        var isDirty = false;
+
+        while (TryReadLine(ref statusText, out var line))
+        {
+            if (line.IsEmpty)
+            {
+                continue;
+            }
+
+            if (TryParseBranchMetadata(
+                    line,
+                    ref branchHeadName,
+                    ref headObjectId,
+                    ref commitsAhead,
+                    ref commitsBehind,
+                    ref stashEntryCount,
+                    ref upstreamReference,
+                    ref hasUpstream,
+                    ref hasAheadBehindCounts))
+            {
+                continue;
+            }
+
+            isDirty = true;
+            break;
+        }
+
+        return new GitStatusCompactSnapshot(branchHeadName,
+            headObjectId,
+            commitsAhead,
+            commitsBehind,
+            stashEntryCount,
+            upstreamReference,
+            hasUpstream,
+            hasAheadBehindCounts,
+            isDirty);
+    }
+
     private static bool TryParseBranchMetadata(
         ReadOnlySpan<char> line,
         ref string branchHeadName,

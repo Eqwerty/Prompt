@@ -10,4 +10,10 @@ internal sealed record GitStatusCounts(
     int UnstagedDeleted = 0,
     int UnstagedRenamed = 0,
     int Untracked = 0,
-    int Conflicts = 0);
+    int Conflicts = 0)
+{
+    internal bool IsDirty =>
+        StagedAdded > 0 || StagedModified > 0 || StagedDeleted > 0 || StagedRenamed > 0 ||
+        UnstagedAdded > 0 || UnstagedModified > 0 || UnstagedDeleted > 0 || UnstagedRenamed > 0 ||
+        Untracked > 0 || Conflicts > 0;
+}

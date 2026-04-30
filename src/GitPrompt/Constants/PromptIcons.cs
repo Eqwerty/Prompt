@@ -11,4 +11,6 @@ internal static class PromptIcons
     internal const char IconUntracked = '?';
     internal const char IconConflicts = '!';
     internal const char IconStash = '@';
+    internal const char IconDirty = '•';
+    internal const char IconClean = '✓';
 }

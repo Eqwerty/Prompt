@@ -37,6 +37,14 @@ internal sealed record Config
     internal string? PromptSymbol { get; init; }
 
     [JsonInclude]
+    [JsonPropertyName("compact")]
+    internal bool Compact { get; init; } = false;
+
+    [JsonInclude]
+    [JsonPropertyName("showStashInCompactMode")]
+    internal bool ShowStashInCompactMode { get; init; } = true;
+
+    [JsonInclude]
     internal IconsConfig Icons { get; init; } = new();
 
     [JsonInclude]
@@ -111,6 +119,14 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("stash")]
         internal string? Stash { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("dirty")]
+        internal string? Dirty { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("clean")]
+        internal string? Clean { get; init; }
     }
     internal sealed record ColorsConfig
     {
@@ -165,6 +181,14 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("conflict")]
         internal string? Conflict { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("dirty")]
+        internal string? Dirty { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("clean")]
+        internal string? Clean { get; init; }
 
         [JsonInclude]
         [JsonPropertyName("missingPath")]

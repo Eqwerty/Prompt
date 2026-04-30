@@ -81,6 +81,59 @@ internal static class GitStatusDisplayFormatter
         return statusBuilder.ToString();
     }
 
+    internal static string BuildDisplayCompact(
+        string branchDescription,
+        int commitsAhead,
+        int commitsBehind,
+        int stashEntryCount,
+        bool isDirty,
+        string operationName)
+    {
+        var icons = ConfigReader.Config.Icons;
+        var aheadIcon = icons.Ahead ?? IconAhead.ToString();
+        var behindIcon = icons.Behind ?? IconBehind.ToString();
+        var dirtyIcon = icons.Dirty ?? IconDirty.ToString();
+        var cleanIcon = icons.Clean ?? IconClean.ToString();
+        var stashIcon = icons.Stash ?? IconStash.ToString();
+
+        var statusBuilder = new StringBuilder();
+
+        branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
+
+        var noUpstreamPrefix = NoUpstreamBranchMarker + BranchLabelOpen;
+        var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
+            ? ColorBranchNoUpstream
+            : ColorBranch;
+
+        statusBuilder.Append(branchColor).Append(branchDescription).Append(ColorReset);
+
+        if (commitsAhead > 0)
+        {
+            statusBuilder.Append(' ').Append(ColorAhead).Append(aheadIcon).Append(commitsAhead).Append(ColorReset);
+        }
+
+        if (commitsBehind > 0)
+        {
+            statusBuilder.Append(' ').Append(ColorBehind).Append(behindIcon).Append(commitsBehind).Append(ColorReset);
+        }
+
+        if (isDirty)
+        {
+            statusBuilder.Append(' ').Append(ColorDirty).Append(dirtyIcon).Append(ColorReset);
+        }
+        else
+        {
+            statusBuilder.Append(' ').Append(ColorClean).Append(cleanIcon).Append(ColorReset);
+        }
+
+        if (stashEntryCount > 0 && ConfigReader.Config.ShowStashInCompactMode)
+        {
+            statusBuilder.Append(' ').Append(ColorStash).Append(stashIcon).Append(stashEntryCount).Append(ColorReset);
+        }
+
+        return statusBuilder.ToString();
+    }
+
     internal static string BuildBranchLabel(string branchName, bool hasUpstream = true)
     {
         var noUpstreamPrefix = hasUpstream ? string.Empty : NoUpstreamBranchMarker;

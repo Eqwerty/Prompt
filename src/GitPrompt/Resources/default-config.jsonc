@@ -11,6 +11,8 @@
   "multilinePrompt": {multilinePrompt},  // put the prompt symbol on its own line (true/false)
   "newlineBeforePrompt": {newlineBeforePrompt},  // add a blank line before the prompt (true/false)
   "promptSymbol": {promptSymbol},  // override prompt symbol (null = automatic: $ / # for root / > on Windows)
+  "compact": {compact},  // compact git status: show dirty/clean icon only instead of all counts (true/false)
+  "showStashInCompactMode": {showStashInCompactMode},  // show stash count in compact mode (true/false)
   "icons": {
     "ahead": {iconAhead},  // null = default: {iconAheadDefault}
     "behind": {iconBehind},  // null = default: {iconBehindDefault}
@@ -20,7 +22,9 @@
     "deleted": {iconDeleted},  // null = default: {iconDeletedDefault}
     "untracked": {iconUntracked},  // null = default: {iconUntrackedDefault}
     "conflicts": {iconConflicts},  // null = default: {iconConflictsDefault}
-    "stash": {iconStash}  // null = default: {iconStashDefault}
+    "stash": {iconStash},  // null = default: {iconStashDefault}
+    "dirty": {iconDirty},  // null = default: {iconDirtyDefault} (compact mode only)
+    "clean": {iconClean}  // null = default: {iconCleanDefault} (compact mode only)
   },
   "colors": {
     "user": {colorUser},  // null = default: {colorUserDefault}
@@ -36,6 +40,8 @@
     "untracked": {colorUntracked},  // null = default: {colorUntrackedDefault}
     "stash": {colorStash},  // null = default: {colorStashDefault}
     "conflict": {colorConflict},  // null = default: {colorConflictDefault}
+    "dirty": {colorDirty},  // null = default: {colorDirtyDefault} (compact mode only)
+    "clean": {colorClean},  // null = default: {colorCleanDefault} (compact mode only)
     "missingPath": {colorMissingPath},  // null = default: {colorMissingPathDefault}
     "timeout": {colorTimeout},  // null = default: {colorTimeoutDefault}
     "promptSymbol": {colorPromptSymbol}  // null = default: {colorPromptSymbolDefault}
