@@ -141,6 +141,80 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
+    public void MigrateConfigIfNeeded_WhenTopLevelBoolKeyMissing_ShouldWriteApplicationDefaultNotClrDefault()
+    {
+        // Arrange — partial config without the keys that have application-default=true.
+        // CLR default for bool is false; application defaults for these five keys are true.
+        var configPath = Path.GetTempFileName();
+        var contentMissingBools = """
+            {
+              "compact": false
+            }
+            """;
+        File.WriteAllText(configPath, contentMissingBools);
+
+        // Act
+        ConfigInitializer.MigrateConfigIfNeeded(configPath);
+
+        // Assert — absent bool keys should be written with the application default (true), not CLR default (false)
+        var result = File.ReadAllText(configPath);
+        result.Should().Contain("\"showUser\": true");
+        result.Should().Contain("\"showHost\": true");
+        result.Should().Contain("\"multilinePrompt\": true");
+        result.Should().Contain("\"showCommandDuration\": true");
+        result.Should().Contain("\"showStashInCompactMode\": true");
+
+        // Existing explicit value must be preserved
+        result.Should().Contain("\"compact\": false");
+
+        File.Delete(configPath);
+    }
+
+    [Fact]
+    public void MigrateConfigIfNeeded_WhenBoolKeyExplicitlyFalse_ShouldPreserveUserFalse()
+    {
+        // Arrange — user explicitly set showCommandDuration to false. Migration must not overwrite it.
+        var configPath = Path.GetTempFileName();
+        var contentWithExplicitFalse = """
+            {
+              "showCommandDuration": false
+            }
+            """;
+        File.WriteAllText(configPath, contentWithExplicitFalse);
+
+        // Act
+        ConfigInitializer.MigrateConfigIfNeeded(configPath);
+
+        // Assert
+        var result = File.ReadAllText(configPath);
+        result.Should().Contain("\"showCommandDuration\": false");
+
+        File.Delete(configPath);
+    }
+
+    [Fact]
+    public void MigrateConfigIfNeeded_WhenCommandDurationMinMsSet_ShouldPreserveUserValue()
+    {
+        // Arrange
+        var configPath = Path.GetTempFileName();
+        var contentWithThreshold = """
+            {
+              "commandDurationMinMs": 5000
+            }
+            """;
+        File.WriteAllText(configPath, contentWithThreshold);
+
+        // Act
+        ConfigInitializer.MigrateConfigIfNeeded(configPath);
+
+        // Assert
+        var result = File.ReadAllText(configPath);
+        result.Should().Contain("\"commandDurationMinMs\": 5000");
+
+        File.Delete(configPath);
+    }
+
+    [Fact]
     public void MigrateConfigIfNeeded_WhenFileIsUnparseable_ShouldNotThrowAndNotModifyFile()
     {
         // Arrange

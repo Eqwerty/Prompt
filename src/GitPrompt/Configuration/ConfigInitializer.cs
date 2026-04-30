@@ -165,25 +165,56 @@ internal static class ConfigInitializer
             {
                 return;
             }
-        }
 
-        Config userConfig;
-        try
-        {
-            userConfig = JsonSerializer.Deserialize(fileContent, ConfigJsonContext.Default.Config) ?? new Config();
-            userConfig = userConfig with
+            Config userConfig;
+            try
             {
-                Cache = userConfig.Cache,
-                Icons = userConfig.Icons,
-                Colors = userConfig.Colors
-            };
-        }
-        catch
-        {
-            return;
-        }
+                userConfig = JsonSerializer.Deserialize(fileContent, ConfigJsonContext.Default.Config) ?? new Config();
+            }
+            catch
+            {
+                return;
+            }
 
-        File.WriteAllText(configPath, BuildConfigContent(userConfig));
+            var mergedConfig = MergeWithDefaults(userConfig, userDoc.RootElement);
+
+            try
+            {
+                File.WriteAllText(configPath, BuildConfigContent(mergedConfig));
+            }
+            catch
+            {
+                // Non-critical: if writing fails, the old file is preserved as-is.
+            }
+        }
+    }
+
+    // Merges a deserialized user Config with application defaults.
+    //
+    // System.Text.Json source generation ignores record `init` defaults: absent JSON keys
+    // get the CLR default (false for bool, null for nullable) instead of the declared
+    // default (e.g. ShowCommandDuration = true). For nullable types this does not matter
+    // because null already means "use built-in default". For the five bool properties that
+    // default to true, we must check whether the key was actually present in the user's
+    // JSON and fall back to the application default when it was absent.
+    //
+    // Nested objects (Cache, Icons, Colors) are null-coalesced separately because their
+    // nullable scalar/string members all use null as the "no override" sentinel.
+    private static Config MergeWithDefaults(Config userConfig, JsonElement root)
+    {
+        var defaults = new Config();
+
+        return userConfig with
+        {
+            ShowUser            = root.TryGetProperty("showUser", out _)            ? userConfig.ShowUser            : defaults.ShowUser,
+            ShowHost            = root.TryGetProperty("showHost", out _)            ? userConfig.ShowHost            : defaults.ShowHost,
+            MultilinePrompt     = root.TryGetProperty("multilinePrompt", out _)     ? userConfig.MultilinePrompt     : defaults.MultilinePrompt,
+            ShowCommandDuration = root.TryGetProperty("showCommandDuration", out _) ? userConfig.ShowCommandDuration : defaults.ShowCommandDuration,
+            ShowStashInCompactMode = root.TryGetProperty("showStashInCompactMode", out _) ? userConfig.ShowStashInCompactMode : defaults.ShowStashInCompactMode,
+            Cache  = userConfig.Cache  ?? defaults.Cache,
+            Icons  = userConfig.Icons  ?? defaults.Icons,
+            Colors = userConfig.Colors ?? defaults.Colors,
+        };
     }
 
     private static bool HasMissingKeys(JsonElement expected, JsonElement actual)
