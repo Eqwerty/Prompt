@@ -25,25 +25,26 @@ internal static class BoxRenderer
     internal static string Render(string title, IReadOnlyList<string?> lines, string borderColor)
     {
         var innerWidth = ComputeInnerWidth(title, lines);
+        var ansiColor = string.IsNullOrEmpty(borderColor) ? string.Empty : AnsiColorConverter.ToAnsi(borderColor);
         var reset = string.IsNullOrEmpty(borderColor) ? string.Empty : AnsiColors.Reset;
 
         var sb = new StringBuilder();
 
-        AppendTopBorder(sb, title, innerWidth, borderColor, reset);
+        AppendTopBorder(sb, title, innerWidth, ansiColor, reset);
 
         foreach (var line in lines)
         {
             if (line is null)
             {
-                AppendSeparator(sb, innerWidth, borderColor, reset);
+                AppendSeparator(sb, innerWidth, ansiColor, reset);
             }
             else
             {
-                AppendContentLine(sb, line, innerWidth, borderColor, reset);
+                AppendContentLine(sb, line, innerWidth, ansiColor, reset);
             }
         }
 
-        AppendBottomBorder(sb, innerWidth, borderColor, reset);
+        AppendBottomBorder(sb, innerWidth, ansiColor, reset);
 
         return sb.ToString();
     }

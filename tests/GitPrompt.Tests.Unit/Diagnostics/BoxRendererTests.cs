@@ -111,7 +111,7 @@ public sealed class BoxRendererTests
     }
 
     [Fact]
-    public void Render_WhenBorderColorProvided_ShouldIncludeColorResetSequences()
+    public void Render_WhenBorderColorProvided_ShouldIncludeAnsiEscapeAndResetSequences()
     {
         // Arrange
         var lines = new List<string?> { "  content" };
@@ -120,7 +120,7 @@ public sealed class BoxRendererTests
         var result = BoxRenderer.Render("Title", lines, AnsiColors.LightGray);
 
         // Assert
-        result.Should().Contain(AnsiColors.LightGray);
+        result.Should().Contain(AnsiColorConverter.ToAnsi(AnsiColors.LightGray));
         result.Should().Contain(AnsiColors.Reset);
     }
 
