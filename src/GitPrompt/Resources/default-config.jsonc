@@ -29,9 +29,16 @@
     "dirty": {iconDirty},  // null = default: {iconDirtyDefault} (compact mode only)
     "clean": {iconClean},  // null = default: {iconCleanDefault} (compact mode only)
     "noUpstreamMarker": {iconNoUpstreamMarker},  // null = default: {iconNoUpstreamMarkerDefault}
+    "detachedHeadMarker": {iconDetachedHeadMarker},  // null = default: {iconDetachedHeadMarkerDefault}
     "branchLabelOpen": {iconBranchLabelOpen},  // null = default: {iconBranchLabelOpenDefault}
     "branchLabelClose": {iconBranchLabelClose},  // null = default: {iconBranchLabelCloseDefault}
-    "branchOperationSeparator": {iconBranchOperationSeparator}  // null = default: {iconBranchOperationSeparatorDefault}
+    "branchOperationSeparator": {iconBranchOperationSeparator},  // null = default: {iconBranchOperationSeparatorDefault}
+    "branchLabelOpenNormal": {iconBranchLabelOpenNormal},  // null = default: {iconBranchLabelOpenNormalDefault}
+    "branchLabelCloseNormal": {iconBranchLabelCloseNormal},  // null = default: {iconBranchLabelCloseNormalDefault}
+    "branchLabelOpenNoUpstream": {iconBranchLabelOpenNoUpstream},  // null = default: {iconBranchLabelOpenNoUpstreamDefault}
+    "branchLabelCloseNoUpstream": {iconBranchLabelCloseNoUpstream},  // null = default: {iconBranchLabelCloseNoUpstreamDefault}
+    "branchLabelOpenDetached": {iconBranchLabelOpenDetached},  // null = default: {iconBranchLabelOpenDetachedDefault}
+    "branchLabelCloseDetached": {iconBranchLabelCloseDetached}  // null = default: {iconBranchLabelCloseDetachedDefault}
   },
   "colors": {
     "user": {colorUser},  // null = default: {colorUserDefault}
@@ -40,6 +47,7 @@
     "commandDuration": {colorCommandDuration},  // null = default: {colorCommandDurationDefault}
     "branch": {colorBranch},  // null = default: {colorBranchDefault}
     "branchNoUpstream": {colorBranchNoUpstream},  // null = default: {colorBranchNoUpstreamDefault}
+    "branchDetached": {colorBranchDetached},  // null = default: {colorBranchDetachedDefault}
     "ahead": {colorAhead},  // null = default: {colorAheadDefault}
     "behind": {colorBehind},  // null = default: {colorBehindDefault}
     "staged": {colorStaged},  // null = default: {colorStagedDefault}

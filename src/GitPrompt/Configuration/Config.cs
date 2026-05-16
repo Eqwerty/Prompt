@@ -147,12 +147,40 @@ internal sealed record Config
         internal string? NoUpstreamMarker { get; init; }
 
         [JsonInclude]
+        [JsonPropertyName("detachedHeadMarker")]
+        internal string? DetachedHeadMarker { get; init; }
+
+        [JsonInclude]
         [JsonPropertyName("branchLabelOpen")]
         internal string? BranchLabelOpen { get; init; }
 
         [JsonInclude]
         [JsonPropertyName("branchLabelClose")]
         internal string? BranchLabelClose { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelOpenNormal")]
+        internal string? BranchLabelOpenNormal { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelCloseNormal")]
+        internal string? BranchLabelCloseNormal { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelOpenNoUpstream")]
+        internal string? BranchLabelOpenNoUpstream { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelCloseNoUpstream")]
+        internal string? BranchLabelCloseNoUpstream { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelOpenDetached")]
+        internal string? BranchLabelOpenDetached { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchLabelCloseDetached")]
+        internal string? BranchLabelCloseDetached { get; init; }
 
         [JsonInclude]
         [JsonPropertyName("branchOperationSeparator")]
@@ -184,6 +212,10 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("branchNoUpstream")]
         internal string? BranchNoUpstream { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("branchDetached")]
+        internal string? BranchDetached { get; init; }
 
         [JsonInclude]
         [JsonPropertyName("ahead")]

@@ -38,6 +38,8 @@ internal static class PromptColors
 
     internal static string ColorBranchNoUpstream => ResolveColor(ConfigReader.Config.Colors.BranchNoUpstream, AnsiColors.BoldCyan);
 
+    internal static string ColorBranchDetached => ResolveColor(ConfigReader.Config.Colors.BranchDetached, AnsiColors.NormalYellow);
+
     internal static string ColorAhead => ResolveColor(ConfigReader.Config.Colors.Ahead, AnsiColors.BoldCyan);
 
     internal static string ColorBehind => ResolveColor(ConfigReader.Config.Colors.Behind, AnsiColors.BoldCyan);

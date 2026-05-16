@@ -52,11 +52,11 @@ internal static class GitStatusSegmentBuilder
         var snapshot = GitStatusParser.Parse(statusOutput);
         var operationName = GitOperationDetector.ReadGitOperationMarker(gitDirectoryPath);
 
-        string branchLabel;
+        BranchLabelInfo branchLabel;
         if (snapshot.BranchHeadName is "(detached)" || string.IsNullOrEmpty(snapshot.BranchHeadName))
         {
             branchLabel = ResolveDetachedHeadBranchLabel(gitDirectoryPath, snapshot.HeadObjectId);
-            if (string.IsNullOrEmpty(branchLabel))
+            if (string.IsNullOrEmpty(branchLabel.Label))
             {
                 return string.Empty;
             }
@@ -67,7 +67,8 @@ internal static class GitStatusSegmentBuilder
             snapshot = snapshot with { CommitsAhead = commitsAhead, CommitsBehind = commitsBehind };
 
             var isInOperation = !string.IsNullOrEmpty(operationName);
-            branchLabel = GitStatusDisplayFormatter.BuildBranchLabel(snapshot.BranchHeadName, snapshot.HasUpstream || isInOperation);
+            var state = snapshot.HasUpstream || isInOperation ? BranchState.Normal : BranchState.NoUpstream;
+            branchLabel = GitStatusDisplayFormatter.BuildBranchLabel(snapshot.BranchHeadName, state);
         }
 
         var segment = ConfigReader.Config.Compact
@@ -78,18 +79,19 @@ internal static class GitStatusSegmentBuilder
         return segment;
     }
 
-    private static string ResolveDetachedHeadBranchLabel(string gitDirectoryPath, string headObjectId)
+    private static BranchLabelInfo ResolveDetachedHeadBranchLabel(string gitDirectoryPath, string headObjectId)
     {
         var rebaseBranchName = GitOperationDetector.ResolveRebaseBranchName(gitDirectoryPath);
         if (!string.IsNullOrEmpty(rebaseBranchName))
         {
-            return GitStatusDisplayFormatter.BuildBranchLabel(rebaseBranchName);
+            // During rebase, show as normal — the operation name in the label explains the state.
+            return GitStatusDisplayFormatter.BuildBranchLabel(rebaseBranchName, BranchState.Normal);
         }
 
         var shortObjectId = ShortenCommitHash(headObjectId);
         if (string.IsNullOrEmpty(shortObjectId))
         {
-            return string.Empty;
+            return default;
         }
 
         var matchingRemoteReferences = GitOperationDetector.FindMatchingRemoteReferences(gitDirectoryPath, headObjectId);
@@ -97,7 +99,7 @@ internal static class GitStatusSegmentBuilder
             ? $"{matchingRemoteReferences[0]} {shortObjectId}..."
             : $"{shortObjectId}...";
 
-        return GitStatusDisplayFormatter.BuildBranchLabel(label);
+        return GitStatusDisplayFormatter.BuildBranchLabel(label, BranchState.Detached);
     }
 
     private static (int Ahead, int Behind) ResolveAheadBehindCounts(string repositoryRootPath, GitStatusSnapshot snapshot)

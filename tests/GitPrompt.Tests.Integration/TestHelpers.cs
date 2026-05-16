@@ -82,14 +82,19 @@ internal static class TestHelpers
         return "\"" + value.Replace("\\", @"\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
     }
 
+    internal static string DetachedBranchLabel(string branchLabel)
+    {
+        return $"{DetachedHeadBranchMarker}{DetachedBranchLabelOpen}{branchLabel}{DetachedBranchLabelClose}";
+    }
+
     internal static string TrackedBranchLabel(string branchName)
     {
-        return $"{BranchLabelOpen}{branchName}{BranchLabelClose}";
+        return $"{NormalBranchLabelOpen}{branchName}{NormalBranchLabelClose}";
     }
 
     internal static string NoUpstreamBranchLabel(string branchName)
     {
-        return $"{NoUpstreamBranchMarker}{TrackedBranchLabel(branchName)}";
+        return $"{NoUpstreamBranchMarker}{NoUpstreamBranchLabelOpen}{branchName}{NoUpstreamBranchLabelClose}";
     }
 
     internal static string BranchLabelWithOperation(string branchLabel, string operation)

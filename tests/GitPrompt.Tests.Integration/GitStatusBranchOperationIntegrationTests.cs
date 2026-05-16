@@ -99,7 +99,7 @@ public sealed class GitStatusBranchOperationIntegrationTests
         var gitStatusSegment = GitStatusSegmentBuilder.Build(repositoryPath);
 
         // Assert
-        gitStatusSegment.Should().Contain($"({commitAObjectId[..7]}...)");
+        gitStatusSegment.Should().Contain($"[{commitAObjectId[..7]}...]");
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public sealed class GitStatusBranchOperationIntegrationTests
         var gitStatusSegment = GitStatusSegmentBuilder.Build(localRepositoryPath);
 
         // Assert
-        gitStatusSegment.Should().Contain($"(origin/main {commitObjectId[..7]}...)");
+        gitStatusSegment.Should().Contain($"[origin/main {commitObjectId[..7]}...]");
     }
 
     [Fact]

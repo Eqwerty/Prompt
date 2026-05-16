@@ -425,9 +425,16 @@ public sealed class ConfigInitializerTests
         content.Should().Contain("\"conflicts\": null");
         content.Should().Contain("\"stash\": null");
         content.Should().Contain("\"noUpstreamMarker\": null");
+        content.Should().Contain("\"detachedHeadMarker\": null");
         content.Should().Contain("\"branchLabelOpen\": null");
         content.Should().Contain("\"branchLabelClose\": null");
         content.Should().Contain("\"branchOperationSeparator\": null");
+        content.Should().Contain("\"branchLabelOpenNormal\": null");
+        content.Should().Contain("\"branchLabelCloseNormal\": null");
+        content.Should().Contain("\"branchLabelOpenNoUpstream\": null");
+        content.Should().Contain("\"branchLabelCloseNoUpstream\": null");
+        content.Should().Contain("\"branchLabelOpenDetached\": null");
+        content.Should().Contain("\"branchLabelCloseDetached\": null");
     }
 
     [Fact]
@@ -459,6 +466,16 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderDetachedHeadMarkerDefaultGlyph()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"null = default: {BranchLabelTokens.DetachedHeadBranchMarker}");
+    }
+
+    [Fact]
     public void BuildDefaultConfigContent_ShouldRenderBranchLabelBracketDefaultGlyphs()
     {
         // Act
@@ -467,6 +484,39 @@ public sealed class ConfigInitializerTests
         // Assert
         content.Should().Contain($"null = default: {BranchLabelTokens.BranchLabelOpen}");
         content.Should().Contain($"null = default: {BranchLabelTokens.BranchLabelClose}");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderNormalBranchLabelBracketDefaultGlyphs()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"null = default: {BranchLabelTokens.NormalBranchLabelOpen}");
+        content.Should().Contain($"null = default: {BranchLabelTokens.NormalBranchLabelClose}");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderNoUpstreamBranchLabelBracketDefaultGlyphs()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"null = default: {BranchLabelTokens.NoUpstreamBranchLabelOpen}");
+        content.Should().Contain($"null = default: {BranchLabelTokens.NoUpstreamBranchLabelClose}");
+    }
+
+    [Fact]
+    public void BuildDefaultConfigContent_ShouldRenderDetachedBranchLabelBracketDefaultGlyphs()
+    {
+        // Act
+        var content = ConfigInitializer.BuildDefaultConfigContent();
+
+        // Assert
+        content.Should().Contain($"null = default: {BranchLabelTokens.DetachedBranchLabelOpen}");
+        content.Should().Contain($"null = default: {BranchLabelTokens.DetachedBranchLabelClose}");
     }
 
     [Fact]
@@ -482,6 +532,7 @@ public sealed class ConfigInitializerTests
         content.Should().Contain("\"commandDuration\": null,");
         content.Should().Contain("\"branch\": null,");
         content.Should().Contain("\"branchNoUpstream\": null,");
+        content.Should().Contain("\"branchDetached\": null,");
         content.Should().Contain("\"ahead\": null,");
         content.Should().Contain("\"behind\": null,");
         content.Should().Contain("\"staged\": null,");
@@ -505,6 +556,7 @@ public sealed class ConfigInitializerTests
         content.Should().Contain("null = default: [95m");
         content.Should().Contain("null = default: [38;5;172m");
         content.Should().Contain("null = default: [1;36m");
+        content.Should().Contain("null = default: [0;33m");
         content.Should().Contain("null = default: [31m");
         content.Should().Contain("null = default: [31m");
         content.Should().Contain("null = default: [33m");

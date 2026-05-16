@@ -142,6 +142,24 @@ public sealed class GitStatusDisplayFormatterTests
     }
 
     [Fact]
+    public void BuildDisplay_WhenBranchIsDetached_ShouldUseDetachedBranchColor()
+    {
+        // Arrange
+        var statusCounts = new GitStatusCounts();
+
+        // Act
+        var gitStatusDisplay = GitStatusDisplayFormatter.BuildDisplay(DetachedBranchLabel("abc1234..."),
+            commitsAhead: 0,
+            commitsBehind: 0,
+            stashEntryCount: 0,
+            statusCounts,
+            operationName: string.Empty);
+
+        // Assert
+        gitStatusDisplay.Should().StartWith(Colored(ColorBranchDetached, DetachedBranchLabel("abc1234...")));
+    }
+
+    [Fact]
     public void BuildDisplay_WhenAheadBehindCountsExist_ShouldUseAheadAndBehindColors()
     {
         // Arrange
@@ -191,27 +209,40 @@ public sealed class GitStatusDisplayFormatterTests
     }
 
     [Fact]
-    public void BuildBranchLabel_WhenHasUpstreamIsTrue_ShouldReturnLabelWithoutNoUpstreamMarker()
+    public void BuildBranchLabel_WhenStateIsNormal_ShouldReturnLabelWithoutAnyMarker()
     {
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Assert
         label.Should().Be(TrackedBranchLabel("main"));
     }
 
     [Fact]
-    public void BuildBranchLabel_WhenHasUpstreamIsFalse_ShouldPrependNoUpstreamMarker()
+    public void BuildBranchLabel_WhenStateIsNoUpstream_ShouldPrependNoUpstreamMarker()
     {
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("feature", hasUpstream: false);
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("feature", BranchState.NoUpstream);
 
         // Assert
         label.Should().Be(NoUpstreamBranchLabel("feature"));
     }
 
     [Fact]
-    public void BuildBranchLabel_WhenHasUpstreamDefaultsToTrue_ShouldReturnTrackedLabel()
+    public void BuildBranchLabel_WhenStateIsDetached_ShouldPrependDetachedHeadMarker()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config());
+
+        // Act
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("abc1234...", BranchState.Detached);
+
+        // Assert
+        label.Should().Be(DetachedBranchLabel("abc1234..."));
+    }
+
+    [Fact]
+    public void BuildBranchLabel_WhenStateDefaultsToNormal_ShouldReturnTrackedLabel()
     {
         // Act
         var label = GitStatusDisplayFormatter.BuildBranchLabel("main");

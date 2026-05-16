@@ -35,12 +35,12 @@ public class GitStatusDisplayBenchmarks
     [Benchmark]
     public string BuildDisplay_CleanRepository()
     {
-        return GitStatusDisplayFormatter.BuildDisplay("(main)", commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, _cleanCounts, operationName: string.Empty);
+        return GitStatusDisplayFormatter.BuildDisplay(new BranchLabelInfo("(main)", BranchState.Normal), commitsAhead: 0, commitsBehind: 0, stashEntryCount: 0, _cleanCounts, operationName: string.Empty);
     }
 
     [Benchmark]
     public string BuildDisplay_BusyRepository()
     {
-        return GitStatusDisplayFormatter.BuildDisplay("(feature)", commitsAhead: 4, commitsBehind: 2, stashEntryCount: 0, _busyCounts, operationName: string.Empty);
+        return GitStatusDisplayFormatter.BuildDisplay(new BranchLabelInfo("(feature)", BranchState.Normal), commitsAhead: 4, commitsBehind: 2, stashEntryCount: 0, _busyCounts, operationName: string.Empty);
     }
 }

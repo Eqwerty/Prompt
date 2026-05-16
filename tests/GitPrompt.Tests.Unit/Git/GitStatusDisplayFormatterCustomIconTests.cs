@@ -112,11 +112,11 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { NoUpstreamMarker = "!" } });
 
         // Act
-        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: false);
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.NoUpstream);
 
         // Assert
-        branchLabel.Should().StartWith("!");
-        branchLabel.Should().NotStartWith("*");
+        branchLabel.Label.Should().StartWith("!");
+        branchLabel.Label.Should().NotStartWith("*");
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
     {
         // Arrange
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { NoUpstreamMarker = "!" } });
-        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: false);
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.NoUpstream);
 
         // Act
         var display = GitStatusDisplayFormatter.BuildDisplay(
@@ -136,7 +136,7 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
             operationName: string.Empty);
 
         // Assert
-        display.Should().Contain(Colored(ColorBranchNoUpstream, branchLabel));
+        display.Should().Contain(Colored(ColorBranchNoUpstream, branchLabel.Label));
     }
 
     [Fact]
@@ -146,11 +146,11 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelOpen = "[" } });
 
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Assert
-        label.Should().StartWith("[");
-        label.Should().NotStartWith("(");
+        label.Label.Should().StartWith("[");
+        label.Label.Should().NotStartWith("(");
     }
 
     [Fact]
@@ -160,11 +160,11 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelClose = "]" } });
 
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Assert
-        label.Should().EndWith("]");
-        label.Should().NotEndWith(")");
+        label.Label.Should().EndWith("]");
+        label.Label.Should().NotEndWith(")");
     }
 
     [Fact]
@@ -174,10 +174,10 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelOpen = "[", BranchLabelClose = "]" } });
 
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Assert
-        label.Should().Be("[main]");
+        label.Label.Should().Be("[main]");
     }
 
     [Fact]
@@ -187,10 +187,10 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelOpen = "[", BranchLabelClose = "]", NoUpstreamMarker = "!" } });
 
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("feature", hasUpstream: false);
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("feature", BranchState.NoUpstream);
 
         // Assert
-        label.Should().Be("![feature]");
+        label.Label.Should().Be("![feature]");
     }
 
     [Fact]
@@ -198,7 +198,7 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
     {
         // Arrange
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelOpen = "[", BranchLabelClose = "]" } });
-        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("feature", hasUpstream: false);
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("feature", BranchState.NoUpstream);
 
         // Act
         var display = GitStatusDisplayFormatter.BuildDisplay(
@@ -210,7 +210,7 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
             operationName: string.Empty);
 
         // Assert
-        display.Should().Contain(Colored(ColorBranchNoUpstream, branchLabel));
+        display.Should().Contain(Colored(ColorBranchNoUpstream, branchLabel.Label));
     }
 
     [Fact]
@@ -218,7 +218,7 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
     {
         // Arrange
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelOpen = "[", BranchLabelClose = "]" } });
-        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Act
         var display = GitStatusDisplayFormatter.BuildDisplay(
@@ -240,10 +240,65 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig() });
 
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Assert
-        label.Should().Be("(main)");
+        label.Label.Should().Be("(main)");
+    }
+
+    [Fact]
+    public void BuildBranchLabel_WhenDetachedAndBracketsAreAbsent_ShouldDefaultToSquareBrackets()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig() });
+
+        // Act
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("abc1234...", BranchState.Detached);
+
+        // Assert
+        label.Label.Should().Be(":[abc1234...]");
+    }
+
+    [Fact]
+    public void BuildBranchLabel_WhenNoUpstreamAndBracketsAreAbsent_ShouldDefaultToParentheses()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig() });
+
+        // Act
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("feature", BranchState.NoUpstream);
+
+        // Assert
+        label.Label.Should().Be("*(feature)");
+    }
+
+    [Fact]
+    public void BuildBranchLabel_WhenDetachedBranchLabelOpenIsConfigured_ShouldUseItOnlyForDetachedState()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelOpenDetached = "<", BranchLabelCloseDetached = ">" } });
+
+        // Act
+        var detachedLabel = GitStatusDisplayFormatter.BuildBranchLabel("abc1234...", BranchState.Detached);
+        var normalLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
+
+        // Assert
+        detachedLabel.Label.Should().StartWith(":<");
+        detachedLabel.Label.Should().EndWith(">");
+        normalLabel.Label.Should().Be("(main)");
+    }
+
+    [Fact]
+    public void BuildBranchLabel_WhenGlobalBracketsSetAndDetachedBracketsAbsent_ShouldUseGlobalForDetached()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchLabelOpen = "{", BranchLabelClose = "}" } });
+
+        // Act
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("abc1234...", BranchState.Detached);
+
+        // Assert
+        label.Label.Should().Be(":{abc1234...}");
     }
 
     [Fact]
@@ -251,7 +306,7 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
     {
         // Arrange
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { BranchOperationSeparator = " | " } });
-        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Act
         var display = GitStatusDisplayFormatter.BuildDisplay(
@@ -272,7 +327,7 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
     {
         // Arrange
         using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig() });
-        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", hasUpstream: true);
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Act
         var display = GitStatusDisplayFormatter.BuildDisplay(
@@ -285,5 +340,38 @@ public sealed class GitStatusDisplayFormatterCustomIconTests
 
         // Assert
         display.Should().Contain("(main|MERGE)");
+    }
+
+    [Fact]
+    public void BuildDisplay_WhenCustomDetachedHeadMarkerIsConfigured_ShouldUseThatMarkerInBranchLabel()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Icons = new Config.IconsConfig { DetachedHeadMarker = "#" } });
+
+        // Act
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("abc1234...", BranchState.Detached);
+
+        // Assert
+        branchLabel.Label.Should().StartWith("#");
+        branchLabel.Label.Should().NotStartWith(":");
+    }
+
+    [Fact]
+    public void BuildDisplay_WhenDetachedBranch_ShouldApplyDetachedBranchColor()
+    {
+        // Arrange
+        var branchLabel = GitStatusDisplayFormatter.BuildBranchLabel("abc1234...", BranchState.Detached);
+
+        // Act
+        var display = GitStatusDisplayFormatter.BuildDisplay(
+            branchLabel,
+            commitsAhead: 0,
+            commitsBehind: 0,
+            stashEntryCount: 0,
+            new GitStatusCounts(),
+            operationName: string.Empty);
+
+        // Assert
+        display.Should().Contain(Colored(ColorBranchDetached, branchLabel.Label));
     }
 }

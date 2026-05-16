@@ -1,4 +1,5 @@
 using FluentAssertions;
+using GitPrompt.Git;
 using static GitPrompt.Constants.BranchLabelTokens;
 using static GitPrompt.Constants.PromptColors;
 
@@ -17,9 +18,17 @@ internal static class TestHelpers
         }
     }
 
-    internal static string TrackedBranchLabel(string branchName) => $"{BranchLabelOpen}{branchName}{BranchLabelClose}";
+    internal static BranchLabelInfo TrackedBranchLabel(string branchName) =>
+        new($"{NormalBranchLabelOpen}{branchName}{NormalBranchLabelClose}", BranchState.Normal);
 
-    internal static string NoUpstreamBranchLabel(string branchName) => $"{NoUpstreamBranchMarker}{TrackedBranchLabel(branchName)}";
+    internal static BranchLabelInfo NoUpstreamBranchLabel(string branchName) =>
+        new($"{NoUpstreamBranchMarker}{NoUpstreamBranchLabelOpen}{branchName}{NoUpstreamBranchLabelClose}", BranchState.NoUpstream);
+
+    internal static BranchLabelInfo DetachedBranchLabel(string branchLabel) =>
+        new($"{DetachedHeadBranchMarker}{DetachedBranchLabelOpen}{branchLabel}{DetachedBranchLabelClose}", BranchState.Detached);
+
+    internal static string BranchLabelWithOperation(BranchLabelInfo branchLabel, string operation) =>
+        BranchLabelWithOperation(branchLabel.Label, operation);
 
     internal static string BranchLabelWithOperation(string branchLabel, string operation) =>
         branchLabel.Replace(BranchLabelClose, $"{BranchOperationSeparator}{operation}{BranchLabelClose}", StringComparison.Ordinal);
@@ -27,6 +36,8 @@ internal static class TestHelpers
     internal static string Indicator(char icon, int count) => $"{icon}{count}";
 
     internal static string Indicator(string icon, int count) => $"{icon}{count}";
+
+    internal static string Colored(string color, BranchLabelInfo segment) => Colored(color, segment.Label);
 
     internal static string Colored(string color, string segment) => $"{color}{segment}{ColorReset}";
 }

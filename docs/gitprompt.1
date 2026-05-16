@@ -234,13 +234,41 @@ Stash entries. Default:
 Prefix on branch name when there is no upstream. Default:
 .BR * .
 .TP
+.B icons.detachedHeadMarker
+Prefix on branch name when HEAD is detached. Default:
+.BR : .
+.TP
 .B icons.branchLabelOpen
-Opening bracket around the branch name. Default:
+Opening bracket around the branch name (overrides all states when set). Default:
 .BR ( .
 .TP
 .B icons.branchLabelClose
-Closing bracket around the branch name. Default:
+Closing bracket around the branch name (overrides all states when set). Default:
 .BR ) .
+.TP
+.B icons.branchLabelOpenNormal
+Opening bracket for a normal (tracked) branch. Default:
+.BR ( .
+.TP
+.B icons.branchLabelCloseNormal
+Closing bracket for a normal (tracked) branch. Default:
+.BR ) .
+.TP
+.B icons.branchLabelOpenNoUpstream
+Opening bracket when there is no upstream. Default:
+.BR ( .
+.TP
+.B icons.branchLabelCloseNoUpstream
+Closing bracket when there is no upstream. Default:
+.BR ) .
+.TP
+.B icons.branchLabelOpenDetached
+Opening bracket when HEAD is detached. Default:
+.BR [ .
+.TP
+.B icons.branchLabelCloseDetached
+Closing bracket when HEAD is detached. Default:
+.BR ] .
 .TP
 .B icons.branchOperationSeparator
 Separator between branch name and in-progress operation. Default:
@@ -275,6 +303,10 @@ Branch name (tracked). Default:
 .B colors.branchNoUpstream
 Branch name (no upstream). Default:
 .BR #48A8CD .
+.TP
+.B colors.branchDetached
+Branch name (detached HEAD). Default:
+.BR #DDDD00 .
 .TP
 .B colors.ahead
 Commits-ahead indicator. Default:

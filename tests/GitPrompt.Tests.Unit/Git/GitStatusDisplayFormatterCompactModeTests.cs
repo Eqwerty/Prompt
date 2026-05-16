@@ -157,7 +157,7 @@ public sealed class GitStatusDisplayFormatterCompactModeTests : IDisposable
         // Assert
         AssertInOrder(
             display,
-            TrackedBranchLabel("main"),
+            TrackedBranchLabel("main").Label,
             Indicator(PromptIcons.IconAhead, 3),
             Indicator(PromptIcons.IconBehind, 1),
             PromptIcons.IconDirty.ToString(),

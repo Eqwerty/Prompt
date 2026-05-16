@@ -11,7 +11,7 @@ internal static class GitStatusDisplayFormatter
     private readonly record struct CountStyle(int Value, string Color, string Icon);
 
     internal static string BuildDisplay(
-        string branchDescription,
+        BranchLabelInfo branchLabel,
         int commitsAhead,
         int commitsBehind,
         int stashEntryCount,
@@ -32,14 +32,16 @@ internal static class GitStatusDisplayFormatter
 
         var statusBuilder = new StringBuilder();
 
-        branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
+        var labelWithOp = AppendOperationToBranchLabel(branchLabel, operationName);
 
-        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + (icons.BranchLabelOpen ?? BranchLabelOpen);
-        var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
-            ? ColorBranchNoUpstream
-            : ColorBranch;
+        var branchColor = branchLabel.State switch
+        {
+            BranchState.NoUpstream => ColorBranchNoUpstream,
+            BranchState.Detached => ColorBranchDetached,
+            _ => ColorBranch,
+        };
 
-        statusBuilder.Append(branchColor).Append(branchDescription).Append(ColorReset);
+        statusBuilder.Append(branchColor).Append(labelWithOp).Append(ColorReset);
 
         if (commitsAhead > 0)
         {
@@ -82,7 +84,7 @@ internal static class GitStatusDisplayFormatter
     }
 
     internal static string BuildDisplayCompact(
-        string branchDescription,
+        BranchLabelInfo branchLabel,
         int commitsAhead,
         int commitsBehind,
         int stashEntryCount,
@@ -98,14 +100,16 @@ internal static class GitStatusDisplayFormatter
 
         var statusBuilder = new StringBuilder();
 
-        branchDescription = AppendOperationToBranchLabel(branchDescription, operationName);
+        var labelWithOp = AppendOperationToBranchLabel(branchLabel, operationName);
 
-        var noUpstreamPrefix = (icons.NoUpstreamMarker ?? NoUpstreamBranchMarker) + (icons.BranchLabelOpen ?? BranchLabelOpen);
-        var branchColor = branchDescription.StartsWith(noUpstreamPrefix, StringComparison.Ordinal)
-            ? ColorBranchNoUpstream
-            : ColorBranch;
+        var branchColor = branchLabel.State switch
+        {
+            BranchState.NoUpstream => ColorBranchNoUpstream,
+            BranchState.Detached => ColorBranchDetached,
+            _ => ColorBranch,
+        };
 
-        statusBuilder.Append(branchColor).Append(branchDescription).Append(ColorReset);
+        statusBuilder.Append(branchColor).Append(labelWithOp).Append(ColorReset);
 
         if (commitsAhead > 0)
         {
@@ -134,33 +138,54 @@ internal static class GitStatusDisplayFormatter
         return statusBuilder.ToString();
     }
 
-    internal static string BuildBranchLabel(string branchName, bool hasUpstream = true)
+    internal static BranchLabelInfo BuildBranchLabel(string branchName, BranchState state = BranchState.Normal)
     {
         var icons = ConfigReader.Config.Icons;
-        var marker = icons.NoUpstreamMarker ?? NoUpstreamBranchMarker;
-        var open = icons.BranchLabelOpen ?? BranchLabelOpen;
-        var close = icons.BranchLabelClose ?? BranchLabelClose;
-        var noUpstreamPrefix = hasUpstream ? string.Empty : marker;
 
-        return $"{noUpstreamPrefix}{open}{branchName}{close}";
+        var (open, close) = state switch
+        {
+            BranchState.NoUpstream => (
+                icons.BranchLabelOpenNoUpstream ?? icons.BranchLabelOpen ?? NoUpstreamBranchLabelOpen,
+                icons.BranchLabelCloseNoUpstream ?? icons.BranchLabelClose ?? NoUpstreamBranchLabelClose),
+            BranchState.Detached => (
+                icons.BranchLabelOpenDetached ?? icons.BranchLabelOpen ?? DetachedBranchLabelOpen,
+                icons.BranchLabelCloseDetached ?? icons.BranchLabelClose ?? DetachedBranchLabelClose),
+            _ => (
+                icons.BranchLabelOpenNormal ?? icons.BranchLabelOpen ?? NormalBranchLabelOpen,
+                icons.BranchLabelCloseNormal ?? icons.BranchLabelClose ?? NormalBranchLabelClose),
+        };
+
+        var prefix = state switch
+        {
+            BranchState.NoUpstream => icons.NoUpstreamMarker ?? NoUpstreamBranchMarker,
+            BranchState.Detached => icons.DetachedHeadMarker ?? DetachedHeadBranchMarker,
+            _ => string.Empty,
+        };
+
+        return new BranchLabelInfo($"{prefix}{open}{branchName}{close}", state);
     }
 
-    private static string AppendOperationToBranchLabel(string branchLabel, string operationName)
+    private static string AppendOperationToBranchLabel(BranchLabelInfo branchLabel, string operationName)
     {
         if (string.IsNullOrEmpty(operationName))
         {
-            return branchLabel;
+            return branchLabel.Label;
         }
 
         var icons = ConfigReader.Config.Icons;
-        var close = icons.BranchLabelClose ?? BranchLabelClose;
-        var separator = icons.BranchOperationSeparator ?? BranchOperationSeparator;
-        if (branchLabel.EndsWith(close, StringComparison.Ordinal))
+        var close = branchLabel.State switch
         {
-            return branchLabel[..^close.Length] + separator + operationName + close;
+            BranchState.NoUpstream => icons.BranchLabelCloseNoUpstream ?? icons.BranchLabelClose ?? NoUpstreamBranchLabelClose,
+            BranchState.Detached => icons.BranchLabelCloseDetached ?? icons.BranchLabelClose ?? DetachedBranchLabelClose,
+            _ => icons.BranchLabelCloseNormal ?? icons.BranchLabelClose ?? NormalBranchLabelClose,
+        };
+        var separator = icons.BranchOperationSeparator ?? BranchOperationSeparator;
+        if (branchLabel.Label.EndsWith(close, StringComparison.Ordinal))
+        {
+            return branchLabel.Label[..^close.Length] + separator + operationName + close;
         }
 
-        return branchLabel + separator + operationName;
+        return branchLabel.Label + separator + operationName;
     }
 
     private static void AppendCountIndicators(StringBuilder sb, params CountStyle[] items)
