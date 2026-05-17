@@ -16,7 +16,7 @@ public sealed class PromptResultTests
     public void Output_WhenMultilinePromptIsTrue_ShouldPutSymbolOnNewLine()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = true } });
         var result = MakeResult();
 
         // Act
@@ -30,7 +30,7 @@ public sealed class PromptResultTests
     public void Output_WhenMultilinePromptIsFalse_ShouldPutSymbolOnSameLine()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = false } });
         var result = MakeResult();
 
         // Act
@@ -44,7 +44,7 @@ public sealed class PromptResultTests
     public void Output_WhenMultilinePromptIsFalseAndGitStatusPresent_ShouldKeepAllOnOneLine()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = false } });
         var result = new PromptResult("ctx", string.Empty, "(main)", "$",
             TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero);
 
@@ -59,7 +59,7 @@ public sealed class PromptResultTests
     public void Output_WhenNewlineBeforePromptIsTrue_ShouldPrependBlankLine()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = true, NewlineBeforePrompt = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = true, NewlineBefore = true } });
         var result = MakeResult();
 
         // Act
@@ -73,7 +73,7 @@ public sealed class PromptResultTests
     public void Output_WhenNewlineBeforePromptIsFalse_ShouldNotPrependBlankLine()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = true, NewlineBeforePrompt = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = true, NewlineBefore = false } });
         var result = MakeResult();
 
         // Act
@@ -87,7 +87,7 @@ public sealed class PromptResultTests
     public void Output_WhenNewlineBeforePromptIsTrueAndMultilinePromptIsFalse_ShouldPrependBlankLineToSingleLine()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MultilinePrompt = false, NewlineBeforePrompt = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = false, NewlineBefore = true } });
         var result = MakeResult();
 
         // Act

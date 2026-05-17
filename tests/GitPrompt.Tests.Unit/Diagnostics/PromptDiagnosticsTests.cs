@@ -168,7 +168,7 @@ public sealed class PromptDiagnosticsTests
     {
         // Arrange
         using var scope = PromptDiagnostics.EnableForTesting();
-        var config = new Config();
+        var config = ConfigInitializer.MergeWithDefaults(new Config());
         var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Loaded, config);
         PromptDiagnostics.RecordConfigLoaded(loadResult);
         var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
@@ -188,7 +188,7 @@ public sealed class PromptDiagnosticsTests
     {
         // Arrange
         using var scope = PromptDiagnostics.EnableForTesting();
-        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Missing, new Config());
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Missing, ConfigInitializer.MergeWithDefaults(new Config()));
         PromptDiagnostics.RecordConfigLoaded(loadResult);
         var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
@@ -206,7 +206,7 @@ public sealed class PromptDiagnosticsTests
     {
         // Arrange
         using var scope = PromptDiagnostics.EnableForTesting();
-        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ParseFailed, new Config());
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ParseFailed, ConfigInitializer.MergeWithDefaults(new Config()));
         PromptDiagnostics.RecordConfigLoaded(loadResult);
         var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
@@ -223,7 +223,7 @@ public sealed class PromptDiagnosticsTests
     {
         // Arrange
         using var scope = PromptDiagnostics.EnableForTesting();
-        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ReadFailed, new Config());
+        var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.ReadFailed, ConfigInitializer.MergeWithDefaults(new Config()));
         PromptDiagnostics.RecordConfigLoaded(loadResult);
         var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",
             TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(2));
@@ -240,7 +240,7 @@ public sealed class PromptDiagnosticsTests
     {
         // Arrange
         using var scope = PromptDiagnostics.EnableForTesting();
-        var config = new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 0 } };
+        var config = ConfigInitializer.MergeWithDefaults(new Config { Cache = new Config.CacheConfig { GitStatusTtlSeconds = 0 } });
         var loadResult = new ConfigLoadResult("/home/user/.config/gitprompt/config.jsonc", ConfigLoadStatus.Loaded, config);
         PromptDiagnostics.RecordConfigLoaded(loadResult);
         var result = new PromptResult(string.Empty, string.Empty, string.Empty, "$",

@@ -13,7 +13,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 123);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = false } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -27,7 +27,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: null);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -41,7 +41,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 42);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -55,7 +55,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 0);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -69,7 +69,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 5000);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 2000 });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true, MinMs = 2000 } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -84,7 +84,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 500);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 2000 });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true, MinMs = 2000 } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -98,7 +98,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 2000);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 2000 });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true, MinMs = 2000 } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -112,7 +112,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 1);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = null });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true, MinMs = null } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);
@@ -126,7 +126,7 @@ public sealed class CommandDurationSegmentBuilderTests
     {
         // Arrange
         var platformProvider = new TestPlatformProvider(lastCommandDurationMs: 1);
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowCommandDuration = true, CommandDurationMinMs = 0 });
+        using var _ = ConfigReader.OverrideForTesting(new Config { CommandDuration = new Config.CommandDurationConfig { Show = true, MinMs = 0 } });
 
         // Act
         var segment = CommandDurationSegmentBuilder.Build(platformProvider);

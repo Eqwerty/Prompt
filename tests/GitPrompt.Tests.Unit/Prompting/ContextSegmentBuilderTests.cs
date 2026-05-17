@@ -48,7 +48,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowDomainIsTrueAndDomainExists_ShouldPrependDomainToWindowsUser()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowDomain = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowDomain = true } });
         var platformProvider = new TestPlatformProvider(
             windowsUserName: "EduardoQuintana",
             windowsUserDomain: "AzureAD",
@@ -66,7 +66,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowDomainIsTrueButDomainIsAbsent_ShouldShowUsernameOnly()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowDomain = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowDomain = true } });
         var platformProvider = new TestPlatformProvider(
             windowsUserName: "EduardoQuintana",
             windowsUserDomain: null,
@@ -84,7 +84,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowDomainIsTrueButUserIsUnixUser_ShouldNotPrependDomain()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowDomain = true });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowDomain = true } });
         var platformProvider = new TestPlatformProvider(
             user: "unix-user",
             windowsUserDomain: "AzureAD",
@@ -102,7 +102,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowDomainIsFalseAndDomainExists_ShouldShowUsernameOnly()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowDomain = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowDomain = false } });
         var platformProvider = new TestPlatformProvider(
             windowsUserName: "EduardoQuintana",
             windowsUserDomain: "AzureAD",
@@ -296,7 +296,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowUserIsFalse_ShouldOmitUserSegment()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowUser = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowUser = false } });
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
@@ -313,7 +313,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowUserIsFalse_ShouldOmitUserSegment_WhenUserIsUnknown()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowUser = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowUser = false } });
         var platformProvider = new TestPlatformProvider(
             user: null,
             host: "machine",
@@ -330,7 +330,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowHostIsFalse_ShouldOmitHostSegment()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowHost = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowHost = false } });
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
@@ -347,7 +347,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenShowUserAndShowHostAreFalse_ShouldRenderOnlyPath()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { ShowUser = false, ShowHost = false });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowUser = false, ShowHost = false } });
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
@@ -395,7 +395,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenMaxPathDepthIsSet_ShouldTruncatePath()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MaxPathDepth = 2 });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { MaxPathDepth = 2 } });
         var platformProvider = new TestPlatformProvider(
             user: "me",
             host: "machine",
@@ -412,7 +412,7 @@ public sealed class ContextSegmentBuilderTests
     public void Build_WhenMissingPathAndMaxPathDepthIsSet_ShouldTruncateThenAppendMissingMarker()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { MaxPathDepth = 1 });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { MaxPathDepth = 1 } });
         var missingPath = "/a/b/c/" + Guid.NewGuid().ToString("N");
         var platformProvider = new TestPlatformProvider(
             user: "me",

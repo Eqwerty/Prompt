@@ -84,7 +84,7 @@ public sealed class InitCommandTests
     [Fact]
     public void GenerateBashInit_WhenPromptStartOfLineIsTrue_ShouldSetVariableTo1()
     {
-        // Arrange — default config has PromptStartOfLine = true
+        // Arrange — default config has Layout.StartOfLine = true
 
         // Act
         var script = InitCommand.GenerateBashInit();

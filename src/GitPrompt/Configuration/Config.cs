@@ -1,5 +1,3 @@
-// ReSharper disable RedundantDefaultMemberInitializer
-
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -7,73 +5,49 @@ namespace GitPrompt.Configuration;
 
 internal sealed record Config
 {
-    [JsonInclude]
-    internal CacheConfig Cache { get; init; } = new();
+    internal const bool DefaultCompact = false;
+    internal const bool DefaultShowStash = true;
+    internal const double DefaultCommandTimeoutMs = 2000;
 
     [JsonInclude]
-    [JsonPropertyName("showUser")]
-    internal bool ShowUser { get; init; } = true;
-
-    [JsonInclude]
-    [JsonPropertyName("showDomain")]
-    internal bool ShowDomain { get; init; } = false;
-
-    [JsonInclude]
-    [JsonPropertyName("showHost")]
-    internal bool ShowHost { get; init; } = true;
-
-    [JsonInclude]
-    [JsonPropertyName("maxPathDepth")]
-    internal int MaxPathDepth { get; init; } = 0;
-
-    [JsonInclude]
-    [JsonPropertyName("multilinePrompt")]
-    internal bool MultilinePrompt { get; init; } = true;
-
-    [JsonInclude]
-    [JsonPropertyName("newlineBeforePrompt")]
-    internal bool NewlineBeforePrompt { get; init; } = false;
-
-    [JsonInclude]
-    [JsonPropertyName("promptStartOfLine")]
-    internal bool PromptStartOfLine { get; init; } = true;
-
-    [JsonInclude]
-    [JsonPropertyName("showCommandDuration")]
-    internal bool ShowCommandDuration { get; init; } = true;
-
-    [JsonInclude]
-    [JsonPropertyName("promptSymbol")]
-    internal string? PromptSymbol { get; init; }
-
-    [JsonInclude]
-    [JsonPropertyName("compact")]
-    internal bool Compact { get; init; } = false;
-
-    [JsonInclude]
-    [JsonPropertyName("showStash")]
-    internal bool ShowStash { get; init; } = true;
-
-    [JsonInclude]
-    internal IconsConfig Icons { get; init; } = new();
-
-    [JsonInclude]
-    internal ColorsConfig Colors { get; init; } = new();
+    internal CacheConfig? Cache { get; init; }
 
     [JsonInclude]
     [JsonPropertyName("commandTimeoutMs")]
     internal double? CommandTimeoutMs { get; init; }
 
     [JsonInclude]
-    [JsonPropertyName("commandDurationMinMs")]
-    internal double? CommandDurationMinMs { get; init; }
+    [JsonPropertyName("commandDuration")]
+    internal CommandDurationConfig? CommandDuration { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName("context")]
+    internal ContextConfig? Context { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName("layout")]
+    internal LayoutConfig? Layout { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName("compact")]
+    internal bool? Compact { get; init; }
+
+    [JsonInclude]
+    [JsonPropertyName("showStash")]
+    internal bool? ShowStash { get; init; }
+
+    [JsonInclude]
+    internal IconsConfig? Icons { get; init; }
+
+    [JsonInclude]
+    internal ColorsConfig? Colors { get; init; }
 
     [JsonIgnore]
     internal TimeSpan? CommandTimeout
     {
         get
         {
-            var ms = CommandTimeoutMs ?? 2000.0;
+            var ms = CommandTimeoutMs ?? DefaultCommandTimeoutMs;
 
             return ms > 0 && double.IsFinite(ms) ? TimeSpan.FromMilliseconds(ms) : null;
         }
@@ -81,6 +55,9 @@ internal sealed record Config
 
     internal sealed record CacheConfig
     {
+        internal const double DefaultGitStatusTtlSeconds = 5;
+        internal const double DefaultRepositoryTtlSeconds = 60;
+
         [JsonInclude]
         [JsonPropertyName("gitStatusTtl")]
         internal double? GitStatusTtlSeconds { get; init; }
@@ -90,10 +67,70 @@ internal sealed record Config
         internal double? RepositoryTtlSeconds { get; init; }
 
         [JsonIgnore]
-        internal TimeSpan GitStatusTtl => TimeSpan.FromSeconds(GitStatusTtlSeconds ?? 5.0);
+        internal TimeSpan GitStatusTtl => TimeSpan.FromSeconds(GitStatusTtlSeconds ?? DefaultGitStatusTtlSeconds);
 
         [JsonIgnore]
-        internal TimeSpan RepositoryTtl => TimeSpan.FromSeconds(RepositoryTtlSeconds ?? 60.0);
+        internal TimeSpan RepositoryTtl => TimeSpan.FromSeconds(RepositoryTtlSeconds ?? DefaultRepositoryTtlSeconds);
+    }
+
+    internal sealed record CommandDurationConfig
+    {
+        internal const bool DefaultShow = true;
+
+        [JsonInclude]
+        [JsonPropertyName("show")]
+        internal bool? Show { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("minMs")]
+        internal double? MinMs { get; init; }
+    }
+
+    internal sealed record ContextConfig
+    {
+        internal const bool DefaultShowUser = true;
+        internal const bool DefaultShowDomain = false;
+        internal const bool DefaultShowHost = true;
+        internal const int DefaultMaxPathDepth = 0;
+
+        [JsonInclude]
+        [JsonPropertyName("showUser")]
+        internal bool? ShowUser { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("showDomain")]
+        internal bool? ShowDomain { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("showHost")]
+        internal bool? ShowHost { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("maxPathDepth")]
+        internal int? MaxPathDepth { get; init; }
+    }
+
+    internal sealed record LayoutConfig
+    {
+        internal const bool DefaultMultiline = true;
+        internal const bool DefaultNewlineBefore = false;
+        internal const bool DefaultStartOfLine = true;
+
+        [JsonInclude]
+        [JsonPropertyName("multiline")]
+        internal bool? Multiline { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("newlineBefore")]
+        internal bool? NewlineBefore { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("startOfLine")]
+        internal bool? StartOfLine { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("symbol")]
+        internal string? Symbol { get; init; }
     }
 
     internal sealed record IconsConfig

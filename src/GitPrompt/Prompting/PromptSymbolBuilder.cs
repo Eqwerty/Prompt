@@ -8,7 +8,7 @@ internal static class PromptSymbolBuilder
 {
     internal static string Build(PlatformProvider platformProvider)
     {
-        var customSymbol = ConfigReader.Config.PromptSymbol;
+        var customSymbol = ConfigReader.Config.Layout!.Symbol;
         if (customSymbol is not null)
         {
             return customSymbol;
@@ -24,3 +24,4 @@ internal static class PromptSymbolBuilder
         return isCurrentUnixRootUser ? PromptSymbols.UnixRoot : PromptSymbols.Unix;
     }
 }
+

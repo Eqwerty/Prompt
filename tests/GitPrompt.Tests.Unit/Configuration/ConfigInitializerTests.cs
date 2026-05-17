@@ -12,8 +12,7 @@ public sealed class ConfigInitializerTests
         // Arrange
         var customConfig = new Config
         {
-            ShowUser = false,
-            MaxPathDepth = 3,
+            Context = new Config.ContextConfig { ShowUser = false, MaxPathDepth = 3 },
             Compact = true
         };
 
@@ -70,12 +69,13 @@ public sealed class ConfigInitializerTests
     [Fact]
     public void MigrateConfigIfNeeded_WhenTopLevelKeyMissing_ShouldAddItWithDefaultValue()
     {
-        // Arrange
+        // Arrange — config has a context group but is missing layout and commandDuration groups entirely
         var configPath = Path.GetTempFileName();
         var contentMissingKey = """
             {
-              "showUser": false,
-              "showHost": true
+              "context": {
+                "showUser": false
+              }
             }
             """;
         File.WriteAllText(configPath, contentMissingKey);
@@ -85,8 +85,8 @@ public sealed class ConfigInitializerTests
 
         // Assert
         var result = File.ReadAllText(configPath);
-        result.Should().Contain("\"compact\":");
-        result.Should().Contain("\"multilinePrompt\":");
+        result.Should().Contain("\"layout\":");
+        result.Should().Contain("\"commandDuration\":");
 
         File.Delete(configPath);
     }
@@ -98,8 +98,12 @@ public sealed class ConfigInitializerTests
         var configPath = Path.GetTempFileName();
         var contentMissingKey = """
             {
-              "showUser": false,
-              "showHost": false
+              "context": {
+                "showUser": false,
+                "showDomain": false,
+                "showHost": false,
+                "maxPathDepth": 0
+              }
             }
             """;
         File.WriteAllText(configPath, contentMissingKey);
@@ -141,29 +145,28 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
-    public void MigrateConfigIfNeeded_WhenTopLevelBoolKeyMissing_ShouldWriteApplicationDefaultNotClrDefault()
+    public void MigrateConfigIfNeeded_WhenKeysMissing_ShouldWriteDefaultValuesForAbsentKeys()
     {
-        // Arrange — partial config without the keys that have application-default=true.
-        // CLR default for bool is false; application defaults for these five keys are true.
+        // Arrange — partial config; context, layout, commandDuration, showStash are all absent
         var configPath = Path.GetTempFileName();
-        var contentMissingBools = """
+        var contentWithOnlyCompact = """
             {
               "compact": false
             }
             """;
-        File.WriteAllText(configPath, contentMissingBools);
+        File.WriteAllText(configPath, contentWithOnlyCompact);
 
         // Act
         ConfigInitializer.MigrateConfigIfNeeded(configPath);
 
-        // Assert — absent bool keys should be written with the application default (true), not CLR default (false)
+        // Assert — absent keys are written with their actual default values
         var result = File.ReadAllText(configPath);
         result.Should().Contain("\"showUser\": true");
         result.Should().Contain("\"showHost\": true");
-        result.Should().Contain("\"multilinePrompt\": true");
-        result.Should().Contain("\"showCommandDuration\": true");
+        result.Should().Contain("\"multiline\": true");
+        result.Should().Contain("\"show\": true");
         result.Should().Contain("\"showStash\": true");
-        result.Should().Contain("\"promptStartOfLine\": true");
+        result.Should().Contain("\"startOfLine\": true");
 
         // Existing explicit value must be preserved
         result.Should().Contain("\"compact\": false");
@@ -174,11 +177,14 @@ public sealed class ConfigInitializerTests
     [Fact]
     public void MigrateConfigIfNeeded_WhenBoolKeyExplicitlyFalse_ShouldPreserveUserFalse()
     {
-        // Arrange — user explicitly set showCommandDuration to false. Migration must not overwrite it.
+        // Arrange — user explicitly set commandDuration.show to false.
         var configPath = Path.GetTempFileName();
         var contentWithExplicitFalse = """
             {
-              "showCommandDuration": false
+              "commandDuration": {
+                "show": false,
+                "minMs": null
+              }
             }
             """;
         File.WriteAllText(configPath, contentWithExplicitFalse);
@@ -188,7 +194,7 @@ public sealed class ConfigInitializerTests
 
         // Assert
         var result = File.ReadAllText(configPath);
-        result.Should().Contain("\"showCommandDuration\": false");
+        result.Should().Contain("\"show\": false");
 
         File.Delete(configPath);
     }
@@ -200,7 +206,10 @@ public sealed class ConfigInitializerTests
         var configPath = Path.GetTempFileName();
         var contentWithThreshold = """
             {
-              "commandDurationMinMs": 5000
+              "commandDuration": {
+                "show": true,
+                "minMs": 5000
+              }
             }
             """;
         File.WriteAllText(configPath, contentWithThreshold);
@@ -210,7 +219,7 @@ public sealed class ConfigInitializerTests
 
         // Assert
         var result = File.ReadAllText(configPath);
-        result.Should().Contain("\"commandDurationMinMs\": 5000");
+        result.Should().Contain("\"minMs\": 5000");
 
         File.Delete(configPath);
     }
@@ -281,16 +290,13 @@ public sealed class ConfigInitializerTests
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderCommandTimeoutMsAsDefaultValue()
+    public void BuildDefaultConfigContent_ShouldRenderCommandTimeoutMsAsDefault()
     {
-        // Arrange
-        var expectedMs = (long)(new Config().CommandTimeout?.TotalMilliseconds ?? 0);
-
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
         // Assert
-        content.Should().Contain($"\"commandTimeoutMs\": {expectedMs}");
+        content.Should().Contain("\"commandTimeoutMs\": 2000");
     }
 
     [Fact]
@@ -299,8 +305,8 @@ public sealed class ConfigInitializerTests
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
-        // Assert
-        content.Should().Contain("\"commandDurationMinMs\": null");
+        // Assert — null = always show
+        content.Should().Contain("\"minMs\": null");
     }
 
     [Fact]
@@ -317,85 +323,33 @@ public sealed class ConfigInitializerTests
     public void BuildDefaultConfigContent_ShouldIncludeShowCommandDuration()
     {
         // Act & Assert
-        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("showCommandDuration");
+        ConfigInitializer.BuildDefaultConfigContent().Should().Contain("\"show\":");
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderShowUserAsDefaultValue()
+    public void BuildDefaultConfigContent_ShouldRenderContextDefaultValues()
     {
-        // Arrange
-        var expectedValue = new Config().ShowUser ? "true" : "false";
-
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
         // Assert
-        content.Should().Contain($"\"showUser\": {expectedValue}");
+        content.Should().Contain("\"showUser\": true");
+        content.Should().Contain("\"showHost\": true");
+        content.Should().Contain("\"showDomain\": false");
+        content.Should().Contain("\"maxPathDepth\": 0");
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderShowHostAsDefaultValue()
+    public void BuildDefaultConfigContent_ShouldRenderLayoutDefaultValues()
     {
-        // Arrange
-        var expectedValue = new Config().ShowHost ? "true" : "false";
-
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
         // Assert
-        content.Should().Contain($"\"showHost\": {expectedValue}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderMaxPathDepthAsDefaultValue()
-    {
-        // Arrange
-        var expectedValue = new Config().MaxPathDepth.ToString();
-
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"\"maxPathDepth\": {expectedValue}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderMultilinePromptAsDefaultValue()
-    {
-        // Arrange
-        var expectedValue = new Config().MultilinePrompt ? "true" : "false";
-
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"\"multilinePrompt\": {expectedValue}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderNewlineBeforePromptAsDefaultValue()
-    {
-        // Arrange
-        var expectedValue = new Config().NewlineBeforePrompt ? "true" : "false";
-
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"\"newlineBeforePrompt\": {expectedValue}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderPromptStartOfLineAsDefaultValue()
-    {
-        // Arrange
-        var expectedValue = new Config().PromptStartOfLine ? "true" : "false";
-
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"\"promptStartOfLine\": {expectedValue}");
+        content.Should().Contain("\"multiline\": true");
+        content.Should().Contain("\"newlineBefore\": false");
+        content.Should().Contain("\"startOfLine\": true");
+        content.Should().Contain("\"symbol\": null");  // null = automatic
     }
 
     [Fact]
@@ -404,162 +358,51 @@ public sealed class ConfigInitializerTests
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
-        // Assert
-        content.Should().Contain("\"promptSymbol\": null");
+        // Assert — null = automatic shell symbol
+        content.Should().Contain("\"symbol\": null");
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderAllIconValuesAsNull()
+    public void BuildDefaultConfigContent_ShouldRenderAllIconValuesAsDefaults()
     {
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
-        // Assert — all icons default to null
-        content.Should().Contain("\"ahead\": null");
-        content.Should().Contain("\"behind\": null");
-        content.Should().Contain("\"added\": null");
-        content.Should().Contain("\"modified\": null");
-        content.Should().Contain("\"renamed\": null");
-        content.Should().Contain("\"deleted\": null");
-        content.Should().Contain("\"untracked\": null");
-        content.Should().Contain("\"conflicts\": null");
-        content.Should().Contain("\"stash\": null");
-        content.Should().Contain("\"noUpstreamMarker\": null");
-        content.Should().Contain("\"detachedHeadMarker\": null");
-        content.Should().Contain("\"branchLabelOpen\": null");
-        content.Should().Contain("\"branchLabelClose\": null");
-        content.Should().Contain("\"branchOperationSeparator\": null");
-        content.Should().Contain("\"branchLabelOpenNormal\": null");
-        content.Should().Contain("\"branchLabelCloseNormal\": null");
-        content.Should().Contain("\"branchLabelOpenNoUpstream\": null");
-        content.Should().Contain("\"branchLabelCloseNoUpstream\": null");
-        content.Should().Contain("\"branchLabelOpenDetached\": null");
-        content.Should().Contain("\"branchLabelCloseDetached\": null");
+        // Assert — icons render as actual glyph values from PromptIcons/BranchLabelTokens
+        content.Should().Contain($"\"ahead\": \"{PromptIcons.IconAhead}\"");
+        content.Should().Contain($"\"behind\": \"{PromptIcons.IconBehind}\"");
+        content.Should().Contain($"\"added\": \"{PromptIcons.IconAdded}\"");
+        content.Should().Contain($"\"modified\": \"{PromptIcons.IconModified}\"");
+        content.Should().Contain($"\"renamed\": \"{PromptIcons.IconRenamed}\"");
+        content.Should().Contain($"\"deleted\": \"{PromptIcons.IconDeleted}\"");
+        content.Should().Contain($"\"untracked\": \"{PromptIcons.IconUntracked}\"");
+        content.Should().Contain($"\"conflicts\": \"{PromptIcons.IconConflicts}\"");
+        content.Should().Contain($"\"stash\": \"{PromptIcons.IconStash}\"");
+        content.Should().Contain($"\"noUpstreamMarker\": \"{BranchLabelTokens.NoUpstreamBranchMarker}\"");
+        content.Should().Contain($"\"detachedHeadMarker\": \"{BranchLabelTokens.DetachedHeadBranchMarker}\"");
+        content.Should().Contain($"\"branchLabelOpen\": \"{BranchLabelTokens.BranchLabelOpen}\"");
+        content.Should().Contain($"\"branchLabelClose\": \"{BranchLabelTokens.BranchLabelClose}\"");
+        content.Should().Contain($"\"branchOperationSeparator\": \"{BranchLabelTokens.BranchOperationSeparator}\"");
+        content.Should().Contain($"\"branchLabelOpenNormal\": \"{BranchLabelTokens.NormalBranchLabelOpen}\"");
+        content.Should().Contain($"\"branchLabelCloseNormal\": \"{BranchLabelTokens.NormalBranchLabelClose}\"");
+        content.Should().Contain($"\"branchLabelOpenNoUpstream\": \"{BranchLabelTokens.NoUpstreamBranchLabelOpen}\"");
+        content.Should().Contain($"\"branchLabelCloseNoUpstream\": \"{BranchLabelTokens.NoUpstreamBranchLabelClose}\"");
+        content.Should().Contain($"\"branchLabelOpenDetached\": \"{BranchLabelTokens.DetachedBranchLabelOpen}\"");
+        content.Should().Contain($"\"branchLabelCloseDetached\": \"{BranchLabelTokens.DetachedBranchLabelClose}\"");
     }
 
     [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderIconDefaultGlyphsFromPromptIcons()
+    public void BuildDefaultConfigContent_ShouldRenderAllColorValuesAsDefaults()
     {
         // Act
         var content = ConfigInitializer.BuildDefaultConfigContent();
 
-        // Assert — comment glyphs come from PromptIcons constants
-        content.Should().Contain($"null = default: {PromptIcons.IconAhead}");
-        content.Should().Contain($"null = default: {PromptIcons.IconBehind}");
-        content.Should().Contain($"null = default: {PromptIcons.IconAdded}");
-        content.Should().Contain($"null = default: {PromptIcons.IconModified}");
-        content.Should().Contain($"null = default: {PromptIcons.IconRenamed}");
-        content.Should().Contain($"null = default: {PromptIcons.IconDeleted}");
-        content.Should().Contain($"null = default: {PromptIcons.IconUntracked}");
-        content.Should().Contain($"null = default: {PromptIcons.IconConflicts}");
-        content.Should().Contain($"null = default: {PromptIcons.IconStash}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderNoUpstreamMarkerDefaultGlyph()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"null = default: {BranchLabelTokens.NoUpstreamBranchMarker}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderDetachedHeadMarkerDefaultGlyph()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"null = default: {BranchLabelTokens.DetachedHeadBranchMarker}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderBranchLabelBracketDefaultGlyphs()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"null = default: {BranchLabelTokens.BranchLabelOpen}");
-        content.Should().Contain($"null = default: {BranchLabelTokens.BranchLabelClose}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderNormalBranchLabelBracketDefaultGlyphs()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"null = default: {BranchLabelTokens.NormalBranchLabelOpen}");
-        content.Should().Contain($"null = default: {BranchLabelTokens.NormalBranchLabelClose}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderNoUpstreamBranchLabelBracketDefaultGlyphs()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"null = default: {BranchLabelTokens.NoUpstreamBranchLabelOpen}");
-        content.Should().Contain($"null = default: {BranchLabelTokens.NoUpstreamBranchLabelClose}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderDetachedBranchLabelBracketDefaultGlyphs()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert
-        content.Should().Contain($"null = default: {BranchLabelTokens.DetachedBranchLabelOpen}");
-        content.Should().Contain($"null = default: {BranchLabelTokens.DetachedBranchLabelClose}");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderAllColorValuesAsNull()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert — all color slots default to null
-        content.Should().Contain("\"user\": null,");
-        content.Should().Contain("\"host\": null,");
-        content.Should().Contain("\"path\": null,");
-        content.Should().Contain("\"commandDuration\": null,");
-        content.Should().Contain("\"branch\": null,");
-        content.Should().Contain("\"branchNoUpstream\": null,");
-        content.Should().Contain("\"branchDetached\": null,");
-        content.Should().Contain("\"ahead\": null,");
-        content.Should().Contain("\"behind\": null,");
-        content.Should().Contain("\"staged\": null,");
-        content.Should().Contain("\"unstaged\": null,");
-        content.Should().Contain("\"untracked\": null,");
-        content.Should().Contain("\"stash\": null,");
-        content.Should().Contain("\"conflict\": null,");
-        content.Should().Contain("\"missingPath\": null,");
-        content.Should().Contain("\"timeout\": null,");
-        content.Should().Contain("\"promptSymbol\": null");
-    }
-
-    [Fact]
-    public void BuildDefaultConfigContent_ShouldRenderColorDefaultHexFromAnsiColors()
-    {
-        // Act
-        var content = ConfigInitializer.BuildDefaultConfigContent();
-
-        // Assert — comment hex values come from AnsiColors constants
-        content.Should().Contain("null = default: [32m");
-        content.Should().Contain("null = default: [95m");
-        content.Should().Contain("null = default: [38;5;172m");
-        content.Should().Contain("null = default: [1;36m");
-        content.Should().Contain("null = default: [0;33m");
-        content.Should().Contain("null = default: [31m");
-        content.Should().Contain("null = default: [31m");
-        content.Should().Contain("null = default: [33m");
-        content.Should().Contain("null = default: [37m");
+        // Assert — color slots render as actual ANSI color codes
+        content.Should().Contain("\"user\": \"[32m\"");
+        content.Should().Contain("\"host\": \"[95m\"");
+        content.Should().Contain("\"path\": \"[38;5;172m\"");
+        content.Should().Contain("\"branch\": \"[1;36m\"");
+        content.Should().Contain("\"branchDetached\": \"[0;33m\"");
+        content.Should().Contain("\"promptSymbol\": \"[37m\"");
     }
 }

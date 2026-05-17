@@ -34,19 +34,19 @@ Shows the elapsed time of the last command in the prompt, rendered in pink betwe
 
 | Key | Default | Description |
 |---|---|---|
-| `showCommandDuration` | `true` | Show last command duration (e.g. `42ms`) |
-| `commandDurationMinMs` | *(none)* | Minimum duration in ms before the duration is shown. `null` means always show. |
+| `commandDuration.show` | `true` | Show last command duration (e.g. `42ms`) |
+| `commandDuration.minMs` | *(none)* | Minimum duration in ms before the duration is shown. `null` means always show. |
 
 ## Context Segment
 
 | Key | Default | Description |
 |---|---|---|
-| `showUser` | `true` | Show the username in the prompt |
-| `showDomain` | `false` | Prepend the Windows domain to the username, e.g. `DOMAIN+user` (Windows only; no effect when `USER` env var is set) |
-| `showHost` | `true` | Show the hostname in the prompt |
-| `maxPathDepth` | `0` | Max directory segments shown in the path (`0` = full path) |
+| `context.showUser` | `true` | Show the username in the prompt |
+| `context.showDomain` | `false` | Prepend the Windows domain to the username, e.g. `DOMAIN+user` (Windows only; no effect when `USER` env var is set) |
+| `context.showHost` | `true` | Show the hostname in the prompt |
+| `context.maxPathDepth` | `0` | Max directory segments shown in the path (`0` = full path) |
 
-When `maxPathDepth` is set, paths deeper than the limit are truncated with `…`. Examples with `maxPathDepth: 2`:
+When `context.maxPathDepth` is set, paths deeper than the limit are truncated with `…`. Examples with `context.maxPathDepth: 2`:
 
 - `~/repos/company/project/src` → `~/…/project/src`
 - `/etc/nginx/conf.d` → `/…/nginx/conf.d`
@@ -55,14 +55,14 @@ When `maxPathDepth` is set, paths deeper than the limit are truncated with `…`
 
 | Key | Default | Description |
 |---|---|---|
-| `multilinePrompt` | `true` | Put the prompt symbol (`$`, `#`, `❯`) on its own line |
-| `newlineBeforePrompt` | `false` | Add a blank line before the prompt |
-| `promptStartOfLine` | `true` | Move to column 0 if the cursor is not there when the prompt renders (e.g. after `printf text`) |
-| `promptSymbol` | *(auto)* | Override the prompt symbol. Omit (or set to `null`) to keep automatic: `$` for regular users, `#` for root, `❯` on Windows. |
+| `layout.multiline` | `true` | Put the prompt symbol (`$`, `#`, `❯`) on its own line |
+| `layout.newlineBefore` | `false` | Add a blank line before the prompt |
+| `layout.startOfLine` | `true` | Move to column 0 if the cursor is not there when the prompt renders (e.g. after `printf text`) |
+| `layout.symbol` | *(auto)* | Override the prompt symbol. Omit (or set to `null`) to keep automatic: `$` for regular users, `#` for root, `❯` on Windows. |
 
-> **Note:** `promptStartOfLine` is baked into the bash integration script at `eval` time, not re-read on every render. Changing it in `config.jsonc` has no effect until you start a new shell or re-run `eval "$(gitprompt init bash)"`.
+> **Note:** `layout.startOfLine` is baked into the bash integration script at `eval` time, not re-read on every render. Changing it in `config.jsonc` has no effect until you start a new shell or re-run `eval "$(gitprompt init bash)"`.
 
-When `multilinePrompt: false`, the symbol appears at the end of the status line:
+When `layout.multiline: false`, the symbol appears at the end of the status line:
 
 ```
 # two-line (default)
@@ -128,7 +128,7 @@ Customise the color of each prompt segment using `#RRGGBB` hex strings. Set any 
 | `colors.timeout` | `#FFA002` | Git timeout indicator |
 | `colors.promptSymbol` | `#AAAAAA` | Prompt symbol (`$`, `#`, `❯`) |
 
-> **Note:** `colors.promptSymbol` controls the *color* of the prompt symbol. To change the symbol character itself, use [`promptSymbol`](#prompt-layout).
+> **Note:** `colors.promptSymbol` controls the *color* of the prompt symbol. To change the symbol character itself, use [`layout.symbol`](#prompt-layout).
 
 ## Compact Mode
 
@@ -152,6 +152,21 @@ The dirty/clean icons and their colors can be customised with `icons.dirty`, `ic
     "repositoryTtl": 30  // repository location cache TTL in seconds (0 = disabled)
   },
   "commandTimeoutMs": 500,  // kill git subprocess after 500ms (0 = disabled)
-  "showCommandDuration": true  // show last command duration in the prompt
+  "commandDuration": {
+    "show": true,  // show last command duration in the prompt
+    "minMs": 250
+  },
+  "context": {
+    "showUser": true,
+    "showHost": true,
+    "showDomain": false,
+    "maxPathDepth": 3
+  },
+  "layout": {
+    "multiline": true,
+    "newlineBefore": false,
+    "startOfLine": true,
+    "symbol": null
+  }
 }
 ```

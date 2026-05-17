@@ -71,7 +71,7 @@ internal static class GitStatusSegmentBuilder
             branchLabel = GitStatusDisplayFormatter.BuildBranchLabel(snapshot.BranchHeadName, state);
         }
 
-        var segment = ConfigReader.Config.Compact
+        var segment = (ConfigReader.Config.Compact ?? false)
             ? GitStatusDisplayFormatter.BuildDisplayCompact(branchLabel, snapshot.CommitsAhead, snapshot.CommitsBehind, snapshot.StashEntryCount, snapshot.GitStatusCounts.IsDirty, operationName)
             : GitStatusDisplayFormatter.BuildDisplay(branchLabel, snapshot.CommitsAhead, snapshot.CommitsBehind, snapshot.StashEntryCount, snapshot.GitStatusCounts, operationName);
 

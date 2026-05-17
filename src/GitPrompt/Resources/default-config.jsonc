@@ -1,64 +1,70 @@
 {
   "cache": {
-    "gitStatusTtl": {gitStatusTtl},  // git status cache TTL in seconds (0 = disabled)
-    "repositoryTtl": {repositoryTtl}  // repository location cache TTL in seconds (0 = disabled)
+    "gitStatusTtl": {gitStatusTtl},  // seconds; 0 = disabled
+    "repositoryTtl": {repositoryTtl}  // seconds; 0 = disabled
   },
-  "commandTimeoutMs": {commandTimeoutMs},  // git subprocess timeout in milliseconds (0 = disabled)
-  "commandDurationMinMs": {commandDurationMinMs},  // minimum duration in ms before showing command duration (null = always show)
-  "showCommandDuration": {showCommandDuration},  // show last command duration in the prompt (true/false)
-  "showUser": {showUser},  // show username in the prompt (true/false)
-  "showDomain": {showDomain},  // show Windows domain before username, e.g. DOMAIN\user (true/false)
-  "showHost": {showHost},  // show hostname in the prompt (true/false)
-  "maxPathDepth": {maxPathDepth},  // max path segments shown (0 = full path)
-  "multilinePrompt": {multilinePrompt},  // put the prompt symbol on its own line (true/false)
-  "newlineBeforePrompt": {newlineBeforePrompt},  // add a blank line before the prompt (true/false)
-  "promptStartOfLine": {promptStartOfLine},  // move to column 0 if the cursor is not there when the prompt renders (true/false) — requires shell restart
-  "promptSymbol": {promptSymbol},  // override prompt symbol (null = automatic: $ / # for root / ❯ on Windows)
-  "compact": {compact},  // compact git status: show dirty/clean icon only instead of all counts (true/false)
-  "showStash": {showStash},  // show stash count in the prompt (true/false)
+  "commandTimeoutMs": {commandTimeoutMs},  // ms; 0 = disabled
+  "commandDuration": {
+    "show": {commandDurationShow},
+    "minMs": {commandDurationMinMs}  // null = always show
+  },
+  "context": {
+    "showUser": {showUser},
+    "showDomain": {showDomain},
+    "showHost": {showHost},
+    "maxPathDepth": {maxPathDepth}  // 0 = full path
+  },
+  "layout": {
+    "multiline": {multiline},
+    "newlineBefore": {newlineBefore},
+    "startOfLine": {startOfLine},  // requires shell restart
+    "symbol": {symbol}  // null = automatic: $ / # for root / ❯ on Windows
+  },
+  "compact": {compact},
+  "showStash": {showStash},
   "icons": {
-    "ahead": {iconAhead},  // null = default: {iconAheadDefault}
-    "behind": {iconBehind},  // null = default: {iconBehindDefault}
-    "added": {iconAdded},  // null = default: {iconAddedDefault}
-    "modified": {iconModified},  // null = default: {iconModifiedDefault}
-    "renamed": {iconRenamed},  // null = default: {iconRenamedDefault}
-    "deleted": {iconDeleted},  // null = default: {iconDeletedDefault}
-    "untracked": {iconUntracked},  // null = default: {iconUntrackedDefault}
-    "conflicts": {iconConflicts},  // null = default: {iconConflictsDefault}
-    "stash": {iconStash},  // null = default: {iconStashDefault}
-    "dirty": {iconDirty},  // null = default: {iconDirtyDefault} (compact mode only)
-    "clean": {iconClean},  // null = default: {iconCleanDefault} (compact mode only)
-    "noUpstreamMarker": {iconNoUpstreamMarker},  // null = default: {iconNoUpstreamMarkerDefault}
-    "detachedHeadMarker": {iconDetachedHeadMarker},  // null = default: {iconDetachedHeadMarkerDefault}
-    "branchLabelOpen": {iconBranchLabelOpen},  // null = default: {iconBranchLabelOpenDefault}
-    "branchLabelClose": {iconBranchLabelClose},  // null = default: {iconBranchLabelCloseDefault}
-    "branchOperationSeparator": {iconBranchOperationSeparator},  // null = default: {iconBranchOperationSeparatorDefault}
-    "branchLabelOpenNormal": {iconBranchLabelOpenNormal},  // null = default: {iconBranchLabelOpenNormalDefault}
-    "branchLabelCloseNormal": {iconBranchLabelCloseNormal},  // null = default: {iconBranchLabelCloseNormalDefault}
-    "branchLabelOpenNoUpstream": {iconBranchLabelOpenNoUpstream},  // null = default: {iconBranchLabelOpenNoUpstreamDefault}
-    "branchLabelCloseNoUpstream": {iconBranchLabelCloseNoUpstream},  // null = default: {iconBranchLabelCloseNoUpstreamDefault}
-    "branchLabelOpenDetached": {iconBranchLabelOpenDetached},  // null = default: {iconBranchLabelOpenDetachedDefault}
-    "branchLabelCloseDetached": {iconBranchLabelCloseDetached}  // null = default: {iconBranchLabelCloseDetachedDefault}
+    "ahead": {iconAhead},
+    "behind": {iconBehind},
+    "added": {iconAdded},
+    "modified": {iconModified},
+    "renamed": {iconRenamed},
+    "deleted": {iconDeleted},
+    "untracked": {iconUntracked},
+    "conflicts": {iconConflicts},
+    "stash": {iconStash},
+    "dirty": {iconDirty},  // compact mode only
+    "clean": {iconClean},  // compact mode only
+    "noUpstreamMarker": {iconNoUpstreamMarker},
+    "detachedHeadMarker": {iconDetachedHeadMarker},
+    "branchLabelOpen": {iconBranchLabelOpen},
+    "branchLabelClose": {iconBranchLabelClose},
+    "branchOperationSeparator": {iconBranchOperationSeparator},
+    "branchLabelOpenNormal": {iconBranchLabelOpenNormal},
+    "branchLabelCloseNormal": {iconBranchLabelCloseNormal},
+    "branchLabelOpenNoUpstream": {iconBranchLabelOpenNoUpstream},
+    "branchLabelCloseNoUpstream": {iconBranchLabelCloseNoUpstream},
+    "branchLabelOpenDetached": {iconBranchLabelOpenDetached},
+    "branchLabelCloseDetached": {iconBranchLabelCloseDetached}
   },
   "colors": {
-    "user": {colorUser},  // null = default: {colorUserDefault}
-    "host": {colorHost},  // null = default: {colorHostDefault}
-    "path": {colorPath},  // null = default: {colorPathDefault}
-    "commandDuration": {colorCommandDuration},  // null = default: {colorCommandDurationDefault}
-    "branch": {colorBranch},  // null = default: {colorBranchDefault}
-    "branchNoUpstream": {colorBranchNoUpstream},  // null = default: {colorBranchNoUpstreamDefault}
-    "branchDetached": {colorBranchDetached},  // null = default: {colorBranchDetachedDefault}
-    "ahead": {colorAhead},  // null = default: {colorAheadDefault}
-    "behind": {colorBehind},  // null = default: {colorBehindDefault}
-    "staged": {colorStaged},  // null = default: {colorStagedDefault}
-    "unstaged": {colorUnstaged},  // null = default: {colorUnstagedDefault}
-    "untracked": {colorUntracked},  // null = default: {colorUntrackedDefault}
-    "stash": {colorStash},  // null = default: {colorStashDefault}
-    "conflict": {colorConflict},  // null = default: {colorConflictDefault}
-    "dirty": {colorDirty},  // null = default: {colorDirtyDefault} (compact mode only)
-    "clean": {colorClean},  // null = default: {colorCleanDefault} (compact mode only)
-    "missingPath": {colorMissingPath},  // null = default: {colorMissingPathDefault}
-    "timeout": {colorTimeout},  // null = default: {colorTimeoutDefault}
-    "promptSymbol": {colorPromptSymbol}  // null = default: {colorPromptSymbolDefault}
+    "user": {colorUser},
+    "host": {colorHost},
+    "path": {colorPath},
+    "commandDuration": {colorCommandDuration},
+    "branch": {colorBranch},
+    "branchNoUpstream": {colorBranchNoUpstream},
+    "branchDetached": {colorBranchDetached},
+    "ahead": {colorAhead},
+    "behind": {colorBehind},
+    "staged": {colorStaged},
+    "unstaged": {colorUnstaged},
+    "untracked": {colorUntracked},
+    "stash": {colorStash},
+    "conflict": {colorConflict},
+    "dirty": {colorDirty},  // compact mode only
+    "clean": {colorClean},  // compact mode only
+    "missingPath": {colorMissingPath},
+    "timeout": {colorTimeout},
+    "promptSymbol": {colorPromptSymbol}
   }
 }

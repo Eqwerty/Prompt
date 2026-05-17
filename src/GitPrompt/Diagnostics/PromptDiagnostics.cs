@@ -208,13 +208,13 @@ internal static class PromptDiagnostics
         lines.Add($"    {"Status",-10}  {statusText}");
 
         var config = _configLoadResult.Config;
-        var gitStatusTtlText = config.Cache.GitStatusTtl == TimeSpan.Zero
+        var gitStatusTtlText = config.Cache!.GitStatusTtl == TimeSpan.Zero
             ? "0s (disabled)"
-            : FormatSeconds(config.Cache.GitStatusTtl);
+            : FormatSeconds(config.Cache!.GitStatusTtl);
 
-        var repoTtlText = config.Cache.RepositoryTtl == TimeSpan.Zero
+        var repoTtlText = config.Cache!.RepositoryTtl == TimeSpan.Zero
             ? "0s (disabled)"
-            : FormatSeconds(config.Cache.RepositoryTtl);
+            : FormatSeconds(config.Cache!.RepositoryTtl);
 
         lines.Add($"    {"TTL",-10}  gitStatus {gitStatusTtlText} · repo {repoTtlText}");
 
@@ -224,9 +224,9 @@ internal static class PromptDiagnostics
 
         lines.Add($"    {"Timeout",-10}  {timeoutText}");
 
-        var durationText = config.ShowCommandDuration
-            ? config.CommandDurationMinMs is > 0
-                ? $"enabled · min {config.CommandDurationMinMs}ms"
+        var durationText = (config.CommandDuration!.Show ?? true)
+            ? config.CommandDuration!.MinMs is > 0
+                ? $"enabled · min {config.CommandDuration!.MinMs}ms"
                 : "enabled · always show"
             : "disabled";
 
@@ -380,3 +380,4 @@ internal static class PromptDiagnostics
         }
     }
 }
+

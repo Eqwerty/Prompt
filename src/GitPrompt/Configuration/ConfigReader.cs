@@ -15,7 +15,7 @@ internal static class ConfigReader
     internal static IDisposable OverrideForTesting(Config config)
     {
         var previous = _configOverride;
-        _configOverride = config;
+        _configOverride = ConfigInitializer.MergeWithDefaults(config);
 
         return new ConfigOverride(() => _configOverride = previous);
     }
@@ -26,7 +26,7 @@ internal static class ConfigReader
 
         if (!File.Exists(filePath))
         {
-            return new ConfigLoadResult(filePath, ConfigLoadStatus.Missing, new Config());
+            return new ConfigLoadResult(filePath, ConfigLoadStatus.Missing, ConfigInitializer.MergeWithDefaults(new Config()));
         }
 
         string json;
@@ -36,31 +36,19 @@ internal static class ConfigReader
         }
         catch
         {
-            return new ConfigLoadResult(filePath, ConfigLoadStatus.ReadFailed, new Config());
+            return new ConfigLoadResult(filePath, ConfigLoadStatus.ReadFailed, ConfigInitializer.MergeWithDefaults(new Config()));
         }
 
         try
         {
             var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
-            if (config is null)
-            {
-                return new ConfigLoadResult(filePath, ConfigLoadStatus.Loaded, new Config());
-            }
-
-            using var doc = JsonDocument.Parse(json,
-                new JsonDocumentOptions
-                {
-                    CommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
-                });
-
-            var resolved = ConfigInitializer.MergeWithDefaults(config, doc.RootElement);
+            var resolved = ConfigInitializer.MergeWithDefaults(config ?? new Config());
 
             return new ConfigLoadResult(filePath, ConfigLoadStatus.Loaded, resolved);
         }
         catch
         {
-            return new ConfigLoadResult(filePath, ConfigLoadStatus.ParseFailed, new Config());
+            return new ConfigLoadResult(filePath, ConfigLoadStatus.ParseFailed, ConfigInitializer.MergeWithDefaults(new Config()));
         }
     }
 

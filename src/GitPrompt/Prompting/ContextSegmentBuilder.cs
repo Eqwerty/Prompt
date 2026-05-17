@@ -14,8 +14,8 @@ internal static class ContextSegmentBuilder
         var pathColor = isMissingPath ? ColorMissingPath : ColorPath;
         var pathSegment = $"{pathColor}{resolvedPath}{ColorReset}";
 
-        var showUser = config.ShowUser;
-        var showHost = config.ShowHost;
+        var showUser = config.Context!.ShowUser ?? true;
+        var showHost = config.Context!.ShowHost ?? true;
 
         if (showUser && showHost)
         {
@@ -48,7 +48,7 @@ internal static class ContextSegmentBuilder
 
         if (!string.IsNullOrEmpty(windowsUserName))
         {
-            if (ConfigReader.Config.ShowDomain)
+            if (ConfigReader.Config.Context!.ShowDomain ?? false)
             {
                 var domain = platformProvider.WindowsUserDomain;
 
@@ -117,7 +117,7 @@ internal static class ContextSegmentBuilder
         }
 
         var displayPath = workingDirectoryPath.Replace('\\', '/');
-        displayPath = TruncatePath(displayPath, ConfigReader.Config.MaxPathDepth);
+        displayPath = TruncatePath(displayPath, ConfigReader.Config.Context!.MaxPathDepth ?? 0);
         if (isMissingPath)
         {
             displayPath += " [missing]";
@@ -173,3 +173,4 @@ internal static class ContextSegmentBuilder
         };
     }
 }
+

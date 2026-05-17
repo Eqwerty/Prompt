@@ -54,7 +54,7 @@ public sealed class PromptSymbolBuilderTests
     public void Build_WhenCustomSymbolIsConfigured_ShouldReturnCustomSymbolRegardlessOfPlatform()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { PromptSymbol = "❯" });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Symbol = "❯" } });
         var platformProvider = new TestPlatformProvider(isWindows: false, user: "me");
 
         // Act
@@ -68,7 +68,7 @@ public sealed class PromptSymbolBuilderTests
     public void Build_WhenCustomSymbolIsConfiguredOnWindows_ShouldReturnCustomSymbol()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { PromptSymbol = "λ" });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Symbol = "λ" } });
         var platformProvider = new TestPlatformProvider(isWindows: true);
 
         // Act
@@ -82,7 +82,7 @@ public sealed class PromptSymbolBuilderTests
     public void Build_WhenCustomSymbolIsEmptyString_ShouldReturnEmptyString()
     {
         // Arrange
-        using var _ = ConfigReader.OverrideForTesting(new Config { PromptSymbol = "" });
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Symbol = "" } });
         var platformProvider = new TestPlatformProvider(isWindows: false, user: "me");
 
         // Act

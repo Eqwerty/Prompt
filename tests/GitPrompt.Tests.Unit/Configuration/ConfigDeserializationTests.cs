@@ -16,7 +16,7 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Cache.GitStatusTtl.Should().Be(TimeSpan.Zero);
+        config!.Cache!.GitStatusTtl.Should().Be(TimeSpan.Zero);
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Cache.GitStatusTtl.Should().Be(TimeSpan.FromSeconds(10));
+        config!.Cache!.GitStatusTtl.Should().Be(TimeSpan.FromSeconds(10));
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Cache.GitStatusTtl.Should().Be(TimeSpan.FromSeconds(5));
+        config!.Cache!.GitStatusTtl.Should().Be(TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Cache.RepositoryTtl.Should().Be(TimeSpan.Zero);
+        config!.Cache!.RepositoryTtl.Should().Be(TimeSpan.Zero);
     }
 
     [Fact]
@@ -75,8 +75,8 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Cache.GitStatusTtl.Should().Be(TimeSpan.Zero);
-        config.Cache.RepositoryTtl.Should().Be(TimeSpan.FromSeconds(60));
+        config!.Cache!.GitStatusTtl.Should().Be(TimeSpan.Zero);
+        config.Cache!.RepositoryTtl.Should().Be(TimeSpan.FromSeconds(60));
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Cache.GitStatusTtl.Should().Be(TimeSpan.FromSeconds(2.5));
+        config!.Cache!.GitStatusTtl.Should().Be(TimeSpan.FromSeconds(2.5));
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class ConfigDeserializationTests
     }
 
     [Fact]
-    public void ShowCommandDuration_WhenAbsent_ShouldDefaultToFalse()
+    public void CommandDuration_WhenAbsent_ShouldBeNull()
     {
         // Arrange
         var json = "{}";
@@ -154,63 +154,37 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowCommandDuration.Should().BeFalse();
+        config!.CommandDuration.Should().BeNull();
     }
 
     [Fact]
-    public void ShowCommandDuration_WhenExplicitlyTrue_ShouldReturnTrue()
+    public void CommandDuration_Show_WhenPresentButEmpty_ShouldBeNull()
     {
         // Arrange
-        var json = """{"showCommandDuration": true}""";
+        var json = """{"commandDuration": {}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowCommandDuration.Should().BeTrue();
+        config!.CommandDuration!.Show.Should().BeNull();
     }
 
     [Fact]
-    public void ShowUser_WhenAbsent_ShouldDefaultToFalse()
+    public void CommandDuration_Show_WhenExplicitlyTrue_ShouldReturnTrue()
     {
         // Arrange
-        var json = "{}";
+        var json = """{"commandDuration": {"show": true}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowUser.Should().BeFalse();
+        config!.CommandDuration!.Show.Should().BeTrue();
     }
 
     [Fact]
-    public void ShowUser_WhenExplicitlyTrue_ShouldReturnTrue()
-    {
-        // Arrange
-        var json = """{"showUser": true}""";
-
-        // Act
-        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
-
-        // Assert
-        config!.ShowUser.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ShowUser_WhenExplicitlyFalse_ShouldReturnFalse()
-    {
-        // Arrange
-        var json = """{"showUser": false}""";
-
-        // Act
-        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
-
-        // Assert
-        config!.ShowUser.Should().BeFalse();
-    }
-
-    [Fact]
-    public void ShowHost_WhenAbsent_ShouldDefaultToFalse()
+    public void Context_WhenAbsent_ShouldBeNull()
     {
         // Arrange
         var json = "{}";
@@ -219,128 +193,115 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowHost.Should().BeFalse();
+        config!.Context.Should().BeNull();
     }
 
     [Fact]
-    public void ShowHost_WhenExplicitlyTrue_ShouldReturnTrue()
+    public void Context_ShowUser_WhenPresentButEmpty_ShouldBeNull()
     {
         // Arrange
-        var json = """{"showHost": true}""";
+        var json = """{"context": {}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowHost.Should().BeTrue();
+        config!.Context!.ShowUser.Should().BeNull();
     }
 
     [Fact]
-    public void ShowHost_WhenExplicitlyFalse_ShouldReturnFalse()
+    public void Context_ShowUser_WhenExplicitlyTrue_ShouldReturnTrue()
     {
         // Arrange
-        var json = """{"showHost": false}""";
+        var json = """{"context": {"showUser": true}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowHost.Should().BeFalse();
+        config!.Context!.ShowUser.Should().BeTrue();
     }
 
     [Fact]
-    public void MaxPathDepth_WhenAbsent_ShouldDefaultToZero()
+    public void Context_ShowUser_WhenExplicitlyFalse_ShouldReturnFalse()
     {
         // Arrange
-        var json = "{}";
+        var json = """{"context": {"showUser": false}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.MaxPathDepth.Should().Be(0);
+        config!.Context!.ShowUser.Should().BeFalse();
     }
 
     [Fact]
-    public void MaxPathDepth_WhenExplicitlySet_ShouldReturnValue()
+    public void Context_ShowHost_WhenPresentButEmpty_ShouldBeNull()
     {
         // Arrange
-        var json = """{"maxPathDepth": 3}""";
+        var json = """{"context": {}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.MaxPathDepth.Should().Be(3);
+        config!.Context!.ShowHost.Should().BeNull();
     }
 
     [Fact]
-    public void MultilinePrompt_WhenAbsent_ShouldDefaultToFalse()
+    public void Context_ShowHost_WhenExplicitlyTrue_ShouldReturnTrue()
     {
         // Arrange
-        var json = "{}";
+        var json = """{"context": {"showHost": true}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.MultilinePrompt.Should().BeFalse();
+        config!.Context!.ShowHost.Should().BeTrue();
     }
 
     [Fact]
-    public void MultilinePrompt_WhenExplicitlyFalse_ShouldReturnFalse()
+    public void Context_ShowHost_WhenExplicitlyFalse_ShouldReturnFalse()
     {
         // Arrange
-        var json = """{"multilinePrompt": false}""";
+        var json = """{"context": {"showHost": false}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.MultilinePrompt.Should().BeFalse();
+        config!.Context!.ShowHost.Should().BeFalse();
     }
 
     [Fact]
-    public void MultilinePrompt_WhenExplicitlyTrue_ShouldReturnTrue()
+    public void Context_MaxPathDepth_WhenPresentButEmpty_ShouldBeNull()
     {
         // Arrange
-        var json = """{"multilinePrompt": true}""";
+        var json = """{"context": {}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.MultilinePrompt.Should().BeTrue();
+        config!.Context!.MaxPathDepth.Should().BeNull();
     }
 
     [Fact]
-    public void NewlineBeforePrompt_WhenAbsent_ShouldDefaultToFalse()
+    public void Context_MaxPathDepth_WhenExplicitlySet_ShouldReturnValue()
     {
         // Arrange
-        var json = "{}";
+        var json = """{"context": {"maxPathDepth": 3}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.NewlineBeforePrompt.Should().BeFalse();
+        config!.Context!.MaxPathDepth.Should().Be(3);
     }
 
     [Fact]
-    public void NewlineBeforePrompt_WhenExplicitlyTrue_ShouldReturnTrue()
-    {
-        // Arrange
-        var json = """{"newlineBeforePrompt": true}""";
-
-        // Act
-        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
-
-        // Assert
-        config!.NewlineBeforePrompt.Should().BeTrue();
-    }
-
-    [Fact]
-    public void PromptSymbol_WhenAbsent_ShouldDefaultToNull()
+    public void Layout_WhenAbsent_ShouldBeNull()
     {
         // Arrange
         var json = "{}";
@@ -349,33 +310,111 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.PromptSymbol.Should().BeNull();
+        config!.Layout.Should().BeNull();
     }
 
     [Fact]
-    public void PromptSymbol_WhenExplicitlySet_ShouldReturnValue()
+    public void Layout_Multiline_WhenPresentButEmpty_ShouldBeNull()
     {
         // Arrange
-        var json = """{"promptSymbol": "❯"}""";
+        var json = """{"layout": {}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.PromptSymbol.Should().Be("❯");
+        config!.Layout!.Multiline.Should().BeNull();
     }
 
     [Fact]
-    public void PromptSymbol_WhenSetToEmptyString_ShouldReturnEmptyString()
+    public void Layout_Multiline_WhenExplicitlyFalse_ShouldReturnFalse()
     {
         // Arrange
-        var json = """{"promptSymbol": ""}""";
+        var json = """{"layout": {"multiline": false}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.PromptSymbol.Should().BeEmpty();
+        config!.Layout!.Multiline.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Layout_Multiline_WhenExplicitlyTrue_ShouldReturnTrue()
+    {
+        // Arrange
+        var json = """{"layout": {"multiline": true}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Layout!.Multiline.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Layout_NewlineBefore_WhenPresentButEmpty_ShouldBeNull()
+    {
+        // Arrange
+        var json = """{"layout": {}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Layout!.NewlineBefore.Should().BeNull();
+    }
+
+    [Fact]
+    public void Layout_NewlineBefore_WhenExplicitlyTrue_ShouldReturnTrue()
+    {
+        // Arrange
+        var json = """{"layout": {"newlineBefore": true}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Layout!.NewlineBefore.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Layout_Symbol_WhenAbsentFromGroup_ShouldDefaultToNull()
+    {
+        // Arrange
+        var json = """{"layout": {}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Layout!.Symbol.Should().BeNull();
+    }
+
+    [Fact]
+    public void Layout_Symbol_WhenExplicitlySet_ShouldReturnValue()
+    {
+        // Arrange
+        var json = """{"layout": {"symbol": "❯"}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Layout!.Symbol.Should().Be("❯");
+    }
+
+    [Fact]
+    public void Layout_Symbol_WhenSetToEmptyString_ShouldReturnEmptyString()
+    {
+        // Arrange
+        var json = """{"layout": {"symbol": ""}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Layout!.Symbol.Should().BeEmpty();
     }
 
     [Fact]
@@ -403,15 +442,15 @@ public sealed class ConfigDeserializationTests
         // Assert
         config!.Icons.Should().NotBeNull();
         config.Icons!.Ahead.Should().BeNull();
-        config.Icons.Behind.Should().BeNull();
-        config.Icons.Added.Should().BeNull();
-        config.Icons.Modified.Should().BeNull();
-        config.Icons.Renamed.Should().BeNull();
-        config.Icons.Deleted.Should().BeNull();
-        config.Icons.Untracked.Should().BeNull();
-        config.Icons.Conflicts.Should().BeNull();
-        config.Icons.Stash.Should().BeNull();
-        config.Icons.NoUpstreamMarker.Should().BeNull();
+        config.Icons!.Behind.Should().BeNull();
+        config.Icons!.Added.Should().BeNull();
+        config.Icons!.Modified.Should().BeNull();
+        config.Icons!.Renamed.Should().BeNull();
+        config.Icons!.Deleted.Should().BeNull();
+        config.Icons!.Untracked.Should().BeNull();
+        config.Icons!.Conflicts.Should().BeNull();
+        config.Icons!.Stash.Should().BeNull();
+        config.Icons!.NoUpstreamMarker.Should().BeNull();
     }
 
     [Fact]
@@ -424,10 +463,10 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Icons.Ahead.Should().Be("⬆");
-        config.Icons.Behind.Should().Be("⬇");
-        config.Icons.Stash.Should().Be("S");
-        config.Icons.Added.Should().BeNull();
+        config!.Icons!.Ahead.Should().Be("⬆");
+        config.Icons!.Behind.Should().Be("⬇");
+        config.Icons!.Stash.Should().Be("S");
+        config.Icons!.Added.Should().BeNull();
     }
 
     [Fact]
@@ -481,21 +520,21 @@ public sealed class ConfigDeserializationTests
         // Assert
         config!.Colors.Should().NotBeNull();
         config.Colors!.User.Should().BeNull();
-        config.Colors.Host.Should().BeNull();
-        config.Colors.Path.Should().BeNull();
-        config.Colors.CommandDuration.Should().BeNull();
-        config.Colors.Branch.Should().BeNull();
-        config.Colors.BranchNoUpstream.Should().BeNull();
-        config.Colors.Ahead.Should().BeNull();
-        config.Colors.Behind.Should().BeNull();
-        config.Colors.Staged.Should().BeNull();
-        config.Colors.Unstaged.Should().BeNull();
-        config.Colors.Untracked.Should().BeNull();
-        config.Colors.Stash.Should().BeNull();
-        config.Colors.Conflict.Should().BeNull();
-        config.Colors.MissingPath.Should().BeNull();
-        config.Colors.Timeout.Should().BeNull();
-        config.Colors.PromptSymbol.Should().BeNull();
+        config.Colors!.Host.Should().BeNull();
+        config.Colors!.Path.Should().BeNull();
+        config.Colors!.CommandDuration.Should().BeNull();
+        config.Colors!.Branch.Should().BeNull();
+        config.Colors!.BranchNoUpstream.Should().BeNull();
+        config.Colors!.Ahead.Should().BeNull();
+        config.Colors!.Behind.Should().BeNull();
+        config.Colors!.Staged.Should().BeNull();
+        config.Colors!.Unstaged.Should().BeNull();
+        config.Colors!.Untracked.Should().BeNull();
+        config.Colors!.Stash.Should().BeNull();
+        config.Colors!.Conflict.Should().BeNull();
+        config.Colors!.MissingPath.Should().BeNull();
+        config.Colors!.Timeout.Should().BeNull();
+        config.Colors!.PromptSymbol.Should().BeNull();
     }
 
     [Fact]
@@ -508,46 +547,48 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.Colors.User.Should().Be("#FF0000");
-        config.Colors.Branch.Should().Be("#00FF00");
-        config.Colors.Timeout.Should().Be("#0000FF");
-        config.Colors.Host.Should().BeNull();
+        config!.Colors!.User.Should().Be("#FF0000");
+        config.Colors!.Branch.Should().Be("#00FF00");
+        config.Colors!.Timeout.Should().Be("#0000FF");
+        config.Colors!.Host.Should().BeNull();
     }
 
     [Fact]
-    public void CommandDurationMinMs_WhenAbsent_ShouldBeNull()
+    public void CommandDuration_MinMs_WhenAbsentFromGroup_ShouldBeNull()
     {
         // Arrange
-        var json = "{}";
+        var json = """{"commandDuration": {}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.CommandDurationMinMs.Should().BeNull();
+        config!.CommandDuration!.MinMs.Should().BeNull();
     }
 
     [Fact]
-    public void CommandDurationMinMs_WhenPresentAsInteger_ShouldDeserialize()
+    public void CommandDuration_MinMs_WhenPresentAsInteger_ShouldDeserialize()
     {
         // Arrange
-        var json = """{"commandDurationMinMs": 5000}""";
+        var json = """{"commandDuration": {"minMs": 5000}}""";
 
         // Act
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.CommandDurationMinMs.Should().Be(5000.0);
+        config!.CommandDuration!.MinMs.Should().Be(5000.0);
     }
 
     [Fact]
-    public void CommandDurationMinMs_WhenPresentWithInlineComment_ShouldDeserialize()
+    public void CommandDuration_MinMs_WhenPresentWithInlineComment_ShouldDeserialize()
     {
         // Arrange - matches the real config file format with JSONC inline comment
         var json = """
             {
-              "commandDurationMinMs": 5000,  // minimum duration in ms before showing command duration (null = always show)
-              "showCommandDuration": true
+              "commandDuration": {
+                "minMs": 5000,  // minimum duration in ms before showing command duration (null = always show)
+                "show": true
+              }
             }
             """;
 
@@ -555,17 +596,19 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.CommandDurationMinMs.Should().Be(5000.0);
-        config.ShowCommandDuration.Should().BeTrue();
+        config!.CommandDuration!.MinMs.Should().Be(5000.0);
+        config.CommandDuration!.Show.Should().BeTrue();
     }
 
     [Fact]
-    public void ShowCommandDuration_WhenFalseWithInlineComment_ShouldDeserializeToFalse()
+    public void CommandDuration_Show_WhenFalseWithInlineComment_ShouldDeserializeToFalse()
     {
         // Arrange - matches the real config file format with JSONC inline comment
         var json = """
             {
-              "showCommandDuration": false  // show last command duration in the prompt (true/false)
+              "commandDuration": {
+                "show": false  // show last command duration in the prompt (true/false)
+              }
             }
             """;
 
@@ -573,6 +616,7 @@ public sealed class ConfigDeserializationTests
         var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
 
         // Assert
-        config!.ShowCommandDuration.Should().BeFalse();
+        config!.CommandDuration!.Show.Should().BeFalse();
     }
 }
+
