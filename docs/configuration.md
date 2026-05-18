@@ -46,10 +46,10 @@ Shows the elapsed time of the last command in the prompt, rendered in pink betwe
 | `context.showHost` | `true` | Show the hostname in the prompt |
 | `context.maxPathDepth` | `0` | Max directory segments shown in the path (`0` = full path) |
 
-When `context.maxPathDepth` is set, paths deeper than the limit are truncated with `…`. Examples with `context.maxPathDepth: 2`:
+When `context.maxPathDepth` is set, paths deeper than the limit are truncated with `...`. Examples with `context.maxPathDepth: 2`:
 
-- `~/repos/company/project/src` → `~/…/project/src`
-- `/etc/nginx/conf.d` → `/…/nginx/conf.d`
+- `~/repos/company/project/src` → `~/.../project/src`
+- `/etc/nginx/conf.d` → `/.../nginx/conf.d`
 
 ## Prompt Layout
 

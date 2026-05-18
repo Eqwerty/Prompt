@@ -126,22 +126,22 @@ to disable. Default:
 .BR 2000 .
 .SS Command Duration
 .TP
-.B showCommandDuration
+.B commandDuration.show
 Show the elapsed time of the last command in the prompt (requires Bash 5+).
 Default:
-.BR false .
+.BR true .
 .TP
-.B commandDurationMinMs
+.B commandDuration.minMs
 Minimum duration in milliseconds before the value is shown.
 .B null
 means always show. Default: none.
 .SS Context Segment
 .TP
-.B showUser
+.B context.showUser
 Show the username in the prompt. Default:
 .BR true .
 .TP
-.B showDomain
+.B context.showDomain
 Prepend the Windows domain to the username (e.g.
 .BR DOMAIN+user ).
 Only applies when the username comes from
@@ -151,35 +151,39 @@ Only applies when the username comes from
 environment variable is set. Default:
 .BR false .
 .TP
-.B showHost
+.B context.showHost
 Show the hostname in the prompt. Default:
 .BR true .
 .TP
-.B maxPathDepth
+.B context.maxPathDepth
 Maximum directory segments shown in the path.
 .B 0
 means full path. Default:
 .BR 0 .
 .SS Prompt Layout
 .TP
-.B multilinePrompt
+.B layout.multiline
 Put the prompt symbol
 .RB ( $ ,
 .BR # ,
-.BR > )
+.BR ❯ )
 on its own line. Default:
 .BR true .
 .TP
-.B newlineBeforePrompt
+.B layout.newlineBefore
 Add a blank line before the prompt. Default:
 .BR false .
 .TP
-.B promptStartOfLine
+.B layout.startOfLine
 Move to column 0 if the cursor is not there when the prompt renders.
+Baked into the shell integration script at
+.B eval
+time; changing this setting requires restarting the shell or re-running
+.BR "eval \(dq$(gitprompt init bash)\(dq" .
 Default:
 .BR true .
 .TP
-.B promptSymbol
+.B layout.symbol
 Override the prompt symbol. Omit or set to
 .B null
 for automatic:
@@ -187,7 +191,7 @@ for automatic:
 for regular users,
 .B #
 for root,
-.B >
+.B ❯
 on Windows.
 .SS Git Status Icons
 Set any key to a string to override the icon; set to
@@ -229,6 +233,14 @@ Merge conflicts. Default:
 .B icons.stash
 Stash entries. Default:
 .BR @ .
+.TP
+.B icons.dirty
+Dirty indicator (compact mode only). Default:
+.BR \(bu .
+.TP
+.B icons.clean
+Clean indicator (compact mode only). Default:
+.BR \[u2713] .
 .TP
 .B icons.noUpstreamMarker
 Prefix on branch name when there is no upstream. Default:
@@ -336,6 +348,14 @@ Stash entries. Default:
 Merge conflicts. Default:
 .BR #FF5555 .
 .TP
+.B colors.dirty
+Dirty indicator (compact mode only). Default:
+.BR #D78700 .
+.TP
+.B colors.clean
+Clean indicator (compact mode only). Default:
+.BR #00BB00 .
+.TP
 .B colors.missingPath
 Missing working directory. Default:
 .BR #FF5555 .
@@ -347,6 +367,16 @@ Git timeout indicator. Default:
 .B colors.promptSymbol
 Prompt symbol color. Default:
 .BR #AAAAAA .
+.SS Compact Mode
+.TP
+.B compact
+Show only a dirty/clean indicator instead of the full staged/unstaged file counts.
+Ahead/behind counts and stash entries are still shown. Default:
+.BR false .
+.TP
+.B showStash
+Show the stash entry count in the prompt. Applies to both full and compact modes. Default:
+.BR true .
 .SH FILES
 .TP
 .I ~/.local/bin/gitprompt
