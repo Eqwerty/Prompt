@@ -112,14 +112,12 @@ fi
 
 "$FINAL_BINARY_PATH" --migrate-config 2>/dev/null || true
 
-if [ "$INSTALL_ALIASES" = "1" ]; then
-  mkdir -p "$ALIASES_DIR"
-  run_step "Installing git aliases" "$TEMPORARY_DIRECTORY/aliases.log" \
-    cp "$REPOSITORY_ROOT/git_aliases.sh" "$ALIASES_FILE_PATH"
+mkdir -p "$ALIASES_DIR"
+run_step "Installing git aliases" "$TEMPORARY_DIRECTORY/aliases.log" \
+  cp "$REPOSITORY_ROOT/git_aliases.sh" "$ALIASES_FILE_PATH"
 
-  try_step "Installing git completions" "$TEMPORARY_DIRECTORY/completions.log" \
-    download_git_completion || true
-fi
+try_step "Installing git completions" "$TEMPORARY_DIRECTORY/completions.log" \
+  download_git_completion || true
 
 add_to_shell_config
 printf '\nRestart your terminal to apply changes.\n'
