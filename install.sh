@@ -28,7 +28,7 @@ _stop_spinner() {
 
 _run_animated_step() {
   _ra_msg="$1"; _ra_log="$2"; shift 2
-  printf "${HIDE_CURSOR}${YELLOW}●${R} %s%-3s" "$_ra_msg" "."
+  printf "${HIDE_CURSOR}${YELLOW}•${R} %s%-3s" "$_ra_msg" "."
   (
     _sp_i=0
     while true; do
@@ -39,7 +39,7 @@ _run_animated_step() {
         2) _sp_d="..." ;;
         *) _sp_d="." ;;
       esac
-      printf "\r${YELLOW}●${R} %s%-3s" "$_ra_msg" "$_sp_d"
+      printf "\r${YELLOW}•${R} %s%-3s" "$_ra_msg" "$_sp_d"
     done
   ) &
   _CURRENT_SPINNER_PID=$!

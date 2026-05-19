@@ -15,7 +15,7 @@ internal sealed class TerminalSpinner : IDisposable
 
         if (_interactive)
         {
-            Console.Write($"{AnsiTerminal.HideCursor}{AnsiTerminal.Yellow}●{AnsiTerminal.Reset} {message}{".",-3}");
+            Console.Write($"{AnsiTerminal.HideCursor}{AnsiTerminal.Yellow}•{AnsiTerminal.Reset} {message}{".",-3}");
         }
 
         _thread = new Thread(SpinLoop) { IsBackground = true };
@@ -80,7 +80,7 @@ internal sealed class TerminalSpinner : IDisposable
                 _ => "."
             };
 
-            Console.Write($"\r{AnsiTerminal.Yellow}●{AnsiTerminal.Reset} {_message}{dots,-3}");
+            Console.Write($"\r{AnsiTerminal.Yellow}•{AnsiTerminal.Reset} {_message}{dots,-3}");
         }
     }
 }

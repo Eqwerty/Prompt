@@ -36,7 +36,7 @@ try_step() {
     printf "\r${GREEN}✓${R} %s...\n" "$step_message"
     return 0
   else
-    printf "\r${YELLOW}○${R} %s...\n" "$step_message"
+    printf "\r${YELLOW}◦${R} %s...\n" "$step_message"
     return 1
   fi
 }
