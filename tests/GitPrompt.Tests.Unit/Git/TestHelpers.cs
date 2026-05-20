@@ -65,12 +65,3 @@ internal static class TestHelpers
         return $"{color}{segment}{ColorReset}";
     }
 }
-
-internal sealed class FakeTimeProvider(DateTimeOffset initialUtcNow) : TimeProvider
-{
-    private DateTimeOffset _utcNow = initialUtcNow;
-
-    public override DateTimeOffset GetUtcNow() => _utcNow;
-
-    public void Advance(TimeSpan elapsed) => _utcNow = _utcNow.Add(elapsed);
-}

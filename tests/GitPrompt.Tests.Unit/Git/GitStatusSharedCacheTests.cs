@@ -1,6 +1,7 @@
 using FluentAssertions;
 using GitPrompt.Configuration;
 using GitPrompt.Git;
+using Microsoft.Extensions.Time.Testing;
 
 namespace GitPrompt.Tests.Unit.Git;
 
