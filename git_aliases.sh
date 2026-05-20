@@ -130,7 +130,7 @@ function glm() {
 
 # Copy the short hash of the Nth most recent commit to the clipboard
 function gcc() {
-  local index commit_hash short_hash commit_message
+  local index line short_hash commit_message
 
   if [ -z "$1" ]; then
     echo "Usage: gcc <commit-position>"
@@ -144,15 +144,15 @@ function gcc() {
   fi
 
   index="$1"
-  commit_hash=$(git rev-list --max-count="$index" HEAD 2>/dev/null | tail -n 1)
+  line=$(git log -n "$index" --oneline 2>/dev/null | tail -n 1)
 
-  if [ -z "$commit_hash" ]; then
+  if [ -z "$line" ]; then
     echo "Error: could not find commit at position $index"
     return 1
   fi
 
-  short_hash=$(git rev-parse --short "$commit_hash")
-  commit_message=$(git show -s --format=%s "$commit_hash")
+  short_hash=$(awk '{print $1}' <<< "$line")
+  commit_message=$(awk '{$1=""; sub(/^ /, ""); print}' <<< "$line")
 
   if command -v clip.exe >/dev/null 2>&1; then
     if command -v iconv >/dev/null 2>&1; then
@@ -278,12 +278,10 @@ function __git_web_url() {
 function pr() {
   local base_url branch_name main_branch pr_url
 
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Error: not in a git repository"; return 1; }
-
   base_url=$(__git_web_url) || { echo "Error: no supported remote found (GitHub or Azure DevOps)"; return 1; }
 
   branch_name=$(git symbolic-ref --short HEAD 2>/dev/null)
-  [ -n "$branch_name" ] || { echo "Error: could not determine current branch (detached HEAD?)"; return 1; }
+  [ -n "$branch_name" ] || { echo "Error: not in a git repository or in detached HEAD state"; return 1; }
 
   main_branch=$(gdefault)
   [ -n "$main_branch" ] || { echo "Error: could not determine default branch"; return 1; }
@@ -327,6 +325,15 @@ function gdefault() {
   local default_branch
 
   default_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | cut -d'/' -f2)
+
+  if [ -z "$default_branch" ]; then
+    for branch in main master; do
+      if git show-ref --verify --quiet "refs/remotes/origin/$branch" 2>/dev/null; then
+        default_branch="$branch"
+        break
+      fi
+    done
+  fi
 
   if [ -z "$default_branch" ]; then
     default_branch=$(git remote show origin 2>/dev/null | awk -F': ' '/HEAD branch/ {print $2; exit}')
