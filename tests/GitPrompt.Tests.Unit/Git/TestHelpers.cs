@@ -18,14 +18,20 @@ internal static class TestHelpers
         }
     }
 
-    internal static BranchLabelInfo TrackedBranchLabel(string branchName) =>
-        new($"{NormalBranchLabelOpen}{branchName}{NormalBranchLabelClose}", BranchState.Normal);
+    internal static BranchLabelInfo TrackedBranchLabel(string branchName)
+    {
+        return new BranchLabelInfo($"{NormalBranchLabelOpen}{branchName}{NormalBranchLabelClose}", BranchState.Normal);
+    }
 
-    internal static BranchLabelInfo NoUpstreamBranchLabel(string branchName) =>
-        new($"{NoUpstreamBranchMarker}{NoUpstreamBranchLabelOpen}{branchName}{NoUpstreamBranchLabelClose}", BranchState.NoUpstream);
+    internal static BranchLabelInfo NoUpstreamBranchLabel(string branchName)
+    {
+        return new BranchLabelInfo($"{NoUpstreamBranchMarker}{NoUpstreamBranchLabelOpen}{branchName}{NoUpstreamBranchLabelClose}", BranchState.NoUpstream);
+    }
 
-    internal static BranchLabelInfo DetachedBranchLabel(string branchLabel) =>
-        new($"{DetachedHeadBranchMarker}{DetachedBranchLabelOpen}{branchLabel}{DetachedBranchLabelClose}", BranchState.Detached);
+    internal static BranchLabelInfo DetachedBranchLabel(string branchLabel)
+    {
+        return new BranchLabelInfo($"{DetachedHeadBranchMarker}{DetachedBranchLabelOpen}{branchLabel}{DetachedBranchLabelClose}", BranchState.Detached);
+    }
 
     internal static string BranchLabelWithOperation(BranchLabelInfo branchLabel, string operation)
     {
@@ -35,16 +41,29 @@ internal static class TestHelpers
             BranchState.NoUpstream => NoUpstreamBranchLabelClose,
             _ => NormalBranchLabelClose
         };
+
         return branchLabel.Label.Replace(close, $"{BranchOperationSeparator}{operation}{close}", StringComparison.Ordinal);
     }
 
-    internal static string Indicator(char icon, int count) => $"{icon}{count}";
+    internal static string Indicator(char icon, int count)
+    {
+        return $"{icon}{count}";
+    }
 
-    internal static string Indicator(string icon, int count) => $"{icon}{count}";
+    internal static string Indicator(string icon, int count)
+    {
+        return $"{icon}{count}";
+    }
 
-    internal static string Colored(string color, BranchLabelInfo segment) => Colored(color, segment.Label);
+    internal static string Colored(string color, BranchLabelInfo segment)
+    {
+        return Colored(color, segment.Label);
+    }
 
-    internal static string Colored(string color, string segment) => $"{color}{segment}{ColorReset}";
+    internal static string Colored(string color, string segment)
+    {
+        return $"{color}{segment}{ColorReset}";
+    }
 }
 
 internal sealed class FakeTimeProvider(DateTimeOffset initialUtcNow) : TimeProvider
