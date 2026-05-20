@@ -38,7 +38,7 @@ internal static class GitStatusDisplayFormatter
         {
             BranchState.NoUpstream => ColorBranchNoUpstream,
             BranchState.Detached => ColorBranchDetached,
-            _ => ColorBranch,
+            _ => ColorBranch
         };
 
         statusBuilder.Append(branchColor).Append(labelWithOp).Append(ColorReset);
@@ -107,7 +107,7 @@ internal static class GitStatusDisplayFormatter
         {
             BranchState.NoUpstream => ColorBranchNoUpstream,
             BranchState.Detached => ColorBranchDetached,
-            _ => ColorBranch,
+            _ => ColorBranch
         };
 
         statusBuilder.Append(branchColor).Append(labelWithOp).Append(ColorReset);
@@ -143,7 +143,7 @@ internal static class GitStatusDisplayFormatter
         return statusBuilder.ToString();
     }
 
-    internal static BranchLabelInfo BuildBranchLabel(string branchName, BranchState state = BranchState.Normal)
+    internal static BranchLabelInfo BuildBranchLabel(string branchName, BranchState state)
     {
         var icons = ConfigReader.Config.Icons!;
 
@@ -157,14 +157,14 @@ internal static class GitStatusDisplayFormatter
                 icons.BranchLabelCloseDetached ?? DetachedBranchLabelClose),
             _ => (
                 icons.BranchLabelOpenNormal ?? NormalBranchLabelOpen,
-                icons.BranchLabelCloseNormal ?? NormalBranchLabelClose),
+                icons.BranchLabelCloseNormal ?? NormalBranchLabelClose)
         };
 
         var prefix = state switch
         {
             BranchState.NoUpstream => icons.NoUpstreamMarker ?? NoUpstreamBranchMarker,
             BranchState.Detached => icons.DetachedHeadMarker ?? DetachedHeadBranchMarker,
-            _ => string.Empty,
+            _ => string.Empty
         };
 
         return new BranchLabelInfo($"{prefix}{open}{branchName}{close}", state);
@@ -182,8 +182,9 @@ internal static class GitStatusDisplayFormatter
         {
             BranchState.NoUpstream => icons.BranchLabelCloseNoUpstream ?? NoUpstreamBranchLabelClose,
             BranchState.Detached => icons.BranchLabelCloseDetached ?? DetachedBranchLabelClose,
-            _ => icons.BranchLabelCloseNormal ?? NormalBranchLabelClose,
+            _ => icons.BranchLabelCloseNormal ?? NormalBranchLabelClose
         };
+
         var separator = icons.BranchOperationSeparator ?? BranchOperationSeparator;
         if (branchLabel.Label.EndsWith(close, StringComparison.Ordinal))
         {
@@ -204,4 +205,3 @@ internal static class GitStatusDisplayFormatter
         }
     }
 }
-

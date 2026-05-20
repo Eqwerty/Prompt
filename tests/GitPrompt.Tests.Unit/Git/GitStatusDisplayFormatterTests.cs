@@ -245,7 +245,7 @@ public sealed class GitStatusDisplayFormatterTests
     public void BuildBranchLabel_WhenStateDefaultsToNormal_ShouldReturnTrackedLabel()
     {
         // Act
-        var label = GitStatusDisplayFormatter.BuildBranchLabel("main");
+        var label = GitStatusDisplayFormatter.BuildBranchLabel("main", BranchState.Normal);
 
         // Assert
         label.Should().Be(TrackedBranchLabel("main"));
