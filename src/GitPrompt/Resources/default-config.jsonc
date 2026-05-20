@@ -12,6 +12,7 @@
     "showUser": {showUser},
     "showDomain": {showDomain},
     "showHost": {showHost},
+    "showPath": {showPath},
     "maxPathDepth": {maxPathDepth}  // 0 = full path
   },
   "layout": {

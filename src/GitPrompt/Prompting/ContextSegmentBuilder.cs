@@ -10,24 +10,29 @@ internal static class ContextSegmentBuilder
     {
         var config = ConfigReader.Config;
 
-        var (resolvedPath, isMissingPath) = ResolveWorkingDirectoryPath(platformProvider);
-        var pathColor = isMissingPath ? ColorMissingPath : ColorPath;
-        var pathSegment = $"{pathColor}{resolvedPath}{ColorReset}";
+            var userSegment = string.Empty;
+            var hostSegment = string.Empty;
+            var pathSegment = string.Empty;
 
-        var userSegment = string.Empty;
-        var hostSegment = string.Empty;
+            if (config.Context?.ShowUser is true)
+            {
+                userSegment = $"{ColorUser}{ResolveUser(platformProvider)}{ColorReset} ";
+            }
 
-        if (config.Context?.ShowUser is true)
-        {
-            userSegment = $"{ColorUser}{ResolveUser(platformProvider)}{ColorReset} ";
-        }
+            if (config.Context?.ShowHost is true)
+            {
+                hostSegment = $"{ColorHost}{ResolveHost(platformProvider)}{ColorReset} ";
+            }
 
-        if (config.Context?.ShowHost is true)
-        {
-            hostSegment = $"{ColorHost}{ResolveHost(platformProvider)}{ColorReset} ";
-        }
+            if (config.Context?.ShowPath is not false)
+            {
+                var (resolvedPath, isMissingPath) = ResolveWorkingDirectoryPath(platformProvider);
+                var pathColor = isMissingPath ? ColorMissingPath : ColorPath;
+                pathSegment = $"{pathColor}{resolvedPath}{ColorReset}";
+            }
 
-        return $"{userSegment}{hostSegment}{pathSegment}";
+            var parts = new[] { userSegment, hostSegment, pathSegment };
+            return string.Concat(parts).TrimEnd();
     }
 
     private static string ResolveUser(PlatformProvider platformProvider)

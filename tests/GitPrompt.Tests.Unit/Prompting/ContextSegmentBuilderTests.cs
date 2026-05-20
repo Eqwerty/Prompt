@@ -360,6 +360,40 @@ public sealed class ContextSegmentBuilderTests
         segment.Should().Be($"{ColorPath}/repo{ColorReset}");
     }
 
+    [Fact]
+    public void Build_WhenShowPathIsFalse_ShouldOmitPathSegment()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowPath = false } });
+        var platformProvider = new TestPlatformProvider(
+            user: "me",
+            host: "machine",
+            workingDirectoryPath: "/repo");
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().Be($"{ColorUser}me{ColorReset} {ColorHost}machine{ColorReset}");
+    }
+
+    [Fact]
+    public void Build_WhenShowUserAndShowHostAndShowPathAreFalse_ShouldReturnEmptyString()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Context = new Config.ContextConfig { ShowUser = false, ShowHost = false, ShowPath = false } });
+        var platformProvider = new TestPlatformProvider(
+            user: "me",
+            host: "machine",
+            workingDirectoryPath: "/repo");
+
+        // Act
+        var segment = ContextSegmentBuilder.Build(platformProvider);
+
+        // Assert
+        segment.Should().BeEmpty();
+    }
+
     [Theory]
     [InlineData("~/a/b/c/d", 2, "~/.../c/d")]
     [InlineData("~/a/b/c/d", 3, "~/.../b/c/d")]

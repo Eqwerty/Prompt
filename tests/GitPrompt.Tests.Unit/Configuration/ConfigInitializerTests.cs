@@ -163,6 +163,7 @@ public sealed class ConfigInitializerTests
         var result = File.ReadAllText(configPath);
         result.Should().Contain("\"showUser\": true");
         result.Should().Contain("\"showHost\": true");
+        result.Should().Contain("\"showPath\": true");
         result.Should().Contain("\"multiline\": true");
         result.Should().Contain("\"show\": true");
         result.Should().Contain("\"showStash\": true");
@@ -336,6 +337,7 @@ public sealed class ConfigInitializerTests
         content.Should().Contain("\"showUser\": true");
         content.Should().Contain("\"showHost\": true");
         content.Should().Contain("\"showDomain\": false");
+        content.Should().Contain("\"showPath\": true");
         content.Should().Contain("\"maxPathDepth\": 0");
     }
 

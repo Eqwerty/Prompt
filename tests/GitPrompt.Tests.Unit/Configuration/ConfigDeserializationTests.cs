@@ -275,6 +275,45 @@ public sealed class ConfigDeserializationTests
     }
 
     [Fact]
+    public void Context_ShowPath_WhenPresentButEmpty_ShouldBeNull()
+    {
+        // Arrange
+        var json = """{"context": {}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Context!.ShowPath.Should().BeNull();
+    }
+
+    [Fact]
+    public void Context_ShowPath_WhenExplicitlyTrue_ShouldReturnTrue()
+    {
+        // Arrange
+        var json = """{"context": {"showPath": true}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Context!.ShowPath.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Context_ShowPath_WhenExplicitlyFalse_ShouldReturnFalse()
+    {
+        // Arrange
+        var json = """{"context": {"showPath": false}}""";
+
+        // Act
+        var config = JsonSerializer.Deserialize(json, ConfigJsonContext.Default.Config);
+
+        // Assert
+        config!.Context!.ShowPath.Should().BeFalse();
+    }
+
+    [Fact]
     public void Context_MaxPathDepth_WhenPresentButEmpty_ShouldBeNull()
     {
         // Arrange

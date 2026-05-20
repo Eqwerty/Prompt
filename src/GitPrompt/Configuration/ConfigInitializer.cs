@@ -50,6 +50,7 @@ internal static class ConfigInitializer
             .Replace("{showUser}", JsonBool(config.Context?.ShowUser, Config.ContextConfig.DefaultShowUser))
             .Replace("{showDomain}", JsonBool(config.Context?.ShowDomain, Config.ContextConfig.DefaultShowDomain))
             .Replace("{showHost}", JsonBool(config.Context?.ShowHost, Config.ContextConfig.DefaultShowHost))
+            .Replace("{showPath}", JsonBool(config.Context?.ShowPath, Config.ContextConfig.DefaultShowPath))
             .Replace("{maxPathDepth}", JsonInt(config.Context?.MaxPathDepth, Config.ContextConfig.DefaultMaxPathDepth))
             .Replace("{multiline}", JsonBool(config.Layout?.Multiline, Config.LayoutConfig.DefaultMultiline))
             .Replace("{newlineBefore}", JsonBool(config.Layout?.NewlineBefore, Config.LayoutConfig.DefaultNewlineBefore))
@@ -212,6 +213,7 @@ internal static class ConfigInitializer
                 ShowUser = userConfig.Context?.ShowUser ?? Config.ContextConfig.DefaultShowUser,
                 ShowDomain = userConfig.Context?.ShowDomain ?? Config.ContextConfig.DefaultShowDomain,
                 ShowHost = userConfig.Context?.ShowHost ?? Config.ContextConfig.DefaultShowHost,
+                ShowPath = userConfig.Context?.ShowPath ?? Config.ContextConfig.DefaultShowPath,
                 MaxPathDepth = userConfig.Context?.MaxPathDepth ?? Config.ContextConfig.DefaultMaxPathDepth
             },
             Layout = new Config.LayoutConfig

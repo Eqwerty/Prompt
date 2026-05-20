@@ -91,6 +91,7 @@ internal sealed record Config
         internal const bool DefaultShowUser = true;
         internal const bool DefaultShowDomain = false;
         internal const bool DefaultShowHost = true;
+        internal const bool DefaultShowPath = true;
         internal const int DefaultMaxPathDepth = 0;
 
         [JsonInclude]
@@ -104,6 +105,10 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("showHost")]
         internal bool? ShowHost { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("showPath")]
+        internal bool? ShowPath { get; init; }
 
         [JsonInclude]
         [JsonPropertyName("maxPathDepth")]

@@ -44,6 +44,7 @@ Shows the elapsed time of the last command in the prompt, rendered in pink betwe
 | `context.showUser` | `true` | Show the username in the prompt |
 | `context.showDomain` | `false` | Prepend the Windows domain to the username, e.g. `DOMAIN+user` (Windows only; no effect when `USER` env var is set) |
 | `context.showHost` | `true` | Show the hostname in the prompt |
+| `context.showPath` | `true` | Show the working directory path in the prompt |
 | `context.maxPathDepth` | `0` | Max directory segments shown in the path (`0` = full path) |
 
 When `context.maxPathDepth` is set, paths deeper than the limit are truncated with `...`. Examples with `context.maxPathDepth: 2`:
@@ -177,6 +178,7 @@ All three icons and their colors can be customised independently:
     "showUser": true,
     "showHost": true,
     "showDomain": false,
+    "showPath": true,
     "maxPathDepth": 3
   },
   "layout": {
