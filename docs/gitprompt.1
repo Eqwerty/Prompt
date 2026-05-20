@@ -197,6 +197,12 @@ for regular users,
 for root,
 .B ❯
 on Windows.
+.TP
+.B layout.prefix
+Prepend a static string to the start of the prompt line (e.g.
+.BR "\(-> " ).
+.B null
+or omitted means no prefix.
 .SS Git Status Icons
 Set any key to a string to override the icon; set to
 .B null
@@ -378,6 +384,12 @@ Git timeout indicator. Default:
 .TP
 .B colors.promptSymbol
 Prompt symbol color. Default:
+.BR #AAAAAA .
+.TP
+.B colors.prefix
+Color of the prefix string set by
+.BR layout.prefix .
+Default:
 .BR #AAAAAA .
 .SS Compact Mode
 When enabled, the git status segment shows only the branch name, ahead/behind counts,

@@ -60,6 +60,7 @@ When `context.maxPathDepth` is set, paths deeper than the limit are truncated wi
 | `layout.newlineBefore` | `false` | Add a blank line before the prompt |
 | `layout.startOfLine` | `true` | Move to column 0 if the cursor is not there when the prompt renders (e.g. after `printf text`) |
 | `layout.symbol` | *(auto)* | Override the prompt symbol. Omit (or set to `null`) to keep automatic: `$` for regular users, `#` for root, `❯` on Windows. |
+| `layout.prefix` | *(none)* | Prepend a static string to the start of the prompt line (e.g. `"→ "`). `null` or omitted means no prefix. |
 
 > **Note:** `layout.startOfLine` is baked into the bash integration script at `eval` time, not re-read on every render. Changing it in `config.jsonc` has no effect until you start a new shell or re-run `eval "$(gitprompt init bash)"`.
 
@@ -130,6 +131,7 @@ Customise the color of each prompt segment using `#RRGGBB` hex strings. Set any 
 | `colors.missingPath` | `#FF5555` | Missing working directory |
 | `colors.timeout` | `#FFA002` | Git timeout indicator |
 | `colors.promptSymbol` | `#AAAAAA` | Prompt symbol (`$`, `#`, `❯`) |
+| `colors.prefix` | `#AAAAAA` | Prefix string set by `layout.prefix` |
 
 > **Note:** `colors.promptSymbol` controls the *color* of the prompt symbol. To change the symbol character itself, use [`layout.symbol`](#prompt-layout).
 

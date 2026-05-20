@@ -136,6 +136,10 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("symbol")]
         internal string? Symbol { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("prefix")]
+        internal string? Prefix { get; init; }
     }
 
     internal sealed record IconsConfig
@@ -314,6 +318,10 @@ internal sealed record Config
         [JsonInclude]
         [JsonPropertyName("promptSymbol")]
         internal string? PromptSymbol { get; init; }
+
+        [JsonInclude]
+        [JsonPropertyName("prefix")]
+        internal string? Prefix { get; init; }
     }
 }
 

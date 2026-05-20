@@ -19,7 +19,8 @@
     "multiline": {multiline},  // info line and symbol on separate lines
     "newlineBefore": {newlineBefore},  // blank line above the prompt
     "startOfLine": {startOfLine},  // requires shell restart
-    "symbol": {symbol}  // null = automatic: $ / # for root / ❯ on Windows
+    "symbol": {symbol},  // null = automatic: $ / # for root / ❯ on Windows
+    "prefix": {prefix}  // null = no prefix; e.g. "→ " or "❯ "
   },
   "compact": {compact},  // single dirty/clean icon instead of individual file-type counts
   "showStash": {showStash},
@@ -66,6 +67,7 @@
     "clean": {colorClean},  // compact mode only
     "missingPath": {colorMissingPath},  // when the working directory no longer exists
     "timeout": {colorTimeout},  // when the git command times out
-    "promptSymbol": {colorPromptSymbol}
+    "promptSymbol": {colorPromptSymbol},
+    "prefix": {colorPrefix}  // color of the layout.prefix string
   }
 }

@@ -66,6 +66,8 @@ internal static class PromptColors
 
     internal static string ColorPromptSymbol => ResolveColor(ConfigReader.Config.Colors!.PromptSymbol, AnsiColors.White);
 
+    internal static string ColorPrefix => ResolveColor(ConfigReader.Config.Colors!.Prefix, AnsiColors.White);
+
     internal static readonly string ColorReset = PromptColor(AnsiColors.Reset);
 }
 

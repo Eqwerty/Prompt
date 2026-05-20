@@ -96,4 +96,46 @@ public sealed class PromptResultTests
         // Assert
         output.Should().Be($"\nctx {ColorPromptSymbol}${ColorReset} ");
     }
+
+    [Fact]
+    public void Output_WhenPrefixIsSet_ShouldPrependPrefixToPromptLine()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = true, Prefix = "→ " } });
+        var result = MakeResult();
+
+        // Act
+        var output = result.Output;
+
+        // Assert
+        output.Should().Be($"{ColorPrefix}→ {ColorReset}ctx\n{ColorPromptSymbol}${ColorReset} ");
+    }
+
+    [Fact]
+    public void Output_WhenPrefixIsNull_ShouldNotPrependAnything()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = true, Prefix = null } });
+        var result = MakeResult();
+
+        // Act
+        var output = result.Output;
+
+        // Assert
+        output.Should().Be($"ctx\n{ColorPromptSymbol}${ColorReset} ");
+    }
+
+    [Fact]
+    public void Output_WhenPrefixIsEmpty_ShouldNotPrependAnything()
+    {
+        // Arrange
+        using var _ = ConfigReader.OverrideForTesting(new Config { Layout = new Config.LayoutConfig { Multiline = true, Prefix = "" } });
+        var result = MakeResult();
+
+        // Act
+        var output = result.Output;
+
+        // Assert
+        output.Should().Be($"ctx\n{ColorPromptSymbol}${ColorReset} ");
+    }
 }

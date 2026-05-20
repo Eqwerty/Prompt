@@ -56,6 +56,7 @@ internal static class ConfigInitializer
             .Replace("{newlineBefore}", JsonBool(config.Layout?.NewlineBefore, Config.LayoutConfig.DefaultNewlineBefore))
             .Replace("{startOfLine}", JsonBool(config.Layout?.StartOfLine, Config.LayoutConfig.DefaultStartOfLine))
             .Replace("{symbol}", JsonValue(config.Layout?.Symbol))
+            .Replace("{prefix}", JsonValue(config.Layout?.Prefix))
             .Replace("{compact}", JsonBool(config.Compact, Config.DefaultCompact))
             .Replace("{showStash}", JsonBool(config.ShowStash, Config.DefaultShowStash))
             .Replace("{iconAhead}", JsonValue(config.Icons?.Ahead ?? PromptIcons.IconAhead.ToString()))
@@ -98,7 +99,8 @@ internal static class ConfigInitializer
             .Replace("{colorClean}", JsonValue(config.Colors?.Clean ?? ColorDisplayValue(AnsiColors.Green)))
             .Replace("{colorMissingPath}", JsonValue(config.Colors?.MissingPath ?? ColorDisplayValue(AnsiColors.Red)))
             .Replace("{colorTimeout}", JsonValue(config.Colors?.Timeout ?? ColorDisplayValue(AnsiColors.Yellow)))
-            .Replace("{colorPromptSymbol}", JsonValue(config.Colors?.PromptSymbol ?? ColorDisplayValue(AnsiColors.White)));
+            .Replace("{colorPromptSymbol}", JsonValue(config.Colors?.PromptSymbol ?? ColorDisplayValue(AnsiColors.White)))
+            .Replace("{colorPrefix}", JsonValue(config.Colors?.Prefix ?? ColorDisplayValue(AnsiColors.White)));
     }
 
     private static string JsonBool(bool? value, bool fallback)
@@ -221,7 +223,8 @@ internal static class ConfigInitializer
                 Multiline = userConfig.Layout?.Multiline ?? Config.LayoutConfig.DefaultMultiline,
                 NewlineBefore = userConfig.Layout?.NewlineBefore ?? Config.LayoutConfig.DefaultNewlineBefore,
                 StartOfLine = userConfig.Layout?.StartOfLine ?? Config.LayoutConfig.DefaultStartOfLine,
-                Symbol = userConfig.Layout?.Symbol
+                Symbol = userConfig.Layout?.Symbol,
+                Prefix = userConfig.Layout?.Prefix
             },
             Cache = userConfig.Cache ?? new Config.CacheConfig(),
             Icons = userConfig.Icons ?? new Config.IconsConfig(),

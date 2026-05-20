@@ -19,9 +19,12 @@ internal readonly record struct PromptResult(
             var config = ConfigReader.Config;
             var promptSymbolSegment = $"{ColorPromptSymbol}{PromptSymbol}{ColorReset} ";
 
+            var prefix = config.Layout!.Prefix;
+            var prefixSegment = !string.IsNullOrEmpty(prefix) ? $"{ColorPrefix}{prefix}{ColorReset}" : string.Empty;
+
             var body = (config.Layout!.Multiline ?? true)
-                ? $"{PromptLine}\n{promptSymbolSegment}"
-                : $"{PromptLine} {promptSymbolSegment}";
+                ? $"{prefixSegment}{PromptLine}\n{promptSymbolSegment}"
+                : $"{prefixSegment}{PromptLine} {promptSymbolSegment}";
 
             return (config.Layout!.NewlineBefore ?? false) ? $"\n{body}" : body;
         }
