@@ -8,40 +8,37 @@ internal static class ContextSegmentBuilder
 {
     internal static string Build(PlatformProvider platformProvider)
     {
-        var config = ConfigReader.Config;
+        var userSegment = ResolveUser(platformProvider);
+        var hostSegment = ResolveHost(platformProvider);
+        var pathSegment = ResolvePath(platformProvider);
 
-            var userSegment = string.Empty;
-            var hostSegment = string.Empty;
-            var pathSegment = string.Empty;
+        var response = userSegment;
 
-            if (config.Context?.ShowUser is true)
-            {
-                userSegment = $"{ColorUser}{ResolveUser(platformProvider)}{ColorReset} ";
-            }
+        if (!string.IsNullOrEmpty(hostSegment))
+        {
+            response += $" {hostSegment}";
+        }
 
-            if (config.Context?.ShowHost is true)
-            {
-                hostSegment = $"{ColorHost}{ResolveHost(platformProvider)}{ColorReset} ";
-            }
-
-            if (config.Context?.ShowPath is not false)
-            {
-                var (resolvedPath, isMissingPath) = ResolveWorkingDirectoryPath(platformProvider);
-                var pathColor = isMissingPath ? ColorMissingPath : ColorPath;
-                pathSegment = $"{pathColor}{resolvedPath}{ColorReset}";
-            }
-
-            var parts = new[] { userSegment, hostSegment, pathSegment };
-            return string.Concat(parts).TrimEnd();
+        if (!string.IsNullOrEmpty(pathSegment))
+        {
+            response += $" {pathSegment}";
+        }
+        
+        return response.TrimStart();
     }
 
     private static string ResolveUser(PlatformProvider platformProvider)
     {
+        if (ConfigReader.Config.Context?.ShowUser is false)
+        {
+            return string.Empty;
+        }
+
         var user = platformProvider.User;
 
         if (!string.IsNullOrEmpty(user))
         {
-            return user;
+            return $"{ColorUser}{user}{ColorReset}";
         }
 
         var windowsUserName = platformProvider.WindowsUserName;
@@ -54,36 +51,46 @@ internal static class ContextSegmentBuilder
 
                 if (!string.IsNullOrEmpty(domain))
                 {
-                    return $"{domain}+{windowsUserName}";
+                    return $"{ColorUser}{domain}+{windowsUserName}{ColorReset}";
                 }
             }
 
-            return windowsUserName;
+            return $"{ColorUser}{windowsUserName}{ColorReset}";
         }
 
-        return "[user?]";
+        return $"{ColorUser}[user?]{ColorReset}";
     }
 
     private static string ResolveHost(PlatformProvider platformProvider)
     {
+        if (ConfigReader.Config.Context?.ShowHost is false)
+        {
+            return string.Empty;
+        }
+
         var host = platformProvider.Host;
 
         if (!string.IsNullOrEmpty(host))
         {
-            return host;
+            return $"{ColorHost}{host}{ColorReset}";
         }
 
-        return "[host?]";
+        return $"{ColorHost}[host?]{ColorReset}";
     }
 
-    private static (string DisplayPath, bool IsMissingPath) ResolveWorkingDirectoryPath(PlatformProvider platformProvider)
+    private static string ResolvePath(PlatformProvider platformProvider)
     {
+        if (ConfigReader.Config.Context?.ShowPath is false)
+        {
+            return string.Empty;
+        }
+
         var workingDirectoryPath = platformProvider.WorkingDirectory.Path;
         var isFallbackPath = platformProvider.WorkingDirectory.IsFromFallback;
 
         if (string.IsNullOrEmpty(workingDirectoryPath))
         {
-            return (DisplayPath: "[path?]", IsMissingPath: false);
+            return $"{ColorPath}[path?]{ColorReset}";
         }
 
         var isMissingPath = isFallbackPath && !Directory.Exists(workingDirectoryPath);
@@ -123,7 +130,9 @@ internal static class ContextSegmentBuilder
             displayPath += " [missing]";
         }
 
-        return (displayPath, isMissingPath);
+        var pathColor = isMissingPath ? ColorMissingPath : ColorPath;
+
+        return $"{pathColor}{displayPath}{ColorReset}";
     }
 
     internal static string TruncatePath(string displayPath, int maxDepth)
